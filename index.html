@@ -1,1 +1,224 @@
-tes
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loker Ahtris - Portal Lowongan Kerja</title>
+  <!-- Tailwind CSS CDN untuk styling modern -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen">
+
+  <!-- NAVBAR -->
+  <nav class="bg-blue-600 text-white shadow-md">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+      <a href="#" class="font-bold text-xl tracking-wide">Loker Ahtris</a>
+      <div id="nav-actions" class="flex gap-3">
+        <!-- Tombol akan berubah dinamis via JS tergantung status login -->
+        <button onclick="openModal('modal-login')" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-100 transition">Masuk</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO & SEARCH SECTION -->
+  <header class="bg-blue-500 text-white py-12 px-4 text-center">
+    <h1 class="text-3xl font-bold mb-2">Temukan Pekerjaan Impian Anda</h1>
+    <p class="text-blue-100 mb-6">Ribuan lowongan kerja terbaru siap melamar Anda</p>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="max-w-4xl mx-auto px-4 py-8 flex-grow w-full">
+    
+    <!-- DASHBOARD USER (POSTING LOKER) - HANYA TAMPIL SAAT LOGIN -->
+    <section id="post-job-section" class="hidden bg-white p-6 rounded-xl shadow-md mb-8 border border-blue-100">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">📢 Posting Lowongan Baru</h2>
+      <form id="form-job" onsubmit="handlePostJob(event)" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Judul Posisi / Pekerjaan</label>
+          <input type="text" id="job-title" placeholder="Contoh: Frontend Developer" required class="w-full border px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Nama Perusahaan</label>
+            <input type="text" id="job-company" placeholder="PT Sukses Bersama" required class="w-full border px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Lokasi</label>
+            <input type="text" id="job-location" placeholder="Jakarta / Remote" required class="w-full border px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Deskripsi & Kualifikasi</label>
+          <textarea id="job-desc" rows="3" placeholder="Jelaskan kebutuhan peran..." required class="w-full border px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">Terbitkan Lowongan</button>
+      </form>
+    </section>
+
+    <!-- LIST LOWONGAN -->
+    <section>
+      <h2 class="text-xl font-bold mb-4">Lowongan Kerja Terbaru</h2>
+      <div id="job-list" class="space-y-4">
+        <p class="text-gray-500 italic">Memuat lowongan...</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-gray-800 text-gray-400 py-4 text-center text-sm mt-auto">
+    &copy; 2026 loker.ahtris.my.id - All rights reserved.
+  </footer>
+
+  <!-- MODAL LOGIN / REGISTER -->
+  <div id="modal-login" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-xl w-full max-w-md relative shadow-2xl">
+      <button onclick="closeModal('modal-login')" class="absolute top-3 right-4 text-gray-400 text-xl font-bold">&times;</button>
+      <h3 class="text-xl font-bold mb-4">Masuk / Daftar</h3>
+      <form onsubmit="handleAuth(event)" class="space-y-4">
+        <div>
+          <label class="block text-sm mb-1">Email</label>
+          <input type="email" id="auth-email" required class="w-full border px-3 py-2 rounded-lg">
+        </div>
+        <div>
+          <label class="block text-sm mb-1">Password</label>
+          <input type="password" id="auth-password" required class="w-full border px-3 py-2 rounded-lg">
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="submit" onclick="authAction='login'" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700">Masuk</button>
+          <button type="submit" onclick="authAction='register'" class="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg font-semibold hover:bg-gray-300">Daftar Akun</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FIREBASE CONFIG & SCRIPT INTEGRATION -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // 🔴 GANTI DENGAN FIREBASE CONFIG ANDA DARI CONSOLE FIREBASE
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Inisialisasi Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+    window.authAction = 'login';
+
+    // Check status login
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      const navActions = document.getElementById('nav-actions');
+      const postSection = document.getElementById('post-job-section');
+
+      if (user) {
+        navActions.innerHTML = `
+          <span class="text-sm self-center hidden sm:inline">${user.email}</span>
+          <button onclick="handleLogout()" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-600">Keluar</button>
+        `;
+        postSection.classList.remove('hidden');
+      } else {
+        navActions.innerHTML = `
+          <button onclick="openModal('modal-login')" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-100">Masuk</button>
+        `;
+        postSection.classList.add('hidden');
+      }
+    });
+
+    // Auth Handler (Login / Register)
+    window.handleAuth = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value;
+      const pass = document.getElementById('auth-password').value;
+
+      try {
+        if (window.authAction === 'login') {
+          await signInWithEmailAndPassword(auth, email, pass);
+        } else {
+          await createUserWithEmailAndPassword(auth, email, pass);
+        }
+        closeModal('modal-login');
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    };
+
+    window.handleLogout = () => signOut(auth);
+
+    // Post Job Handler
+    window.handlePostJob = async (e) => {
+      e.preventDefault();
+      if (!currentUser) return alert("Anda harus login!");
+
+      try {
+        await addDoc(collection(db, "jobs"), {
+          title: document.getElementById('job-title').value,
+          company: document.getElementById('job-company').value,
+          location: document.getElementById('job-location').value,
+          description: document.getElementById('job-desc').value,
+          postedBy: currentUser.email,
+          createdAt: new Date()
+        });
+
+        document.getElementById('form-job').reset();
+        loadJobs();
+        alert("Lowongan berhasil diterbitkan!");
+      } catch (err) {
+        alert("Gagal posting: " + err.message);
+      }
+    };
+
+    // Load Jobs
+    async function loadJobs() {
+      const container = document.getElementById('job-list');
+      try {
+        const q = query(collection(db, "jobs"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.empty) {
+          container.innerHTML = `<p class="text-gray-500">Belum ada lowongan kerja tersedia.</p>`;
+          return;
+        }
+
+        container.innerHTML = "";
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          container.innerHTML += `
+            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h3 class="font-bold text-lg text-blue-600">${data.title}</h3>
+                  <p class="text-sm font-semibold text-gray-700">${data.company} • <span class="text-gray-500 font-normal">${data.location}</span></p>
+                </div>
+              </div>
+              <p class="text-sm text-gray-600 mt-2 whitespace-pre-line">${data.description}</p>
+              <div class="mt-4 pt-3 border-t text-xs text-gray-400 flex justify-between">
+                <span>Diposting oleh: ${data.postedBy}</span>
+              </div>
+            </div>
+          `;
+        });
+      } catch (err) {
+        container.innerHTML = `<p class="text-red-500 text-sm">Gagal memuat data (Pastikan Firebase Config sudah benar).</p>`;
+      }
+    }
+
+    // Modal Helpers
+    window.openModal = (id) => document.getElementById(id).classList.remove('hidden');
+    window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
+
+    // Init
+    loadJobs();
+  </script>
+</body>
+</html>
