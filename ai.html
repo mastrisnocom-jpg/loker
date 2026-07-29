@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistem Generator Text-to-Video AI</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            line-height: 1.6;
+            padding: 30px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #1e293b;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border: 1px solid #334155;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 26px;
+            color: #38bdf8;
+            margin-bottom: 8px;
+        }
+        .header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        .badge-container {
+            margin-top: 10px;
+        }
+        .badge {
+            display: inline-block;
+            background-color: #0369a1;
+            color: #e0f2fe;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            margin: 2px;
+        }
+        .badge-alt {
+            background-color: #4338ca;
+            color: #e0e7ff;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+        textarea, select, input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            background-color: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: #f8fafc;
+            font-size: 14px;
+        }
+        .grid-2 {
+            display: table;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        .col {
+            display: table-cell;
+            width: 50%;
+            padding-right: 10px;
+        }
+        .col:last-child {
+            padding-right: 0;
+            padding-left: 10px;
+        }
+        .btn-generate {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .pipeline-box {
+            margin-top: 30px;
+            background-color: #0f172a;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px dashed #475569;
+        }
+        .pipeline-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #38bdf8;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .step {
+            margin-bottom: 15px;
+            padding-left: 12px;
+            border-left: 3px solid #0284c7;
+        }
+        .step-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #f1f5f9;
+        }
+        .step-desc {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        .code-preview {
+            background-color: #020617;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 11px;
+            color: #a5f3fc;
+            margin-top: 6px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .video-placeholder {
+            margin-top: 25px;
+            background-color: #020617;
+            border-radius: 12px;
+            height: 220px;
+            border: 2px dashed #334155;
+            text-align: center;
+            padding-top: 80px;
+        }
+        .video-placeholder-text {
+            color: #64748b;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AI Text-to-Video Studio</h1>
+            <p>Integrasi Gemini API (Prompt Enhancer) & Kie.ai API (Video Generator)</p>
+            <div class="badge-container">
+                <span class="badge">Gemini Flash / Pro</span>
+                <span class="badge badge-alt">Kie.ai Engine</span>
+            </div>
+        </div>
+
+        <form>
+            <div class="form-group">
+                <label>Ide Video (Teks Sederhana / Bahasa Indonesia):</label>
+                <textarea rows="3" placeholder="Contoh: Kucing astronot terbang di ruang angkasa dengan latar belakang planet bumi...">Kucing astronot melayang di luar angkasa, melihat ke arah bumi dengan cahaya realistis.</textarea>
+            </div>
+
+            <div class="grid-2">
+                <div class="col">
+                    <label>Pilih Model Video (Kie.ai):</label>
+                    <select>
+                        <option>Veo 2 (Google)</option>
+                        <option selected>Kling AI v1.5</option>
+                        <option>Runway Gen-3</option>
+                        <option>Wan 2.1</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <label>Rasio Aspek:</label>
+                    <select>
+                        <option selected>16:9 (Landscape / YouTube)</option>
+                        <option>9:16 (Portrait / TikTok / Reels)</option>
+                        <option>1:1 (Square)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="btn-generate">
+                🚀 Generate Video Otomatis
+            </div>
+        </form>
+
+        <div class="pipeline-box">
+            <div class="pipeline-title">⚡ Simulasi Alur Proses Sistem (Backend Architecture)</div>
+            
+            <div class="step">
+                <div class="step-title">Langkah 1: Gemini API – Prompt Enhancement</div>
+                <div class="step-desc">Mengubah teks sederhana user menjadi prompt sinematik profesional dalam bahasa Inggris.</div>
+                <div class="code-preview">// Output dari Gemini API:
+"Cinematic wide shot of an astronaut cat floating gracefully in zero gravity outside a spaceship, Earth visible in the background with realistic atmosphere glow, detailed fur, cinematic lighting, 8k resolution, smooth camera movement, --ar 16:9"</div>
+            </div>
+
+            <div class="step">
+                <div class="step-title">Langkah 2: Kie.ai API – Video Generation Request</div>
+                <div class="step-desc">Mengirim hasil prompt Gemini ke endpoint Text-to-Video Kie.ai.</div>
+                <div class="code-preview">POST https://api.kie.ai/v1/jobs/create-video
+Authorization: Bearer YOUR_KIE_AI_API_KEY
+Content-Type: application/json
+
+{
+  "model": "kling-v1.5",
+  "prompt": "Cinematic wide shot of an astronaut cat...",
+  "aspect_ratio": "16:9",
+  "duration": 5
+}</div>
+            </div>
+        </div>
+
+        <div class="video-placeholder">
+            <div class="video-placeholder-text">
+                🎬 Output Video Hasil Generasi Akan Tampil Di Sini
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
