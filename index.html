@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Text-to-Video Studio (Gemini + Kie.ai)</title>
+    <title>AI Text-to-Video Studio (Client-Side API)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -15,7 +15,7 @@
         }
         .container {
             max-width: 800px;
-            margin: 30px auto;
+            margin: 20px auto;
             background-color: #1e293b;
             border-radius: 16px;
             padding: 32px;
@@ -24,38 +24,54 @@
         }
         .header {
             text-align: center;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
             border-bottom: 1px solid #334155;
-            padding-bottom: 20px;
+            padding-bottom: 16px;
         }
-        .header h1 { font-size: 26px; color: #38bdf8; margin-bottom: 8px; }
-        .header p { color: #94a3b8; font-size: 14px; }
+        .header h1 { font-size: 24px; color: #38bdf8; margin-bottom: 6px; }
+        .header p { color: #94a3b8; font-size: 13px; }
         
-        .form-group { margin-bottom: 20px; }
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #38bdf8;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .api-box {
+            background-color: #0f172a;
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px dashed #475569;
+            margin-bottom: 20px;
+        }
+
+        .form-group { margin-bottom: 16px; }
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
             color: #cbd5e1;
-            font-size: 14px;
+            font-size: 13px;
         }
-        textarea, select {
+        textarea, select, input[type="password"], input[type="text"] {
             width: 100%;
-            padding: 12px 16px;
+            padding: 10px 14px;
             background-color: #0f172a;
             border: 1px solid #475569;
             border-radius: 8px;
             color: #f8fafc;
-            font-size: 14px;
+            font-size: 13px;
             outline: none;
         }
-        textarea:focus, select:focus { border-color: #38bdf8; }
+        textarea:focus, select:focus, input:focus { border-color: #38bdf8; }
         
         .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 16px;
-            margin-bottom: 20px;
         }
         
         button {
@@ -65,10 +81,11 @@
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
             transition: opacity 0.2s;
+            margin-top: 10px;
         }
         button:hover { opacity: 0.9; }
 
@@ -76,11 +93,11 @@
             margin-top: 25px;
             background-color: #0f172a;
             border-radius: 12px;
-            padding: 20px;
-            border: 1px dashed #475569;
+            padding: 16px;
+            border: 1px solid #334155;
             display: none;
         }
-        .status-title { font-weight: bold; color: #38bdf8; margin-bottom: 8px; }
+        .status-title { font-weight: bold; color: #38bdf8; margin-bottom: 8px; font-size: 14px; }
         .prompt-preview {
             background-color: #020617;
             padding: 10px;
@@ -88,7 +105,8 @@
             font-family: monospace;
             font-size: 12px;
             color: #a5f3fc;
-            margin-top: 6px;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
         .video-result {
             margin-top: 25px;
@@ -100,6 +118,12 @@
             max-height: 450px;
             border-radius: 12px;
             border: 1px solid #334155;
+            margin-top: 10px;
+        }
+        .note {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
         }
     </style>
 </head>
@@ -108,18 +132,36 @@
     <div class="container">
         <div class="header">
             <h1>AI Text-to-Video Studio</h1>
-            <p>Diototatisasi oleh Gemini API (Prompt Enhancer) & Kie.ai (Video Engine)</p>
+            <p>Generate video langsung dari browser menggunakan API Key Anda sendiri</p>
         </div>
 
         <form id="videoForm">
+            <!-- Pengaturan API Key User -->
+            <div class="api-box">
+                <div class="section-title">🔑 Konfigurasi API Key User</div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="geminiKey">Gemini API Key:</label>
+                        <input type="password" id="geminiKey" placeholder="AIzaSy..." required>
+                        <div class="note">Diperlukan untuk memperjelas prompt</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="kieKey">Kie.ai API Key:</label>
+                        <input type="password" id="kieKey" placeholder="kie_..." required>
+                        <div class="note">Diperlukan untuk memproses video</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Input Video -->
             <div class="form-group">
                 <label for="userPrompt">Ide Video (Bahasa Indonesia):</label>
-                <textarea id="userPrompt" rows="3" placeholder="Contoh: Kucing astronot terbang di ruang angkasa dengan latar planet bumi..."></textarea>
+                <textarea id="userPrompt" rows="3" placeholder="Contoh: Kucing memasak nasi goreng di dapur modern, gaya sinematik..." required></textarea>
             </div>
 
             <div class="grid-2">
                 <div class="form-group">
-                    <label for="model">Model AI Video (Kie.ai):</label>
+                    <label for="model">Model Video (Kie.ai):</label>
                     <select id="model">
                         <option value="kling-v1.5">Kling AI v1.5</option>
                         <option value="veo-2">Veo 2 (Google)</option>
@@ -131,37 +173,45 @@
                     <select id="aspectRatio">
                         <option value="16:9">16:9 (Landscape / YouTube)</option>
                         <option value="9:16">9:16 (Portrait / TikTok / Reels)</option>
+                        <option value="1:1">1:1 (Square)</option>
                     </select>
                 </div>
             </div>
 
-            <button type="button" onclick="generateVideo()">🚀 Generate Video</button>
+            <button type="button" onclick="processTextToVideo()">🚀 Generate Video</button>
         </form>
 
-        <!-- Box Indikator / Pipeline Status -->
+        <!-- Dynamic Status Section -->
         <div class="status-box" id="statusBox">
-            <div class="status-title" id="statusText">🔄 Mengoptimalkan prompt dengan Gemini API...</div>
+            <div class="status-title" id="statusText">🔄 Mengoptimalkan prompt dengan Gemini...</div>
             <div class="prompt-preview" id="enhancedPrompt">...</div>
         </div>
 
-        <!-- Tempat Output Video -->
+        <!-- Output Video -->
         <div class="video-result" id="videoResult">
-            <h3>Hasil Video Anda:</h3>
+            <h3 style="color: #38bdf8;">🎬 Hasil Video Anda:</h3>
             <video id="outputVideo" controls autoplay loop>
-                <source src="" type="video/mp4">
-                Browser Anda tidak mendukung pemutar video.
+                <source id="videoSource" src="" type="video/mp4">
+                Browser Anda tidak mendukung elemen video.
             </video>
         </div>
     </div>
 
     <script>
-        async function generateVideo() {
-            const promptText = document.getElementById('userPrompt').value;
+        async function processTextToVideo() {
+            const geminiKey = document.getElementById('geminiKey').value.trim();
+            const kieKey = document.getElementById('kieKey').value.trim();
+            const promptText = document.getElementById('userPrompt').value.trim();
             const model = document.getElementById('model').value;
             const aspectRatio = document.getElementById('aspectRatio').value;
 
+            if (!geminiKey || !kieKey) {
+                alert("Mohon isi kedua API Key (Gemini dan Kie.ai) terlebih dahulu!");
+                return;
+            }
+
             if (!promptText) {
-                alert("Silakan masukkan ide video terlebih dahulu!");
+                alert("Mohon isi ide video Anda!");
                 return;
             }
 
@@ -170,37 +220,77 @@
             const enhancedPrompt = document.getElementById('enhancedPrompt');
             const videoResult = document.getElementById('videoResult');
 
-            // Reset UI
             statusBox.style.display = 'block';
             videoResult.style.display = 'none';
             statusText.innerText = "1/2: Menghubungi Gemini API untuk memoles prompt...";
-            enhancedPrompt.innerText = "Memproses teks...";
+            enhancedPrompt.innerText = "Sedang memproses prompt...";
 
             try {
-                // Kirim ide dasar ke Backend milik Anda sendiri
-                const response = await fetch('/api/generate-video', {
+                // TAHAP 1: Panggil Gemini API langsung dari Browser
+                const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
+                
+                const promptInstruction = `Ubah ide singkat berikut menjadi prompt Text-to-Video sinematik yang sangat detail dalam Bahasa Inggris (sertakan detail lighting, camera movement, style, 8k resolution). Berikan HANYA teks prompt bahasa inggrisnya saja tanpa kalimat pembuka/penutup:\n\nIde: ${promptText}`;
+
+                const geminiResponse = await fetch(geminiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: promptText, model, aspectRatio })
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptInstruction }] }]
+                    })
                 });
 
-                const data = await response.json();
+                const geminiData = await geminiResponse.json();
 
-                if (data.success) {
-                    statusText.innerText = "2/2: Prompt berhasil di-optimize! Video sedang diproses oleh Kie.ai...";
-                    enhancedPrompt.innerText = "Prompt Gemini: " + data.enhancedPrompt;
-
-                    // Tampilkan video jika URL sudah siap
-                    setTimeout(() => {
-                        document.getElementById('outputVideo').src = data.videoUrl;
-                        videoResult.style.display = 'block';
-                    }, 3000);
-                } else {
-                    alert("Gagal memproses video: " + data.error);
+                if (geminiData.error) {
+                    throw new Error("Gemini Error: " + geminiData.error.message);
                 }
+
+                const generatedPrompt = geminiData.candidates[0].content.parts[0].text.trim();
+                
+                // Tampilkan hasil prompt Gemini di layar
+                statusText.innerText = "2/2: Prompt berhasil dipoles! Mengirim permintaan ke Kie.ai...";
+                enhancedPrompt.innerText = generatedPrompt;
+
+                // TAHAP 2: Panggil Kie.ai API langsung dari Browser
+                const kieUrl = 'https://api.kie.ai/v1/jobs/create-video';
+                
+                const kieResponse = await fetch(kieUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${kieKey}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        prompt: generatedPrompt,
+                        aspect_ratio: aspectRatio,
+                        duration: 5
+                    })
+                });
+
+                const kieData = await kieResponse.json();
+
+                if (!kieResponse.ok || kieData.error) {
+                    throw new Error("Kie.ai Error: " + (kieData.error || kieData.message || "Gagal membuat video"));
+                }
+
+                // TAHAP 3: Tampilkan Video
+                statusText.innerText = "✅ Berhasil! Video selesai diproses.";
+                const videoUrl = kieData.video_url || kieData.data?.url;
+
+                if (videoUrl) {
+                    document.getElementById('videoSource').src = videoUrl;
+                    document.getElementById('outputVideo').load();
+                    videoResult.style.display = 'block';
+                } else {
+                    alert("Video diproses, tetapi URL video belum siap. Respon Kie.ai: " + JSON.stringify(kieData));
+                }
+
             } catch (err) {
                 console.error(err);
-                alert("Terjadi kesalahan koneksi ke server backend.");
+                alert("Terjadi Kesalahan: " + err.message);
+                statusText.innerText = "❌ Proses Gagal.";
+                enhancedPrompt.innerText = err.message;
             }
         }
     </script>
