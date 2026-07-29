@@ -3,385 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Text-to-Video Studio (Gemini + Kie.ai)</title>
+    <title>Peta Murottal Dunia</title>
+
+    <!-- Leaflet CSS (Peta) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #0f172a;
             color: #f8fafc;
-            line-height: 1.6;
-            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
         }
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
+
+        header {
+            padding: 16px 20px;
             background-color: #1e293b;
-            border-radius: 16px;
-            padding: 32px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            border: 1px solid #334155;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 24px;
             border-bottom: 1px solid #334155;
-            padding-bottom: 16px;
+            text-align: center;
         }
-        .header h1 { font-size: 24px; color: #38bdf8; margin-bottom: 6px; }
-        .header p { color: #94a3b8; font-size: 13px; }
-        
-        .section-title {
-            font-size: 14px;
-            font-weight: bold;
-            color: #38bdf8;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+        header h1 { font-size: 20px; color: #38bdf8; }
+        header p { font-size: 13px; color: #94a3b8; }
 
-        .api-box {
-            background-color: #0f172a;
-            padding: 16px;
-            border-radius: 10px;
-            border: 1px dashed #475569;
-            margin-bottom: 20px;
-        }
-
-        .form-group { margin-bottom: 16px; }
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: #cbd5e1;
-            font-size: 13px;
-        }
-        textarea, select, input[type="password"], input[type="text"] {
+        /* Container Peta */
+        #map {
+            flex: 1;
             width: 100%;
-            padding: 10px 14px;
-            background-color: #0f172a;
-            border: 1px solid #475569;
-            border-radius: 8px;
-            color: #f8fafc;
-            font-size: 13px;
-            outline: none;
+            z-index: 1;
         }
-        textarea:focus, select:focus, input:focus { border-color: #38bdf8; }
-        
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
+
+        /* Panel Audio Player di Bawah */
+        .player-bar {
+            background-color: #1e293b;
+            border-top: 1px solid #334155;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            z-index: 2;
+        }
+        .player-info {
+            flex: 1;
+        }
+        .qori-name { font-weight: bold; font-size: 15px; color: #38bdf8; }
+        .location-name { font-size: 12px; color: #94a3b8; }
+
+        audio {
+            width: 60%;
+            max-width: 400px;
+            height: 40px;
         }
 
         @media (max-width: 600px) {
-            .grid-2 { grid-template-columns: 1fr; }
-        }
-        
-        button {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: opacity 0.2s;
-            margin-top: 10px;
-        }
-        button:hover { opacity: 0.9; }
-
-        .status-box {
-            margin-top: 25px;
-            background-color: #0f172a;
-            border-radius: 12px;
-            padding: 16px;
-            border: 1px solid #334155;
-            display: none;
-        }
-        .status-title { font-weight: bold; color: #38bdf8; margin-bottom: 8px; font-size: 14px; }
-        .prompt-preview {
-            background-color: #020617;
-            padding: 10px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 12px;
-            color: #a5f3fc;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-        .video-result {
-            margin-top: 25px;
-            display: none;
-            text-align: center;
-        }
-        video {
-            width: 100%;
-            max-height: 450px;
-            border-radius: 12px;
-            border: 1px solid #334155;
-            margin-top: 10px;
-        }
-        .note {
-            font-size: 11px;
-            color: #64748b;
-            margin-top: 4px;
+            .player-bar { flex-direction: column; text-align: center; }
+            audio { width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="header">
-            <h1>AI Text-to-Video Studio</h1>
-            <p>Generate video langsung dari browser menggunakan API Key Anda sendiri</p>
+    <header>
+        <h1>🗺️ Peta Murottal Al-Qur'an Dunia</h1>
+        <p>Klik marker pada peta untuk mendengarkan lantunan murottal dari berbagai wilayah</p>
+    </header>
+
+    <!-- Elemen Peta -->
+    <div id="map"></div>
+
+    <!-- Bar Pemutar Audio -->
+    <div class="player-bar">
+        <div class="player-info">
+            <div class="qori-name" id="qoriTitle">Pilih lokasi di peta...</div>
+            <div class="location-name" id="qoriSub">Klik salah satu pin penanda</div>
         </div>
-
-        <form id="videoForm">
-            <!-- Pengaturan API Key User -->
-            <div class="api-box">
-                <div class="section-title">🔑 Konfigurasi API Key User</div>
-                <div class="grid-2">
-                    <div class="form-group">
-                        <label for="geminiKey">Gemini API Key:</label>
-                        <input type="password" id="geminiKey" placeholder="AIzaSy..." required>
-                        <div class="note">Diperlukan untuk memperjelas & mengoptimalkan prompt</div>
-                    </div>
-                    <div class="form-group">
-                        <label for="kieKey">Kie.ai API Key:</label>
-                        <input type="password" id="kieKey" placeholder="kie_..." required>
-                        <div class="note">Diperlukan untuk memproses pembuatan video</div>
-                    </div>
-                </div>
-                <div class="form-group" style="margin-bottom:0; margin-top:8px;">
-                    <label for="kieEndpoint">Kie.ai API Base Endpoint (Opsional):</label>
-                    <input type="text" id="kieEndpoint" value="https://api.kie.ai" placeholder="https://api.kie.ai">
-                    <div class="note">Ubah jika akun Kie.ai Anda menggunakan proxy atau subdomain endpoint lain.</div>
-                </div>
-            </div>
-
-            <!-- Form Input Video -->
-            <div class="form-group">
-                <label for="userPrompt">Ide Video (Bahasa Indonesia):</label>
-                <textarea id="userPrompt" rows="3" placeholder="Contoh: Kucing memasak nasi goreng di dapur modern, gaya sinematik..." required></textarea>
-            </div>
-
-            <div class="grid-2">
-                <div class="form-group">
-                    <label for="model">Model Video (Kie.ai):</label>
-                    <select id="model">
-                        <option value="kling-v1.5">Kling AI v1.5</option>
-                        <option value="veo-2">Veo 2 (Google)</option>
-                        <option value="runway-gen3">Runway Gen-3</option>
-                        <option value="wan-2.1">Wan 2.1</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="aspectRatio">Rasio Aspek:</label>
-                    <select id="aspectRatio">
-                        <option value="16:9">16:9 (Landscape / YouTube)</option>
-                        <option value="9:16">9:16 (Portrait / TikTok / Reels)</option>
-                        <option value="1:1">1:1 (Square)</option>
-                    </select>
-                </div>
-            </div>
-
-            <button type="button" onclick="processTextToVideo()">🚀 Generate Video</button>
-        </form>
-
-        <!-- Status Section -->
-        <div class="status-box" id="statusBox">
-            <div class="status-title" id="statusText">🔄 Mengoptimalkan prompt dengan Gemini...</div>
-            <div class="prompt-preview" id="enhancedPrompt">...</div>
-        </div>
-
-        <!-- Output Video -->
-        <div class="video-result" id="videoResult">
-            <h3 style="color: #38bdf8;">🎬 Hasil Video Anda:</h3>
-            <video id="outputVideo" controls autoplay loop>
-                <source id="videoSource" src="" type="video/mp4">
-                Browser Anda tidak mendukung elemen video.
-            </video>
-        </div>
+        <audio id="audioPlayer" controls autoplay style="display: none;">
+            <source id="audioSource" src="" type="audio/mp3">
+            Browser Anda tidak mendukung elemen audio.
+        </audio>
     </div>
 
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
-        async function processTextToVideo() {
-            const geminiKey = document.getElementById('geminiKey').value.trim();
-            const kieKey = document.getElementById('kieKey').value.trim();
-            let kieEndpoint = document.getElementById('kieEndpoint').value.trim().replace(/\/$/, "");
-            const promptText = document.getElementById('userPrompt').value.trim();
-            const model = document.getElementById('model').value;
-            const aspectRatio = document.getElementById('aspectRatio').value;
+        // 1. Inisialisasi Peta Dunia (Tampilan Awal Fokus ke Wilayah Timur Tengah / Asia)
+        const map = L.map('map').setView([21.4225, 39.8262], 3);
 
-            if (!geminiKey || !kieKey) {
-                alert("Mohon isi kedua API Key (Gemini dan Kie.ai) terlebih dahulu!");
-                return;
+        // 2. Tambahkan Layer Peta (Menggunakan OpenStreetMap Dark Theme)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+            maxZoom: 18
+        }).addTo(map);
+
+        // 3. Data Lokasi & Murottal
+        // Anda bisa menambahkan daftar lokasi & URL MP3 Murottal di sini
+        const murottalData = [
+            {
+                name: "Makkah (Masjidil Haram)",
+                qori: "Syaikh Abdurrahman As-Sudais",
+                surah: "Surah Al-Fatihah",
+                coords: [21.4225, 39.8262],
+                audioUrl: "https://server8.mp3quran.net/sds/001.mp3"
+            },
+            {
+                name: "Madinah (Masjid Nabawi)",
+                qori: "Syaikh Ali Al-Hudhaify",
+                surah: "Surah Al-Fatihah",
+                coords: [24.4672, 39.6111],
+                audioUrl: "https://server9.mp3quran.net/hudhaify/001.mp3"
+            },
+            {
+                name: "Mesir (Kairo)",
+                qori: "Syaikh Mahmoud Khalil Al-Hussary",
+                surah: "Surah Al-Fatihah",
+                coords: [30.0444, 31.2357],
+                audioUrl: "https://server13.mp3quran.net/hussary/001.mp3"
+            },
+            {
+                name: "Indonesia (Jakarta)",
+                qori: "Murottal Indonesia",
+                surah: "Surah Al-Fatihah",
+                coords: [-6.2088, 106.8456],
+                audioUrl: "https://server8.mp3quran.net/sds/001.mp3"
+            },
+            {
+                name: "Palestina (Al-Quds / Yerusalem)",
+                qori: "Syaikh Ra'ad Al-Kurdi",
+                surah: "Surah Al-Fatihah",
+                coords: [31.7767, 35.2345],
+                audioUrl: "https://server6.mp3quran.net/kurdi/001.mp3"
             }
+        ];
 
-            if (!promptText) {
-                alert("Mohon isi ide video Anda!");
-                return;
-            }
+        // 4. Tambahkan Marker ke Peta
+        murottalData.forEach(item => {
+            const marker = L.marker(item.coords).addTo(map);
+            
+            // Popup sederhana saat hover
+            marker.bindPopup(`<b>${item.name}</b><br>${item.qori}`);
 
-            if (!kieEndpoint) {
-                kieEndpoint = "https://api.kie.ai";
-            }
+            // Event saat Marker Di-klik
+            marker.on('click', function() {
+                playMurottal(item);
+            });
+        });
 
-            const statusBox = document.getElementById('statusBox');
-            const statusText = document.getElementById('statusText');
-            const enhancedPrompt = document.getElementById('enhancedPrompt');
-            const videoResult = document.getElementById('videoResult');
+        // 5. Fungsi Pemutar Audio
+        function playMurottal(item) {
+            const audioPlayer = document.getElementById('audioPlayer');
+            const audioSource = document.getElementById('audioSource');
+            const qoriTitle = document.getElementById('qoriTitle');
+            const qoriSub = document.getElementById('qoriSub');
 
-            statusBox.style.display = 'block';
-            videoResult.style.display = 'none';
-            statusText.innerText = "1/3: Menghubungi Gemini API untuk memoles prompt...";
-            enhancedPrompt.innerText = "Sedang memproses prompt...";
+            qoriTitle.innerText = item.qori;
+            qoriSub.innerText = `${item.name} • ${item.surah}`;
 
-            try {
-                // TAHAP 1: Optimasi Prompt dengan Gemini API
-                const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
-                const promptInstruction = `Ubah ide singkat berikut menjadi prompt Text-to-Video sinematik yang sangat detail dalam Bahasa Inggris (sertakan detail lighting, camera movement, style, 8k resolution). Berikan HANYA teks prompt bahasa inggrisnya saja tanpa kalimat pembuka/penutup:\n\nIde: ${promptText}`;
-
-                const geminiResponse = await fetch(geminiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: promptInstruction }] }]
-                    })
-                });
-
-                const geminiData = await geminiResponse.json();
-                if (geminiData.error) {
-                    throw new Error("Gemini Error: " + geminiData.error.message);
-                }
-
-                const generatedPrompt = geminiData.candidates[0].content.parts[0].text.trim();
-                
-                statusText.innerText = "2/3: Mengirim perintah pembuatan video ke Kie.ai...";
-                enhancedPrompt.innerText = generatedPrompt;
-
-                // TAHAP 2: Buat Request ke Kie.ai API
-                // Menguji beberapa variasi jalur endpoint standar Kie.ai
-                const targetEndpoints = [
-                    `${kieEndpoint}/v1/jobs/create-video`,
-                    `${kieEndpoint}/api/v1/jobs/create`,
-                    `${kieEndpoint}/v1/video/generate`
-                ];
-
-                let kieData = null;
-                let lastError = null;
-
-                for (const url of targetEndpoints) {
-                    try {
-                        const res = await fetch(url, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${kieKey}`
-                            },
-                            body: JSON.stringify({
-                                model: model,
-                                prompt: generatedPrompt,
-                                aspect_ratio: aspectRatio,
-                                duration: 5
-                            })
-                        });
-
-                        if (res.status !== 404) {
-                            kieData = await res.json();
-                            if (!res.ok) {
-                                throw new Error(kieData.message || kieData.error || `HTTP ${res.status}`);
-                            }
-                            break;
-                        }
-                    } catch (e) {
-                        lastError = e;
-                    }
-                }
-
-                if (!kieData) {
-                    throw new Error(lastError ? lastError.message : "Endpoint Kie.ai tidak ditemukan (404). Silakan periksa isi Base Endpoint Kie.ai.");
-                }
-
-                // TAHAP 3: Ambil URL Video atau Jalankan Polling Jika Asinkron
-                const videoUrl = kieData.video_url || kieData.data?.url || kieData.result?.url;
-                const taskId = kieData.task_id || kieData.job_id || kieData.id;
-
-                if (videoUrl) {
-                    showVideo(videoUrl, statusText, videoResult);
-                } else if (taskId) {
-                    statusText.innerText = "3/3: Video sedang di-render oleh Kie.ai... (Mohon tunggu beberapa saat)";
-                    await pollVideoStatus(kieEndpoint, taskId, kieKey, statusText, videoResult);
-                } else {
-                    throw new Error("Respons Kie.ai diterima tetapi tidak berisi URL Video maupun Task ID.");
-                }
-
-            } catch (err) {
-                console.error(err);
-                alert("Terjadi Kesalahan: " + err.message);
-                statusText.innerText = "❌ Proses Gagal.";
-                enhancedPrompt.innerText = err.message;
-            }
-        }
-
-        // Fungsi Polling untuk Menunggu Proses Render Video
-        async function pollVideoStatus(baseUrl, taskId, apiKey, statusTextElement, videoResultElement) {
-            const checkEndpoints = [
-                `${baseUrl}/v1/jobs/status/${taskId}`,
-                `${baseUrl}/api/v1/jobs/status/${taskId}`
-            ];
-
-            let attempts = 0;
-            const maxAttempts = 60; // Maksimal 3 menit (interval 3 detik)
-
-            const interval = setInterval(async () => {
-                attempts++;
-                let statusFound = false;
-
-                for (const checkUrl of checkEndpoints) {
-                    try {
-                        const res = await fetch(checkUrl, {
-                            headers: { 'Authorization': `Bearer ${apiKey}` }
-                        });
-                        if (res.ok) {
-                            const data = await res.json();
-                            statusFound = true;
-                            
-                            const finalUrl = data.video_url || data.result?.url || data.data?.url;
-                            const status = data.status || data.state;
-
-                            if (status === 'succeeded' || status === 'completed' || finalUrl) {
-                                clearInterval(interval);
-                                showVideo(finalUrl, statusTextElement, videoResultElement);
-                                return;
-                            } else if (status === 'failed') {
-                                clearInterval(interval);
-                                alert("Gagal merender video di Kie.ai: " + (data.error || "Unknown Error"));
-                                return;
-                            }
-                        }
-                    } catch (e) {
-                        console.error("Polling error:", e);
-                    }
-                }
-
-                if (attempts >= maxAttempts) {
-                    clearInterval(interval);
-                    alert("Waktu render habis (Timeout). Silakan periksa status tugas di dashboard Kie.ai Anda.");
-                } else {
-                    statusTextElement.innerText = `3/3: Video sedang di-render oleh Kie.ai... (${attempts * 3} detik)`;
-                }
-            }, 3000);
-        }
-
-        function showVideo(url, statusTextElement, videoResultElement) {
-            statusTextElement.innerText = "✅ Berhasil! Video selesai diproses.";
-            document.getElementById('videoSource').src = url;
-            document.getElementById('outputVideo').load();
-            videoResultElement.style.display = 'block';
+            audioSource.src = item.audioUrl;
+            audioPlayer.style.display = 'block';
+            audioPlayer.load();
+            audioPlayer.play();
         }
     </script>
 </body>
