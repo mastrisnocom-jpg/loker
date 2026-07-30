@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Islami & Lyric Video Studio HD 720p - Audio to Text AI</title>
+  <title>Islami & Lyric Video Studio - Dual Mode Rekam & Render</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -163,17 +163,37 @@
     .btn-play { background: var(--primary); border: none; font-weight: bold; cursor: pointer; color: white; }
     .btn-play:hover { background: var(--primary-dark); }
 
-    .btn-download { background: #d97706; border: none; font-weight: bold; cursor: pointer; color: white; }
-    .btn-download:hover { background: #b45309; }
+    .btn-record { background: #d97706; border: none; font-weight: bold; cursor: pointer; color: white; }
+    .btn-record:hover { background: #b45309; }
+
+    .btn-render { background: #7c3aed; border: none; font-weight: bold; cursor: pointer; color: white; }
+    .btn-render:hover { background: #6d28d9; }
 
     .btn-stt { background: #2563eb; border: none; font-weight: bold; cursor: pointer; color: white; }
-    .btn-stt:hover { background: #1d4ed8; }
-    .btn-stt.listening { background: #dc2626; animation: pulse 1.5s infinite; }
 
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.6; }
-      100% { opacity: 1; }
+    .progress-box {
+      grid-column: span 2;
+      background: #0f172a;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #7c3aed;
+      display: none;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 12px;
+      background: #334155;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: #7c3aed;
+      transition: width 0.1s ease;
     }
 
     .mode-panel { display: none; }
@@ -217,7 +237,6 @@
     </div>
   </div>
 
-  <!-- CANVAS KHUSUS PEREKAMAN -->
   <canvas id="exportCanvas" width="1280" height="720"></canvas>
 
   <div class="controls-wrapper">
@@ -262,7 +281,7 @@
       </div>
     </div>
 
-    <!-- PANEL 2: LAGU & LIRIK + FITUR AUDIO TO TEXT -->
+    <!-- PANEL 2: LAGU & LIRIK -->
     <div id="songPanel" class="mode-panel active">
       <div class="control-card">
         <div>
@@ -278,7 +297,7 @@
           <input type="file" id="uploadSong" accept="audio/*" onchange="handleSongUpload(event)">
         </div>
 
-        <!-- FITUR AUDIO TO TEXT (SPEECH TO TEXT AI) -->
+        <!-- FITUR AUDIO TO TEXT -->
         <div style="grid-column: span 2; background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #2563eb;">
           <label style="color: #60a5fa; font-weight: bold; font-size: 0.8rem; margin-bottom: 6px;">🎙️ Audio to Text (Transkripsi Lirik Otomatis dari Suara / Audio):</label>
           <div style="display:flex; gap:8px; margin-bottom: 8px;">
@@ -290,7 +309,6 @@
             </select>
             <button class="btn-stt" id="sttBtn" onclick="toggleAudioToText()">🎙️ Mulai Dengar Audio -> Teks</button>
           </div>
-          <small style="color: #94a3b8; font-size: 0.7rem; display: block;">*Putar lagu lalu klik tombol ini untuk mengubah audio/suara menjadi teks lirik bertimestamp [LRC] secara otomatis.</small>
         </div>
 
         <div style="grid-column: span 2;">
@@ -302,7 +320,7 @@
         </div>
 
         <div style="grid-column: span 2;">
-          <label>Editor Lirik Sync Format .LRC (Otomatis Terisi dari Transkripsi / Edit Manual):</label>
+          <label>Editor Lirik Sync Format .LRC:</label>
           <textarea id="lrcManualInput" placeholder="[00:06.78] Lirik lagu baris pertama&#10;[00:12.45] Lirik lagu baris kedua..."></textarea>
         </div>
       </div>
@@ -321,31 +339,41 @@
       </div>
     </div>
 
-    <!-- PANEL UPLOAD BACKGROUND & ACTION BUTTONS -->
+    <!-- MENU EKSPOR: 2 PILIHAN (REKAM / RENDER OFFLINE) -->
     <div class="control-card">
       <div>
-        <label>Unggah Gambar Latar kustom (JPG/PNG):</label>
+        <label>Unggah Gambar Latar Kustom (JPG/PNG):</label>
         <input type="file" id="uploadBgImg" accept="image/*" onchange="handleBgImgUpload(event)">
       </div>
 
       <div>
-        <label>Unggah Video Latar kustom (MP4):</label>
+        <label>Unggah Video Latar Kustom (MP4):</label>
         <input type="file" id="uploadBgVid" accept="video/mp4" onchange="handleBgVidUpload(event)">
       </div>
 
       <div>
-        <label>Kontrol Utama Pemutar:</label>
-        <button class="btn-play" onclick="startPlay()">▶️ Putar Media Sekarang</button>
+        <label>Pilihan 1: Rekam Layar Real-time</label>
+        <button class="btn-record" id="recBtn" onclick="toggleRecord()">🔴 1. Rekam Real-time MP4</button>
       </div>
 
       <div>
-        <label>Ekspor Video HD 720p:</label>
-        <button class="btn-download" id="recBtn" onclick="toggleRecord()">🎥 Rekam & Unduh Video MP4</button>
+        <label>Pilihan 2: Render Offline Cepat (Frame-by-Frame)</label>
+        <button class="btn-render" id="renderBtn" onclick="startOfflineRender()">⚡ 2. Render Offline Video</button>
+      </div>
+
+      <!-- PROGRESS BAR UNTUK RENDER OFFLINE -->
+      <div class="progress-box" id="progressBox">
+        <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#cbd5e1;">
+          <span id="renderStatusText">Memproses Render...</span>
+          <span id="renderPercentText">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressBarFill"></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- PLAYER BAR FLOATING BOTTOM -->
   <div class="player-bar">
     <div style="font-size:0.8rem; font-weight:600; color:#38bdf8;" id="playingTitle">Siap Memutar Media</div>
     <audio id="audioElement" controls style="width:100%; max-width:600px;"></audio>
@@ -363,7 +391,6 @@
     let mediaRecorder, recordedChunks = [], isRecording = false;
     let canvasAnimationId;
 
-    // Speech-to-Text Recognition Engine
     let recognition = null;
     let isListening = false;
 
@@ -449,7 +476,7 @@
       if (file) {
         audio.src = URL.createObjectURL(file);
         document.getElementById('playingTitle').innerText = `Lagu: ${file.name}`;
-        alert("File MP3 berhasil dimuat! Silakan klik 'Putar Media Sekarang'.");
+        alert("File MP3 berhasil dimuat!");
       }
     }
 
@@ -466,16 +493,13 @@
       if (!url) return alert("Masukkan URL MP3 valid terlebih dahulu.");
       audio.src = url;
       document.getElementById('playingTitle').innerText = "Audio dari Link Direct";
-      alert("URL MP3 dimuat! Klik 'Putar Media Sekarang'");
+      alert("URL MP3 dimuat!");
     }
 
-    /* FITUR AUDIO TO TEXT (SPEECH RECOGNITION AI) */
+    /* SPEECH-TO-TEXT AI */
     function initSpeechRecognition() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        console.warn("Browser tidak mendukung Web Speech Recognition API.");
-        return;
-      }
+      if (!SpeechRecognition) return;
 
       recognition = new SpeechRecognition();
       recognition.continuous = true;
@@ -492,37 +516,27 @@
           const ms = Math.floor((currentTime % 1) * 100);
 
           const timestamp = `[${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(ms).padStart(2, '0')}]`;
-          const formattedLine = `${timestamp} ${transcript}
-`;
+          const formattedLine = `${timestamp} ${transcript}\n`;
 
           const textarea = document.getElementById('lrcManualInput');
           textarea.value += formattedLine;
 
-          // Update real-time ke overlay player
           document.getElementById('subDisplay').innerText = transcript;
           parseLrc(textarea.value);
         }
       };
 
-      recognition.onerror = (err) => {
-        console.error("Speech Recognition error:", err);
-      };
-
       recognition.onend = () => {
-        if (isListening) {
-          recognition.start();
-        } else {
+        if (isListening) recognition.start();
+        else {
           const btn = document.getElementById('sttBtn');
-          btn.classList.remove('listening');
           btn.innerText = "🎙️ Mulai Dengar Audio -> Teks";
         }
       };
     }
 
     function toggleAudioToText() {
-      if (!recognition) {
-        return alert("Fitur Audio to Text didukung penuh di browser Google Chrome / Edge.");
-      }
+      if (!recognition) return alert("Gunakan browser Chrome / Edge untuk fitur Speech to Text.");
 
       const btn = document.getElementById('sttBtn');
       const lang = document.getElementById('sttLangSelect').value;
@@ -531,13 +545,10 @@
         recognition.lang = lang;
         recognition.start();
         isListening = true;
-        btn.classList.add('listening');
-        btn.innerText = "🔴 Mendengarkan Audio... (Klik Stop)";
-        alert("Fitur Audio to Text aktif! Silakan putar audio/lagu Anda.");
+        btn.innerText = "🔴 Mendengarkan Audio...";
       } else {
         isListening = false;
         recognition.stop();
-        btn.classList.remove('listening');
         btn.innerText = "🎙️ Mulai Dengar Audio -> Teks";
       }
     }
@@ -553,35 +564,16 @@
         if (data.length > 0 && data[0].syncedLyrics) {
           document.getElementById('lrcManualInput').value = data[0].syncedLyrics;
           parseLrc(data[0].syncedLyrics);
-          alert(`Lirik berhasil dimuat untuk: ${data[0].trackName} - ${data[0].artistName}`);
+          alert(`Lirik berhasil dimuat untuk: ${data[0].trackName}`);
           document.getElementById('subDisplay').innerText = "Lirik siap dimainkan!";
         } else {
-          alert("Lirik tidak ditemukan di server. Silakan gunakan fitur Audio to Text atau isi teks manual.");
+          alert("Lirik tersinkronisasi tidak ditemukan di database.");
         }
       } catch (e) {
         alert("Gagal terhubung ke server lirik.");
       }
     }
 
-    /* ENGINE MEMUTAR BERSAMAAN */
-    function startPlay() {
-      if (!audio.src) {
-        return alert("Pilih file MP3 atau muat lagu terlebih dahulu!");
-      }
-
-      if (currentMode === 'song' && document.getElementById('lrcManualInput').value) {
-        parseLrc(document.getElementById('lrcManualInput').value);
-      }
-
-      audio.play().then(() => {
-        if (bgType === 'video') bgVideo.play().catch(() => {});
-        document.getElementById('playingTitle').innerText = "▶ Sedang Memutar...";
-      }).catch(err => {
-        alert("Gagal memutar audio. Pastikan file MP3 lokal Anda valid.");
-      });
-    }
-
-    /* ENGINE SINKRONISASI REAL-TIME */
     function initSyncEngine() {
       audio.addEventListener('timeupdate', () => {
         if (!audio.duration) return;
@@ -629,15 +621,14 @@
           renderAyat(currentAyatIndex);
           audio.play();
         } else if (isRecording) {
-          toggleRecord();
+          stopAndSaveRecording();
         }
       });
     }
 
     function parseLrc(lrcText) {
       songLyrics = [];
-      const lines = lrcText.split('
-');
+      const lines = lrcText.split('\n');
       const reg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
       lines.forEach(l => {
         const m = reg.exec(l);
@@ -696,10 +687,7 @@
       }
     }
 
-    /* RENDER CANVAS & PEREKAMAN VIDEO HD 720P */
-    function drawCanvasFrame() {
-      if (!isRecording) return;
-
+    function renderFrameAtTime(timeSec) {
       try {
         if (bgType === 'image') {
           ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
@@ -711,26 +699,33 @@
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      // Layer Gradien Subtitle Box
       const grad = ctx.createLinearGradient(0, canvas.height - 250, 0, canvas.height);
       grad.addColorStop(0, 'rgba(0,0,0,0)');
       grad.addColorStop(1, 'rgba(0,0,0,0.85)');
       ctx.fillStyle = grad;
       ctx.fillRect(0, canvas.height - 250, canvas.width, 250);
 
-      // Watermark Channel
       const channelName = document.getElementById('channelNameInput').value || "AUC LIRIK";
       ctx.font = 'bold 24px Inter, sans-serif';
       ctx.fillStyle = '#fbbf24';
       ctx.textAlign = 'right';
       ctx.fillText(`▶ ${channelName}`, canvas.width - 40, 50);
 
-      // Teks Lirik / Subtitle
+      // Cari lirik aktif berdasarkan waktu
+      let activeText = "";
+      if (currentMode === 'song' && songLyrics.length > 0) {
+        for (let i = 0; i < songLyrics.length; i++) {
+          if (timeSec >= songLyrics[i].time) activeText = songLyrics[i].text;
+          else break;
+        }
+      } else {
+        activeText = document.getElementById('subDisplay').innerText;
+      }
+
       ctx.textAlign = 'center';
-      const subText = document.getElementById('subDisplay').innerText;
       ctx.font = '24px Inter, sans-serif';
       ctx.fillStyle = '#ffffff';
-      ctx.fillText(subText, 640, 630);
+      ctx.fillText(activeText, 640, 630);
 
       if (currentMode === 'quran') {
         const arabText = document.getElementById('arabicDisplay').innerText;
@@ -738,15 +733,15 @@
         ctx.fillStyle = '#fbbf24';
         ctx.fillText(arabText, 640, 560);
       }
-
-      canvasAnimationId = requestAnimationFrame(drawCanvasFrame);
     }
 
-    async function toggleRecord() {
-      const recBtn = document.getElementById('recBtn');
-
+    /* PILIHAN 1: REKAM REAL-TIME */
+    function toggleRecord() {
       if (!isRecording) {
+        if (!audio.src) return alert("Unggah file MP3 terlebih dahulu!");
+
         try {
+          audio.currentTime = 0;
           const stream = canvas.captureStream(30);
           recordedChunks = [];
 
@@ -758,34 +753,119 @@
           mediaRecorder = new MediaRecorder(stream, options);
 
           mediaRecorder.ondataavailable = (e) => {
-            if (e.data.size > 0) recordedChunks.push(e.data);
+            if (e.data && e.data.size > 0) recordedChunks.push(e.data);
           };
 
           mediaRecorder.onstop = () => {
+            cancelAnimationFrame(canvasAnimationId);
             const blob = new Blob(recordedChunks, { type: 'video/mp4' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Video_Studio_${Date.now()}.mp4`;
+            a.download = `Record_Realtime_${Date.now()}.mp4`;
             a.click();
           };
 
-          mediaRecorder.start(1000);
+          mediaRecorder.start(500);
           isRecording = true;
-          recBtn.innerText = "⏹️ Hentikan & Simpan MP4";
+
+          const recBtn = document.getElementById('recBtn');
+          recBtn.innerText = "⏹️ Merekam Real-time... (Klik Stop)";
           recBtn.style.background = "#dc2626";
 
-          drawCanvasFrame();
-          startPlay();
+          function loop() {
+            if (isRecording) {
+              renderFrameAtTime(audio.currentTime);
+              canvasAnimationId = requestAnimationFrame(loop);
+            }
+          }
+          loop();
+
+          if (currentMode === 'song' && document.getElementById('lrcManualInput').value) {
+            parseLrc(document.getElementById('lrcManualInput').value);
+          }
+          audio.play();
         } catch(e) {
-          alert("Perekaman gagal dimaksimalkan. Unggah file gambar/MP3 sendiri dari galeri HP agar peramban mengizinkan akses rekam penuh.");
+          alert("Gagal memulai perekaman real-time.");
         }
       } else {
+        stopAndSaveRecording();
+      }
+    }
+
+    function stopAndSaveRecording() {
+      if (mediaRecorder && isRecording) {
         mediaRecorder.stop();
         isRecording = false;
-        recBtn.innerText = "🎥 Rekam & Unduh Video MP4";
+
+        const recBtn = document.getElementById('recBtn');
+        recBtn.innerText = "🔴 1. Rekam Real-time MP4";
         recBtn.style.background = "#d97706";
       }
+    }
+
+    /* PILIHAN 2: RENDER OFFLINE FAST (FRAME-BY-FRAME) */
+    async function startOfflineRender() {
+      if (!audio.src || !audio.duration) {
+        return alert("Muat file MP3 dan pastikan durasi audio terbaca sebelum melakukan Render!");
+      }
+
+      if (currentMode === 'song' && document.getElementById('lrcManualInput').value) {
+        parseLrc(document.getElementById('lrcManualInput').value);
+      }
+
+      const progressBox = document.getElementById('progressBox');
+      const progressBarFill = document.getElementById('progressBarFill');
+      const renderStatusText = document.getElementById('renderStatusText');
+      const renderPercentText = document.getElementById('renderPercentText');
+
+      progressBox.style.display = 'block';
+
+      const totalDuration = audio.duration;
+      const fps = 25;
+      const totalFrames = Math.floor(totalDuration * fps);
+
+      const stream = canvas.captureStream(fps);
+      const renderChunks = [];
+      const offlineRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+
+      offlineRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) renderChunks.push(e.data);
+      };
+
+      offlineRecorder.onstop = () => {
+        const blob = new Blob(renderChunks, { type: 'video/mp4' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Render_Offline_${Date.now()}.mp4`;
+        a.click();
+
+        renderStatusText.innerText = "Render Selesai! Video Diunduh.";
+        setTimeout(() => { progressBox.style.display = 'none'; }, 3000);
+      };
+
+      offlineRecorder.start();
+
+      let frame = 0;
+      function processNextFrame() {
+        if (frame <= totalFrames) {
+          const currentTime = frame / fps;
+          renderFrameAtTime(currentTime);
+
+          const percent = Math.floor((frame / totalFrames) * 100);
+          progressBarFill.style.width = percent + '%';
+          renderPercentText.innerText = percent + '%';
+          renderStatusText.innerText = `Mewarnai Frame ${frame}/${totalFrames}...`;
+
+          frame++;
+          setTimeout(processNextFrame, 10); // Proses cepat per 10ms
+        } else {
+          offlineRecorder.stop();
+        }
+      }
+
+      processNextFrame();
     }
   </script>
 </body>
