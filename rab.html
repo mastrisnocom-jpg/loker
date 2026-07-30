@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Work Request & RAB - BINAYASA</title>
+    <title>Work Request & RAB - Customizable</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- html2pdf.js untuk ekspor PDF presisi -->
+    <!-- html2pdf.js untuk ekspor PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         .document-page {
@@ -36,7 +36,7 @@
         .text-right { text-align: right; }
         .font-bold { font-weight: bold; }
 
-        /* Style untuk input agar menyatu dengan dokumen */
+        /* Style elemen interaktif agar menyatu dengan dokumen */
         .editable-input {
             width: 100%;
             border: none;
@@ -48,13 +48,18 @@
         }
 
         .editable-input:focus {
-            background-color: #f0f9ff;
+            background-color: #e0f2fe;
             border-radius: 2px;
         }
 
-        /* Menyembunyikan tombol hapus saat export PDF */
+        /* Class untuk menyembunyikan elemen saat export PDF */
         .no-print {
             display: inline-block;
+        }
+
+        /* Mode cetak/export PDF */
+        .pdf-mode .no-print {
+            display: none !important;
         }
     </style>
 </head>
@@ -64,13 +69,13 @@
     <div class="max-w-[210mm] mx-auto mb-4 bg-white p-4 rounded-lg shadow-md flex flex-wrap justify-between items-center gap-3">
         <div>
             <h2 class="font-bold text-slate-800 text-lg">Aplikasi RAB & Work Request</h2>
-            <p class="text-xs text-slate-500">Formulir Interaktif & Riwayat Penyimpanan</p>
+            <p class="text-xs text-slate-500">Semua Elemen Interaktif & Dapat Disesuaikan</p>
         </div>
         <div class="flex flex-wrap gap-2">
-            <button onclick="saveToHistory()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1 shadow">
-                💾 Simpan Ke Riwayat
+            <button onclick="saveToHistory()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-xs font-semibold shadow">
+                💾 Simpan Riwayat
             </button>
-            <button onclick="toggleHistoryModal()" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1 shadow">
+            <button onclick="toggleHistoryModal()" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-1.5 rounded text-xs font-semibold shadow">
                 📜 Riwayat RAB (<span id="historyCount">0</span>)
             </button>
             <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded text-xs font-semibold shadow">
@@ -82,7 +87,7 @@
         </div>
     </div>
 
-    <!-- AREA DOKUMEN WORK REQUEST (Semua Elemen BISA DIEDIT) -->
+    <!-- AREA DOKUMEN WORK REQUEST -->
     <div id="pdfDocument" class="document-page shadow-lg">
         
         <!-- Header Logo & Judul -->
@@ -90,7 +95,8 @@
             <tr>
                 <td class="w-1/3 text-center" style="border: none;">
                     <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full border-2 border-blue-600 flex items-center justify-center font-bold text-blue-800 text-xs">B</div>
+                        <input type="text" id="logoText" value="B" oninput="document.getElementById('logoIcon').innerText=this.value.charAt(0)" class="editable-input text-center font-bold text-blue-800 w-6 border-b border-slate-300 no-print" title="Ubah Huruf Logo">
+                        <div id="logoIcon" class="w-8 h-8 rounded-full border-2 border-blue-600 flex items-center justify-center font-bold text-blue-800 text-xs shrink-0">B</div>
                         <input type="text" id="companyName" value="BINAYASA" class="editable-input text-lg font-bold text-blue-900 tracking-wider">
                     </div>
                 </td>
@@ -174,25 +180,31 @@
                         <input type="text" id="ttdJabatan" value="Kepala Unit" class="editable-input text-center text-xs">
                         <div class="mt-4 text-xs text-left">
                             Dibebankan ke :<br>
-                            <label class="flex items-center gap-1"><input type="checkbox" id="chkBsn" checked> BSN Surabaya</label>
-                            <label class="flex items-center gap-1"><input type="checkbox" id="chkPengelola"> Pengelola gedung</label>
+                            <div class="flex items-center gap-1">
+                                <input type="checkbox" id="chkBsn" checked>
+                                <input type="text" id="bebanBsnText" value="BSN Surabaya" class="editable-input text-xs">
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <input type="checkbox" id="chkPengelola">
+                                <input type="text" id="bebanPengelolaText" value="Pengelola gedung" class="editable-input text-xs">
+                            </div>
                         </div>
                     </td>
                 </tr>
                 <tr>
-                    <td>DPP 1,11</td>
+                    <td>DPP <input type="number" step="0.01" id="dppRate" value="1.11" oninput="renderRows()" class="editable-input inline-block w-12 text-center font-semibold"></td>
                     <td class="text-right" id="dppVal">Rp 0</td>
                 </tr>
                 <tr>
-                    <td>PPN 11%</td>
+                    <td>PPN <input type="number" id="ppnRate" value="11" oninput="renderRows()" class="editable-input inline-block w-8 text-center font-semibold">%</td>
                     <td class="text-right" id="ppnVal">Rp 0</td>
                 </tr>
                 <tr>
-                    <td>PPH 23 (2%)</td>
+                    <td>PPH 23 <input type="number" id="pphRate" value="2" oninput="renderRows()" class="editable-input inline-block w-8 text-center font-semibold">%</td>
                     <td class="text-right" id="pphVal">Rp 0</td>
                 </tr>
                 <tr>
-                    <td>Fee 8%</td>
+                    <td>Fee <input type="number" id="feeRate" value="8" oninput="renderRows()" class="editable-input inline-block w-8 text-center font-semibold">%</td>
                     <td class="text-right" id="feeVal">Rp 0</td>
                 </tr>
                 <tr>
@@ -250,7 +262,6 @@
     </div>
 
     <script>
-        // Data Item Awal (Sesuai Gambar)
         let items = [
             { qty: 11, desc: "andi", price: 10500 },
             { qty: 8, desc: "sopyan", price: 10500 },
@@ -276,18 +287,24 @@
                     <td><input type="text" value="${item.desc}" onchange="updateItem(${i}, 'desc', this.value)" class="editable-input"></td>
                     <td><input type="number" value="${item.price}" onchange="updateItem(${i}, 'price', this.value)" class="editable-input text-right"></td>
                     <td class="text-right font-semibold">Rp ${rowTotal.toLocaleString('id-ID')}</td>
-                    <td class="text-center">
-                        <button onclick="removeItemRow(${i})" class="no-print text-red-500 hover:text-red-700 font-bold text-xs">Hapus</button>
+                    <td class="text-center no-print">
+                        <button onclick="removeItemRow(${i})" class="text-red-500 hover:text-red-700 font-bold text-xs">Hapus</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            // Hitung Pajak & Grand Total
-            const dpp = Math.round(subtotal / 1.11);
-            const ppn = Math.round(dpp * 0.11);
-            const pph = Math.round(dpp * 0.02);
-            const fee = Math.round(subtotal * 0.08);
+            // Ambil Tarif Dinamis
+            const dppDivisor = parseFloat(document.getElementById("dppRate").value) || 1;
+            const ppnPercent = parseFloat(document.getElementById("ppnRate").value) || 0;
+            const pphPercent = parseFloat(document.getElementById("pphRate").value) || 0;
+            const feePercent = parseFloat(document.getElementById("feeRate").value) || 0;
+
+            // Kalkulasi Pajak & Total
+            const dpp = Math.round(subtotal / dppDivisor);
+            const ppn = Math.round(dpp * (ppnPercent / 100));
+            const pph = Math.round(dpp * (pphPercent / 100));
+            const fee = Math.round(subtotal * (feePercent / 100));
             const grandTotal = subtotal + ppn + fee - pph;
 
             document.getElementById("subtotalVal").innerText = "Rp " + subtotal.toLocaleString('id-ID');
@@ -317,7 +334,7 @@
             renderRows();
         }
 
-        // --- SISTEM RIWAYAT (LOCALSTORAGE) ---
+        // --- SISTEM RIWAYAT ---
         function getHistory() {
             return JSON.parse(localStorage.getItem("rab_history") || "[]");
         }
@@ -331,20 +348,24 @@
             const dataToSave = {
                 id: Date.now(),
                 timestamp: new Date().toLocaleString('id-ID'),
+                logoText: document.getElementById("logoText").value,
+                companyName: document.getElementById("companyName").value,
                 noWr: document.getElementById("noWr").value,
                 pemohon: document.getElementById("pemohon").value,
                 divisi: document.getElementById("divisi").value,
                 tanggal: document.getElementById("tanggal").value,
                 uraianPermohonan: document.getElementById("uraianPermohonan").value,
                 items: JSON.parse(JSON.stringify(items)),
-                ttdNama: document.getElementById("ttdNama").value,
-                ttdJabatan: document.getElementById("ttdJabatan").value
+                feeRate: document.getElementById("feeRate").value,
+                bebanBsnText: document.getElementById("bebanBsnText").value,
+                bebanPengelolaText: document.getElementById("bebanPengelolaText").value,
+                ttdNama: document.getElementById("ttdNama").value
             };
 
             history.unshift(dataToSave);
             localStorage.setItem("rab_history", JSON.stringify(history));
             updateHistoryBadge();
-            alert("RAB Berhasil Disimpan ke Riwayat!");
+            alert("RAB Berhasil Disimpan!");
         }
 
         function toggleHistoryModal() {
@@ -370,8 +391,8 @@
                 item.className = "flex justify-between items-center p-3 bg-slate-50 border rounded-lg hover:bg-slate-100 transition";
                 item.innerHTML = `
                     <div>
-                        <div class="font-bold text-sm text-slate-800">${record.noWr || 'Tanpa No. WR'} - ${record.pemohon}</div>
-                        <div class="text-xs text-slate-500">${record.timestamp} | ${record.items.length} Item Pekerjaan</div>
+                        <div class="font-bold text-sm text-slate-800">${record.noWr || 'Tanpa No. WR'} - ${record.companyName}</div>
+                        <div class="text-xs text-slate-500">${record.timestamp} | ${record.items.length} Item</div>
                     </div>
                     <div class="flex gap-2">
                         <button onclick="loadHistory(${record.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-semibold">Buka</button>
@@ -386,13 +407,18 @@
             const history = getHistory();
             const record = history.find(r => r.id === id);
             if (record) {
+                document.getElementById("logoText").value = record.logoText || "B";
+                document.getElementById("logoIcon").innerText = (record.logoText || "B").charAt(0);
+                document.getElementById("companyName").value = record.companyName || "";
                 document.getElementById("noWr").value = record.noWr || "";
                 document.getElementById("pemohon").value = record.pemohon || "";
                 document.getElementById("divisi").value = record.divisi || "";
                 document.getElementById("tanggal").value = record.tanggal || "";
                 document.getElementById("uraianPermohonan").value = record.uraianPermohonan || "";
+                document.getElementById("feeRate").value = record.feeRate || 8;
+                document.getElementById("bebanBsnText").value = record.bebanBsnText || "";
+                document.getElementById("bebanPengelolaText").value = record.bebanPengelolaText || "";
                 document.getElementById("ttdNama").value = record.ttdNama || "";
-                document.getElementById("ttdJabatan").value = record.ttdJabatan || "";
                 items = record.items || [];
                 renderRows();
                 toggleHistoryModal();
@@ -407,9 +433,13 @@
             renderHistoryList();
         }
 
-        // --- EKSPOR PDF & CSV ---
+        // --- EKSPOR PDF BERSIH (TANPA TOMBOL) ---
         function exportPDF() {
             const element = document.getElementById('pdfDocument');
+            
+            // Tambahkan class pdf-mode untuk menyembunyikan semua tombol
+            element.classList.add('pdf-mode');
+
             const opt = {
                 margin:       3,
                 filename:     `RAB_${document.getElementById("noWr").value.replace(/[\/\s]/g, '_')}.pdf`,
@@ -417,7 +447,11 @@
                 html2canvas:  { scale: 2 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            html2pdf().set(opt).from(element).save();
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Kembalikan tombol setelah selesai export
+                element.classList.remove('pdf-mode');
+            });
         }
 
         function exportCSV() {
@@ -432,7 +466,6 @@
             link.click();
         }
 
-        // Inisialisasi awal
         renderRows();
         updateHistoryBadge();
     </script>
