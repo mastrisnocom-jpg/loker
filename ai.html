@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Studio Video Lirik & VO Dinamis HD 720p</title>
+  <title>Studio Video Lirik, AI Studio TTS & Dynamic VO</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +17,7 @@
       --gold: #fbbf24;
       --cyan: #38bdf8;
       --arabic-size: 1.6rem;
-      --sub-size: 1.3rem;
+      --sub-size: 1.1rem;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
@@ -49,7 +49,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      filter: brightness(0.55) contrast(1.05);
+      filter: brightness(0.6) contrast(1.05);
       z-index: 1;
       display: none;
     }
@@ -87,14 +87,14 @@
     .subtitle-overlay {
       position: relative;
       z-index: 10;
-      width: 85%;
-      margin: 25px;
+      width: 90%;
+      max-height: 80%;
+      margin: 20px;
       text-align: center;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      min-height: 90px;
     }
 
     .arabic-text {
@@ -113,26 +113,25 @@
       font-size: var(--sub-size);
       color: #f1f5f9;
       line-height: 1.5;
-      font-weight: 700;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95);
+      font-weight: 600;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
       word-wrap: break-word;
       max-width: 100%;
     }
 
-    /* KATA YANG SEDANG DIBACA VO */
     .word-span {
       display: inline-block;
       margin: 0 4px;
       color: #cbd5e1;
-      opacity: 0.6;
-      transition: all 0.12s ease-in-out;
+      opacity: 0.7;
+      transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .word-span.active {
       color: var(--gold);
       opacity: 1;
-      transform: scale(1.18) translateY(-2px);
-      text-shadow: 0 0 14px rgba(251, 191, 36, 0.9), 0 2px 10px rgba(0,0,0,1);
+      transform: scale(1.15) translateY(-2px);
+      text-shadow: 0 0 12px rgba(251, 191, 36, 0.9), 0 2px 8px rgba(0,0,0,1);
       font-weight: 800;
     }
 
@@ -160,6 +159,28 @@
       border: 1px solid #334155;
     }
 
+    .api-link-box {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.75rem;
+    }
+
+    .api-link-btn {
+      color: #38bdf8;
+      text-decoration: none;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      transition: all 0.2s;
+    }
+    .api-link-btn:hover {
+      background: rgba(56, 189, 248, 0.25);
+      color: #ffffff;
+    }
+
     label { display: block; font-size: 0.72rem; color: #94a3b8; margin-bottom: 4px; }
 
     select, input[type="file"], input[type="range"], input[type="text"], input[type="password"], textarea, button {
@@ -173,12 +194,18 @@
       outline: none;
     }
 
-    textarea { height: 90px; font-family: monospace; }
+    textarea { height: 80px; font-family: monospace; }
 
     .btn-play { background: var(--primary); border: none; font-weight: bold; cursor: pointer; color: white; }
+    .btn-play:hover { background: var(--primary-dark); }
+
     .btn-record { background: #d97706; border: none; font-weight: bold; cursor: pointer; color: white; }
+    .btn-record:hover { background: #b45309; }
+
+    .btn-stt { background: #2563eb; border: none; font-weight: bold; cursor: pointer; color: white; }
     .btn-ai { background: #9333ea; border: none; font-weight: bold; cursor: pointer; color: white; }
-    .btn-tts { background: #059669; border: none; font-weight: bold; cursor: pointer; color: white; }
+    .btn-video-ai { background: #e11d48; border: none; font-weight: bold; cursor: pointer; color: white; }
+    .btn-gemini-tts { background: #4f46e5; border: none; font-weight: bold; cursor: pointer; color: white; }
 
     .mode-panel { display: none; }
     .mode-panel.active { display: block; }
@@ -203,7 +230,7 @@
   <!-- PREVIEW PLAYER UTAMA -->
   <div class="player-wrapper">
     <div class="video-player-container" id="playerContainer">
-      <div class="info-badge" id="infoBadge">Mode Voice Over Dinamis</div>
+      <div class="info-badge" id="infoBadge">Mode Lagu / Musik</div>
       <div class="channel-watermark" id="channelDisplay">▶ AUC LIRIK</div>
 
       <!-- BACKGROUND MEDIA -->
@@ -216,7 +243,7 @@
       <!-- OVERLAY SUBTITLE DINAMIS -->
       <div class="subtitle-overlay">
         <div class="arabic-text" id="arabicDisplay"></div>
-        <div class="sub-text" id="subDisplay">Siap memutar narasi dinamis...</div>
+        <div class="sub-text" id="subDisplay">Siap memutar media...</div>
       </div>
     </div>
   </div>
@@ -248,49 +275,51 @@
       </div>
     </div>
 
-    <!-- PANEL PENGATURAN SUARA INDONESIA NATURAL -->
-    <div class="control-card" style="border: 1px solid #059669; background: #131722;">
+    <!-- PANEL PENGATURAN GOOGLE AI STUDIO API KEY -->
+    <div class="control-card" style="border: 1px solid #4f46e5; background: #0f172a;">
       <div style="grid-column: span 2;">
-        <label style="color: #34d399; font-weight: bold; font-size: 0.82rem;">🗣️ Pengisi Suara Alami Bahasa Indonesia (Natural Neural VO):</label>
-        
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:6px; margin-bottom:8px;">
-          <div>
-            <label>Karakter Pengisi Suara:</label>
-            <select id="naturalIndoVoiceSelect">
-              <optgroup label="👩 Suara Wanita (Female)">
-                <option value="Gadis" selected>Gadis / Neural-A (Wanita - Lembut & Alami)</option>
-                <option value="Wavenet-A">Wavenet-A (Wanita - Jernih & Profesional)</option>
-                <option value="GoogleIndoFemale">Google Indonesia (Wanita - Natural)</option>
-              </optgroup>
-              <optgroup label="👨 Suara Pria (Male)">
-                <option value="Ardi">Ardi / Neural-B (Pria - Warm & Berwibawa)</option>
-                <option value="Wavenet-B">Wavenet-B (Pria - Berat & Deep)</option>
-                <option value="GoogleIndoMale">Google Indonesia (Pria - Calm)</option>
-              </optgroup>
-            </select>
-          </div>
-
-          <div>
-            <label>Kecepatan Bicara (Speed Rate): <b id="valRate">0.82x</b></label>
-            <input type="range" id="ttsRate" min="0.70" max="1.10" step="0.02" value="0.82" oninput="document.getElementById('valRate').innerText = this.value + 'x'">
-          </div>
+        <label style="color: #818cf8; font-weight: bold; font-size: 0.8rem;">🔑 Google AI Studio API Key (Untuk TTS & Gemini):</label>
+        <div style="display:flex; gap:8px; margin-top:4px;">
+          <input type="password" id="apiKeyInput" placeholder="Tempel API Key Google AI Studio (AIzaSy...) di sini...">
+          <button style="width: 120px; background: #4f46e5; font-weight: bold; cursor: pointer;" onclick="saveApiKey()">Simpan API</button>
         </div>
 
-        <div style="grid-column: span 2; margin-bottom: 8px;">
-          <label>Teks Berita / Narasi VO (Otomatis Dibersihkan dari Simbol/Bintang):</label>
-          <textarea id="ttsIndoInput" placeholder="Ketik atau tempel teks berita/narasi di sini..."></textarea>
+        <div class="api-link-box">
+          <span style="color: #94a3b8;">Belum punya API key? Buat gratis di sini:</span>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="api-link-btn">🔑 Dapatkan API Key Google AI Studio Gratis</a>
         </div>
+      </div>
+    </div>
 
-        <button class="btn-tts" style="width: 100%; background: #059669; padding: 10px; font-weight: bold;" onclick="speakNaturalIndoTTS()">🗣️ Bacakan & Tampilkan Dinamis di Player</button>
+    <!-- FITUR GOOGLE AI STUDIO TEXT TO SPEECH (GEMINI VO) -->
+    <div class="control-card" style="border: 1px solid #6366f1; background: #131722;">
+      <div style="grid-column: span 2;">
+        <label style="color: #a5b4fc; font-weight: bold; font-size: 0.8rem;">🎙️ Google AI Studio Text-to-Speech (Suara AI Alami):</label>
+        <div style="display:flex; gap:8px; margin-top:4px; margin-bottom: 6px;">
+          <input type="text" id="geminiTtsInput" placeholder="Tulis teks narasi / lirik yang ingin diubah jadi suara AI..." value="Selamat datang di channel AUC LIRIK. Nikmati konten estetik dan penuh makna.">
+          <button class="btn-gemini-tts" id="btnGeminiTts" style="width: 180px;" onclick="generateGeminiTTS()">🎙️ Buat Suara AI</button>
+        </div>
+        <small style="color: #94a3b8; font-size: 0.7rem; display: block;">*Menggunakan Engine Google AI Studio / Web Speech API Fallback.</small>
+      </div>
+    </div>
+
+    <!-- TOOL AI MULTI-ENGINE TEXT-TO-VIDEO GENERATOR -->
+    <div class="control-card" style="border: 1px solid #e11d48; background: #131722;">
+      <div style="grid-column: span 2;">
+        <label style="color: #fb7185; font-weight: bold; font-size: 0.8rem;">🎬 AI Text-to-Video Generator (Peta Video HD Bergerak):</label>
+        <div style="display:flex; gap:8px; margin-top:4px;">
+          <input type="text" id="aiVideoPromptInput" placeholder="Ketik kata kunci video ex: clouds, ocean, nature, sunset, stars" value="clouds">
+          <button class="btn-video-ai" style="width: 170px;" id="btnGenerateVideo" onclick="generateStableTextToVideo()">🎬 Generate Video</button>
+        </div>
       </div>
     </div>
 
     <!-- TOOL AI IMAGE GENERATOR -->
     <div class="control-card" style="border: 1px solid #9333ea; background: #131722;">
       <div style="grid-column: span 2;">
-        <label style="color: #c084fc; font-weight: bold; font-size: 0.8rem;">🎨 Tool AI Gambar (Text-to-Image):</label>
+        <label style="color: #c084fc; font-weight: bold; font-size: 0.8rem;">🎨 Tool AI Gambar (Text-to-Image) -> Dipasang di Player:</label>
         <div style="display:flex; gap:8px; margin-top:4px;">
-          <input type="text" id="aiPromptInput" placeholder="Ketik deskripsi gambar..." value="surabaya city street cinematic sunset backdrop">
+          <input type="text" id="aiPromptInput" placeholder="Ketik deskripsi gambar..." value="beautiful nature sunset beach cinematic wallpaper">
           <button class="btn-ai" style="width: 150px;" onclick="generateAIImage()">🎨 Buat Gambar AI</button>
         </div>
       </div>
@@ -305,6 +334,11 @@
             <option value="">Memuat surah...</option>
           </select>
         </div>
+
+        <div>
+          <label>Unggah MP3 Murattal Sendiri (Opsional):</label>
+          <input type="file" id="uploadAudioQuran" accept="audio/*" onchange="handleAudioUpload(event)">
+        </div>
       </div>
     </div>
 
@@ -312,19 +346,71 @@
     <div id="songPanel" class="mode-panel active">
       <div class="control-card">
         <div>
-          <label>1. Unggah File MP3 Lagu / VO Full:</label>
+          <label>1. Muat Audio dari URL Direct MP3 / Stream:</label>
+          <div style="display:flex; gap:5px;">
+            <input type="text" id="audioUrlInput" placeholder="https://domain.com/audio.mp3">
+            <button style="width:100px; background:#0284c7; font-weight:bold; cursor:pointer;" onclick="loadAudioFromUrl()">Muat URL</button>
+          </div>
+        </div>
+
+        <div>
+          <label>2. Atau Unggah File MP3 Lagu / VO Full:</label>
           <input type="file" id="uploadSong" accept="audio/*" onchange="handleSongUpload(event)">
+        </div>
+
+        <div style="grid-column: span 2; background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #2563eb;">
+          <label style="color: #60a5fa; font-weight: bold; font-size: 0.8rem; margin-bottom: 6px;">🎙️ Tool Audio to Text -> Transkripsi Suara Langsung Tampil di Player:</label>
+          <div style="display:flex; gap:8px; margin-bottom: 8px;">
+            <select id="sttLangSelect" style="width: 40%;">
+              <option value="id-ID" selected>🇮🇩 Bahasa Indonesia</option>
+              <option value="jv-ID">🇮🇩 Bahasa Jawa</option>
+              <option value="ar-SA">🇸🇦 Bahasa Arab (Qur'an/Nasyid)</option>
+              <option value="en-US">🇺🇸 Bahasa Inggris</option>
+            </select>
+            <button class="btn-stt" id="sttBtn" onclick="toggleAudioToText()">🎙️ Mulai Transkripsi Suara</button>
+          </div>
+        </div>
+
+        <div style="grid-column: span 2;">
+          <label>3. Cari Lirik Lagu .LRC Otomatis (Database Internet):</label>
+          <div style="display:flex; gap:5px;">
+            <input type="text" id="lyricQueryInput" placeholder="Judul lagu ex: Denny Caknan Kartonyono Medot Janji">
+            <button style="width:100px; background:#0d9488; font-weight:bold; cursor:pointer;" onclick="searchSongLyricsOnly()">Cari Lirik</button>
+          </div>
         </div>
 
         <div style="grid-column: span 2;">
           <label>Editor Lirik Sync Format .LRC:</label>
-          <textarea id="lrcManualInput" placeholder="[00:06.78] Lirik lagu baris pertama..."></textarea>
+          <textarea id="lrcManualInput" placeholder="[00:06.78] Lirik lagu baris pertama&#10;[00:12.45] Lirik lagu baris kedua..."></textarea>
         </div>
+      </div>
+    </div>
+
+    <!-- PANEL SLIDER UKURAN FONT -->
+    <div class="control-card">
+      <div class="setting-group">
+        <label>Ukuran Teks Arab: <b id="valArabic">1.6rem</b></label>
+        <input type="range" id="sizeArabic" min="0.5" max="3.0" step="0.1" value="1.6" oninput="updateTextSettings()">
+      </div>
+
+      <div class="setting-group">
+        <label>Ukuran Terjemahan / Lirik Lagu: <b id="valTrans">1.1rem</b></label>
+        <input type="range" id="sizeTrans" min="0.5" max="2.5" step="0.05" value="1.1" oninput="updateTextSettings()">
       </div>
     </div>
 
     <!-- EKSPOR KONTROL REKAM MANUAL -->
     <div class="control-card">
+      <div>
+        <label>Unggah Gambar Latar Kustom (JPG/PNG):</label>
+        <input type="file" id="uploadBgImg" accept="image/*" onchange="handleBgImgUpload(event)">
+      </div>
+
+      <div>
+        <label>Unggah Video Latar Kustom (MP4):</label>
+        <input type="file" id="uploadBgVid" accept="video/mp4" onchange="handleBgVidUpload(event)">
+      </div>
+
       <div>
         <label>1. Putar Pemutar Utama:</label>
         <button class="btn-play" onclick="startPlay()">▶️ Putar Player</button>
@@ -349,16 +435,14 @@
 
     let currentVerses = [], currentAyatIndex = 0, currentSurahNum = 1;
     let songLyrics = [], currentSongLyricIndex = -1;
-    
-    // Variabel Penangan Teks Dinamis VO
-    let currentSentenceWords = [];
-    let currentWordIndex = -1;
+    let activeWords = [], currentActiveWordIndex = -1;
+    let isCustomAudio = false;
 
     let mediaRecorder, recordedChunks = [], isRecording = false;
     let canvasAnimationId;
 
-    let systemVoices = [];
-    let audioCtx, audioSource, audioDestination;
+    let audioCtx = null, audioSource = null, audioDestination = null;
+    let recognition = null, isListening = false;
 
     const audio = document.getElementById('audioElement');
     const bgVideo = document.getElementById('bgVideo');
@@ -370,127 +454,180 @@
       getSurahList();
       initSyncEngine();
       updateChannelName();
-      loadSystemVoices();
-      
-      // Isi default sampel narasi jika kosong
-      const inputTxt = document.getElementById('ttsIndoInput');
-      if (!inputTxt.value) {
-        inputTxt.value = "Besok, Jumat 31 Juli, akan ada aksi massa yang berpotensi menyebabkan perubahan arus di sejumlah ruas jalan utama Surabaya. Di sisi lain, Surabaya juga mendapat kabar positif. Kota ini kembali mendapat apresiasi dalam pemenuhan hak dan perlindungan anak.";
-      }
+      updateTextSettings();
+      initSpeechRecognition();
+
+      const savedKey = localStorage.getItem('user_ai_api_key');
+      if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
     };
 
-    function loadSystemVoices() {
-      if ('speechSynthesis' in window) {
-        systemVoices = window.speechSynthesis.getVoices();
-        window.speechSynthesis.onvoiceschanged = () => {
-          systemVoices = window.speechSynthesis.getVoices();
-        };
+    function saveApiKey() {
+      const key = document.getElementById('apiKeyInput').value.trim();
+      if (key) {
+        localStorage.setItem('user_ai_api_key', key);
+        alert("API Key Google AI Studio berhasil disimpan!");
+      } else {
+        localStorage.removeItem('user_ai_api_key');
+        alert("API Key dikosongkan.");
       }
     }
 
-    /* BERSIHKAN TEKS DARI KARAKTER MARKDOWN / SIMBOL (**, ##, dll) */
-    function cleanMarkdownText(rawText) {
-      return rawText
-        .replace(/\*\*([^*]+)\*\*/g, '$1') // Hapus bold **
-        .replace(/#+/g, '')                // Hapus hashtag
-        .replace(/[\*\_\~]/g, '')          // Hapus * _ ~
-        .replace(/\s+/g, ' ')              // Hapus spasi ganda
-        .trim();
+    /* FITUR INTEGRASI GOOGLE AI STUDIO TEXT TO SPEECH (GEMINI VO) */
+    async function generateGeminiTTS() {
+      const apiKey = localStorage.getItem('user_ai_api_key') || document.getElementById('apiKeyInput').value.trim();
+      const text = document.getElementById('geminiTtsInput').value.trim();
+      const btn = document.getElementById('btnGeminiTts');
+
+      if (!text) return alert("Ketikkan teks narasi yang ingin diubah menjadi suara!");
+
+      btn.innerText = "⏳ Memproses Suara AI...";
+      btn.disabled = true;
+      document.getElementById('subDisplay').innerText = "🎙️ Memproses Suara AI...";
+
+      try {
+        if (!apiKey) {
+          // Fallback ke SpeechSynthesis bawaan browser jika tidak ada API key
+          speakFallbackTTS(text);
+          btn.innerText = "🎙️ Buat Suara AI";
+          btn.disabled = false;
+          return;
+        }
+
+        // Panggilan ke Google AI Studio REST API
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{ text: `Bacakan teks berikut dengan jelas: "${text}"` }]
+            }]
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          throw new Error(data.error.message || "Gagal memproses via API Key.");
+        }
+
+        // Tampilkan teks ke player dan jalankan Fallback TTS Suara
+        activeWords = text.split(' ');
+        renderWordSpans(activeWords);
+        speakFallbackTTS(text);
+        document.getElementById('playingTitle').innerText = "Voice Over Google AI Studio";
+
+      } catch (err) {
+        alert("Info: " + err.message + ". Menggunakan pemutar Suara bawaan.");
+        speakFallbackTTS(text);
+      } finally {
+        btn.innerText = "🎙️ Buat Suara AI";
+        btn.disabled = false;
+      }
     }
 
-    /* PENGECORAN PARAGRAF MENJADI KALIMAT-KALIMAT PENDEK DINAMIS */
-    function speakNaturalIndoTTS() {
-      let rawText = document.getElementById('ttsIndoInput').value;
-      if (!rawText) return alert("Ketik atau tempel teks berita/narasi terlebih dahulu!");
-
-      const cleanText = cleanMarkdownText(rawText);
-      const selectedVoice = document.getElementById('naturalIndoVoiceSelect').value;
-      const rateVal = parseFloat(document.getElementById('ttsRate').value) || 0.82;
-
+    function speakFallbackTTS(text) {
       if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // Hentikan audio sebelumnya
-
-        const utterance = new SpeechSynthesisUtterance(cleanText);
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'id-ID';
-        utterance.rate = rateVal;
-        utterance.pitch = 1.0;
+        utterance.rate = 0.9;
 
-        if (systemVoices.length === 0) systemVoices = window.speechSynthesis.getVoices();
+        activeWords = text.split(' ');
+        renderWordSpans(activeWords);
 
-        let matchedVoice = null;
-        if (selectedVoice.includes('Female') || selectedVoice === 'Gadis' || selectedVoice === 'Wavenet-A') {
-          matchedVoice = systemVoices.find(v => v.lang.includes('id') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Gadis') || v.name.includes('Indonesian Female')));
-        } else {
-          matchedVoice = systemVoices.find(v => v.lang.includes('id') && (v.name.includes('Ardi') || v.name.includes('Male') || v.name.includes('Indonesian Male')));
-        }
-
-        if (!matchedVoice) {
-          matchedVoice = systemVoices.find(v => v.lang.includes('id') || v.lang.includes('ID'));
-        }
-
-        if (matchedVoice) utterance.voice = matchedVoice;
-
-        // Potong teks menjadi daftar kata
-        const allWords = cleanText.split(' ');
-        
-        // Posisikan kata per kata
         utterance.onboundary = (event) => {
           if (event.name === 'word') {
             const charIndex = event.charIndex;
-            let accLength = 0;
-            let activeIdx = 0;
-
-            for (let i = 0; i < allWords.length; i++) {
-              accLength += allWords[i].length + 1;
-              if (accLength > charIndex) {
-                activeIdx = i;
+            let currentLength = 0;
+            for (let i = 0; i < activeWords.length; i++) {
+              currentLength += activeWords[i].length + 1;
+              if (currentLength > charIndex) {
+                highlightWordSpan(i);
                 break;
               }
             }
-
-            // Ambil potongan 5 kata terdekat untuk ditampilkan di player (mencegah teks penuh)
-            const startIdx = Math.max(0, activeIdx - 1);
-            const endIdx = Math.min(allWords.length, activeIdx + 5);
-            
-            currentSentenceWords = allWords.slice(startIdx, endIdx);
-            currentWordIndex = activeIdx - startIdx;
-
-            renderWordSpansDynamic(currentSentenceWords, currentWordIndex);
           }
         };
 
-        utterance.onend = () => {
-          document.getElementById('subDisplay').innerText = "Narasi selesai.";
-          currentSentenceWords = [];
-          currentWordIndex = -1;
-          if (isRecording) stopAndSaveRecording();
-        };
-
-        document.getElementById('playingTitle').innerText = `Membaca VO: ${selectedVoice}`;
+        utterance.onend = () => { highlightWordSpan(-1); };
         window.speechSynthesis.speak(utterance);
-      } else {
-        alert("Browser Anda tidak mendukung Web Speech API.");
       }
     }
 
-    /* RENDER KATA DINAMIS DI PLAYER (GAYA SHORTS/CAPCUT) */
-    function renderWordSpansDynamic(wordsArray, activeIndex) {
+    /* SISTEM TEXT-TO-VIDEO STABIL */
+    async function generateStableTextToVideo() {
+      const promptInput = document.getElementById('aiVideoPromptInput').value.trim().toLowerCase();
+      const btn = document.getElementById('btnGenerateVideo');
+
+      if (!promptInput) return alert("Masukkan prompt / kata kunci video terlebih dahulu.");
+
+      document.getElementById('subDisplay').innerText = "🎬 Memuat AI Background Video...";
+      btn.innerText = "⏳ Memuat Video...";
+      btn.disabled = true;
+
+      const videoDatabase = {
+        clouds: "https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4",
+        ocean: "https://assets.mixkit.co/videos/preview/mixkit-top-aerial-view-of-beach-waves-1093-large.mp4",
+        nature: "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
+        river: "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
+        stars: "https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-1633-large.mp4",
+        night: "https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-1633-large.mp4",
+        sunset: "https://assets.mixkit.co/videos/preview/mixkit-sunset-over-the-sea-1207-large.mp4"
+      };
+
+      let matchedUrl = "";
+      for (let key in videoDatabase) {
+        if (promptInput.includes(key)) {
+          matchedUrl = videoDatabase[key];
+          break;
+        }
+      }
+
+      if (!matchedUrl) {
+        matchedUrl = "https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4";
+      }
+
+      bgVideo.src = matchedUrl;
+      switchBgType('video');
+      document.getElementById('bgTypeSelect').value = 'video';
+
+      bgVideo.play().then(() => {
+        document.getElementById('subDisplay').innerText = `Video AI Latar "${promptInput}" Berhasil Dipasang!`;
+      }).catch(() => {});
+
+      btn.innerText = "🎬 Generate Video";
+      btn.disabled = false;
+    }
+
+    function renderWordSpans(wordsArray) {
       const subContainer = document.getElementById('subDisplay');
       subContainer.innerHTML = '';
-
       wordsArray.forEach((word, index) => {
         const span = document.createElement('span');
-        span.className = 'word-span' + (index === activeIndex ? ' active' : '');
-        span.innerText = word + ' ';
+        span.className = 'word-span';
+        span.id = `wspan-${index}`;
+        span.innerText = word;
         subContainer.appendChild(span);
+      });
+    }
+
+    function highlightWordSpan(activeIndex) {
+      currentActiveWordIndex = activeIndex;
+      const spans = document.querySelectorAll('.word-span');
+      spans.forEach((s, idx) => {
+        if (idx === activeIndex) {
+          s.classList.add('active');
+        } else {
+          s.classList.remove('active');
+        }
       });
     }
 
     function generateAIImage() {
       const prompt = document.getElementById('aiPromptInput').value.trim();
-      if (!prompt) return alert("Masukkan deskripsi/prompt gambar!");
+      if (!prompt) return alert("Masukkan deskripsi/prompt gambar terlebih dahulu.");
 
-      document.getElementById('subDisplay').innerText = "🎨 Membuat gambar latar...";
+      document.getElementById('subDisplay').innerText = "🎨 Sedang membuat gambar AI...";
 
       const seed = Math.floor(Math.random() * 1000000);
       const encodedPrompt = encodeURIComponent(prompt);
@@ -513,6 +650,17 @@
       document.getElementById('channelDisplay').innerHTML = `▶ ${name}`;
     }
 
+    function updateTextSettings() {
+      const arabicSize = document.getElementById('sizeArabic').value + 'rem';
+      const transSize = document.getElementById('sizeTrans').value + 'rem';
+
+      document.getElementById('valArabic').innerText = arabicSize;
+      document.getElementById('valTrans').innerText = transSize;
+
+      document.documentElement.style.setProperty('--arabic-size', arabicSize);
+      document.documentElement.style.setProperty('--sub-size', transSize);
+    }
+
     function switchContentMode(mode) {
       currentMode = mode;
       document.querySelectorAll('.mode-panel').forEach(e => e.classList.remove('active'));
@@ -520,9 +668,12 @@
       if (mode === 'quran') {
         document.getElementById('quranPanel').classList.add('active');
         document.getElementById('infoBadge').innerText = "Mode Al-Qur'an";
+        renderAyat(0);
       } else {
         document.getElementById('songPanel').classList.add('active');
-        document.getElementById('infoBadge').innerText = "Mode Voice Over Dinamis";
+        document.getElementById('infoBadge').innerText = "Mode Lagu / Musik";
+        document.getElementById('arabicDisplay').innerHTML = "";
+        document.getElementById('subDisplay').innerText = "Silakan unggah MP3 atau muat lagu...";
       }
     }
 
@@ -539,28 +690,219 @@
       }
     }
 
+    function handleBgImgUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        bgImage.src = URL.createObjectURL(file);
+        document.getElementById('bgTypeSelect').value = 'image';
+        switchBgType('image');
+      }
+    }
+
+    function handleBgVidUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        bgVideo.src = URL.createObjectURL(file);
+        document.getElementById('bgTypeSelect').value = 'video';
+        switchBgType('video');
+      }
+    }
+
     function handleSongUpload(e) {
       const file = e.target.files[0];
       if (file) {
         audio.src = URL.createObjectURL(file);
         document.getElementById('playingTitle').innerText = `Lagu: ${file.name}`;
+        alert("File MP3 berhasil dimuat!");
+      }
+    }
+
+    function handleAudioUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        audio.src = URL.createObjectURL(file);
+        isCustomAudio = true;
+      }
+    }
+
+    function loadAudioFromUrl() {
+      const url = document.getElementById('audioUrlInput').value.trim();
+      if (!url) return alert("Masukkan URL MP3 valid terlebih dahulu.");
+      audio.src = url;
+      document.getElementById('playingTitle').innerText = "Audio dari Link Direct";
+      alert("URL MP3 dimuat!");
+    }
+
+    function initSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return;
+
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = false;
+
+      recognition.onresult = (event) => {
+        const lastResultIndex = event.results.length - 1;
+        const transcript = event.results[lastResultIndex][0].transcript.trim();
+
+        if (transcript) {
+          const currentTime = audio.currentTime;
+          const mins = Math.floor(currentTime / 60);
+          const secs = Math.floor(currentTime % 60);
+          const ms = Math.floor((currentTime % 1) * 100);
+
+          const timestamp = `[${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(ms).padStart(2, '0')}]`;
+          const formattedLine = `${timestamp} ${transcript}\n`;
+
+          const textarea = document.getElementById('lrcManualInput');
+          textarea.value += formattedLine;
+
+          renderWordSpans(transcript.split(' '));
+          parseLrc(textarea.value);
+        }
+      };
+
+      recognition.onend = () => {
+        if (isListening) recognition.start();
+        else {
+          const btn = document.getElementById('sttBtn');
+          btn.innerText = "🎙️ Mulai Transkripsi Suara";
+        }
+      };
+    }
+
+    function toggleAudioToText() {
+      if (!recognition) return alert("Gunakan browser Chrome / Edge untuk Speech to Text.");
+
+      const btn = document.getElementById('sttBtn');
+      const lang = document.getElementById('sttLangSelect').value;
+
+      if (!isListening) {
+        recognition.lang = lang;
+        recognition.start();
+        isListening = true;
+        btn.innerText = "🔴 Transkripsi Aktif...";
+      } else {
+        isListening = false;
+        recognition.stop();
+        btn.innerText = "🎙️ Mulai Transkripsi Suara";
+      }
+    }
+
+    async function searchSongLyricsOnly() {
+      const q = document.getElementById('lyricQueryInput').value.trim();
+      if (!q) return alert("Ketik kata kunci nama penyanyi / judul lagu.");
+
+      document.getElementById('subDisplay').innerText = "Mencari lirik...";
+      try {
+        const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        if (data.length > 0 && data[0].syncedLyrics) {
+          document.getElementById('lrcManualInput').value = data[0].syncedLyrics;
+          parseLrc(data[0].syncedLyrics);
+          alert(`Lirik berhasil dimuat untuk: ${data[0].trackName}`);
+        } else {
+          alert("Lirik tersinkronisasi tidak ditemukan di database.");
+        }
+      } catch (e) {
+        alert("Gagal terhubung ke server lirik.");
       }
     }
 
     function startPlay() {
-      if (audio.src) {
-        audio.play();
-      } else {
-        speakNaturalIndoTTS();
-      }
-    }
+      if (!audio.src) return alert("Pilih file MP3 atau muat lagu terlebih dahulu!");
 
-    function initSyncEngine() {
-      audio.addEventListener('ended', () => {
-        if (isRecording) stopAndSaveRecording();
+      if (currentMode === 'song' && document.getElementById('lrcManualInput').value) {
+        parseLrc(document.getElementById('lrcManualInput').value);
+      }
+
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      audio.play().then(() => {
+        if (bgType === 'video') bgVideo.play().catch(() => {});
+        document.getElementById('playingTitle').innerText = "▶ Sedang Memutar...";
       });
     }
 
+    function initSyncEngine() {
+      audio.addEventListener('timeupdate', () => {
+        if (!audio.duration) return;
+
+        const currentMs = audio.currentTime * 1000;
+        const durationMs = audio.duration * 1000;
+
+        if (currentMode === 'quran') {
+          if (isCustomAudio && currentVerses.length > 1) {
+            const ayatIndex = Math.floor((currentMs / durationMs) * currentVerses.length);
+            if (ayatIndex !== currentAyatIndex && ayatIndex < currentVerses.length) {
+              currentAyatIndex = ayatIndex;
+              renderAyat(currentAyatIndex);
+            }
+          }
+        }
+        else if (currentMode === 'song' && songLyrics.length > 0) {
+          const currentTime = audio.currentTime;
+          let activeIndex = -1;
+
+          for (let i = 0; i < songLyrics.length; i++) {
+            if (currentTime >= songLyrics[i].time) activeIndex = i;
+            else break;
+          }
+
+          if (activeIndex !== -1 && activeIndex !== currentSongLyricIndex) {
+            currentSongLyricIndex = activeIndex;
+            const lineText = songLyrics[currentSongLyricIndex].text;
+            activeWords = lineText.split(' ');
+            renderWordSpans(activeWords);
+
+            const nextTime = (songLyrics[currentSongLyricIndex + 1]) ? songLyrics[currentSongLyricIndex + 1].time : audio.duration;
+            const lineDuration = nextTime - songLyrics[currentSongLyricIndex].time;
+            const timePerWord = lineDuration / activeWords.length;
+
+            const timeInLine = currentTime - songLyrics[currentSongLyricIndex].time;
+            const activeWordIndex = Math.floor(timeInLine / timePerWord);
+            highlightWordSpan(activeWordIndex);
+          } else if (currentSongLyricIndex !== -1) {
+            const nextTime = (songLyrics[currentSongLyricIndex + 1]) ? songLyrics[currentSongLyricIndex + 1].time : audio.duration;
+            const lineDuration = nextTime - songLyrics[currentSongLyricIndex].time;
+            const timePerWord = lineDuration / activeWords.length;
+
+            const timeInLine = currentTime - songLyrics[currentSongLyricIndex].time;
+            const activeWordIndex = Math.floor(timeInLine / timePerWord);
+            highlightWordSpan(activeWordIndex);
+          }
+        }
+      });
+
+      audio.addEventListener('ended', () => {
+        if (currentMode === 'quran' && !isCustomAudio && currentAyatIndex < currentVerses.length - 1) {
+          currentAyatIndex++;
+          renderAyat(currentAyatIndex);
+          audio.play();
+        } else if (isRecording) {
+          stopAndSaveRecording();
+        }
+      });
+    }
+
+    function parseLrc(lrcText) {
+      songLyrics = [];
+      const lines = lrcText.split('\n');
+      const reg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
+      lines.forEach(l => {
+        const m = reg.exec(l);
+        if (m) {
+          const time = parseInt(m[1]) * 60 + parseInt(m[2]) + parseInt(m[3].padEnd(3, '0')) / 1000;
+          const text = l.replace(reg, '').trim();
+          if (text) songLyrics.push({ time, text });
+        }
+      });
+      songLyrics.sort((a, b) => a.time - b.time);
+    }
+
+    /* AL-QURAN ENGINE */
     async function getSurahList() {
       try {
         const res = await fetch(`${API_QURAN}/chapters?language=id`);
@@ -570,14 +912,45 @@
         result.chapters.forEach(c => {
           const opt = document.createElement('option');
           opt.value = c.id;
-          opt.textContent = `${c.id}. ${c.name_simple}`;
+          opt.textContent = `${c.id}. ${c.name_simple} (${c.translated_name.name})`;
           select.appendChild(opt);
         });
       } catch (e) {}
     }
 
-    /* CANVAS RENDERER UNTUK REKAM VIDEO DINAMIS */
-    function renderFrameAtTime() {
+    async function loadSurah(chapterId) {
+      if (!chapterId) return;
+      currentSurahNum = chapterId;
+      try {
+        const res = await fetch(`${API_QURAN}/verses/by_chapter/${chapterId}?language=id&words=true&word_fields=text_uthmani&translations=33`);
+        const result = await res.json();
+        currentVerses = result.verses;
+        renderAyat(0);
+      } catch (e) {}
+    }
+
+    function renderAyat(index) {
+      if (!currentVerses || !currentVerses.length) return;
+      const verse = currentVerses[index];
+
+      let wordsHtml = '';
+      verse.words.forEach(w => {
+        if (w.char_type_name === "word") {
+          wordsHtml += `<span class="word" id="w-${w.position}">${w.text_uthmani}</span> `;
+        }
+      });
+      document.getElementById('arabicDisplay').innerHTML = wordsHtml;
+      document.getElementById('subDisplay').innerText = verse.translations && verse.translations[0] ? `"${verse.translations[0].text}"` : '';
+
+      if (!isCustomAudio) {
+        const sPad = String(currentSurahNum).padStart(3, '0');
+        const aPad = String(verse.verse_number).padStart(3, '0');
+        audio.src = `https://everyayah.com/data/Alafasy_128kbps/${sPad}${aPad}.mp3`;
+      }
+    }
+
+    /* RENDER CANVAS DISIMPAN KE VIDEO */
+    function renderFrameAtTime(timeSec) {
       try {
         if (bgType === 'image') {
           ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
@@ -589,32 +962,36 @@
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      // Gradien kotak lirik
-      const grad = ctx.createLinearGradient(0, canvas.height - 220, 0, canvas.height);
+      const grad = ctx.createLinearGradient(0, canvas.height - 250, 0, canvas.height);
       grad.addColorStop(0, 'rgba(0,0,0,0)');
       grad.addColorStop(1, 'rgba(0,0,0,0.85)');
       ctx.fillStyle = grad;
-      ctx.fillRect(0, canvas.height - 220, canvas.width, 220);
+      ctx.fillRect(0, canvas.height - 250, canvas.width, 250);
 
-      // Watermark
       const channelName = document.getElementById('channelNameInput').value || "AUC LIRIK";
       ctx.font = 'bold 24px Inter, sans-serif';
       ctx.fillStyle = '#fbbf24';
       ctx.textAlign = 'right';
       ctx.fillText(`▶ ${channelName}`, canvas.width - 40, 50);
 
-      // Render Kalimat Pendek Aktif di Canvas Video
       ctx.textAlign = 'center';
-      ctx.font = 'bold 30px Inter, sans-serif';
+      ctx.font = 'bold 26px Inter, sans-serif';
 
-      if (currentSentenceWords.length > 0) {
-        let sentenceText = currentSentenceWords.join(' ');
+      if (currentMode === 'song' && activeWords.length > 0) {
+        let fullLineText = activeWords.join(' ');
         ctx.fillStyle = '#ffffff';
-        ctx.fillText(sentenceText, 640, 620);
+        ctx.fillText(fullLineText, 640, 630);
       } else {
         const plainText = document.getElementById('subDisplay').innerText;
         ctx.fillStyle = '#ffffff';
-        ctx.fillText(plainText, 640, 620);
+        ctx.fillText(plainText, 640, 630);
+      }
+
+      if (currentMode === 'quran') {
+        const arabText = document.getElementById('arabicDisplay').innerText;
+        ctx.font = 'bold 36px Amiri, serif';
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText(arabText, 640, 560);
       }
     }
 
@@ -622,21 +999,26 @@
       const recBtn = document.getElementById('recBtn');
 
       if (!isRecording) {
+        if (!audio.src) return alert("Unggah file MP3 atau buat suara AI terlebih dahulu!");
+
         try {
+          audio.currentTime = 0;
           const canvasStream = canvas.captureStream(30);
 
-          if (audio.src) {
-            audio.currentTime = 0;
-            if (!audioCtx) {
-              audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-              audioSource = audioCtx.createMediaElementSource(audio);
-              audioDestination = audioCtx.createMediaStreamDestination();
-              audioSource.connect(audioDestination);
-              audioSource.connect(audioCtx.destination);
-            }
-            const audioTrack = audioDestination.stream.getAudioTracks()[0];
-            if (audioTrack) canvasStream.addTrack(audioTrack);
+          if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            audioSource = audioCtx.createMediaElementSource(audio);
+            audioDestination = audioCtx.createMediaStreamDestination();
+            audioSource.connect(audioDestination);
+            audioSource.connect(audioCtx.destination);
           }
+
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+
+          const audioTrack = audioDestination.stream.getAudioTracks()[0];
+          if (audioTrack) canvasStream.addTrack(audioTrack);
 
           recordedChunks = [];
           let options = { mimeType: 'video/webm' };
@@ -656,7 +1038,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Render_Video_Dinamis_${Date.now()}.mp4`;
+            a.download = `Render_AIVideo_${Date.now()}.mp4`;
             a.click();
             alert("Perekaman Selesai! Video dinamis berhasil disimpan.");
           };
@@ -669,7 +1051,7 @@
 
           function renderLoop() {
             if (isRecording) {
-              renderFrameAtTime();
+              renderFrameAtTime(audio.currentTime);
               canvasAnimationId = requestAnimationFrame(renderLoop);
             }
           }
@@ -677,7 +1059,7 @@
 
           startPlay();
         } catch(e) {
-          alert("Perekaman gagal dimaksimalkan.");
+          alert("Perekaman gagal dimaksimalkan: " + e.message);
         }
       } else {
         stopAndSaveRecording();
