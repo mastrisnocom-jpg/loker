@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Studio Video Lirik & Qur'an HD 720p</title>
+  <title>Studio Video Lirik, AI Generator & Multi-Tool HD 720p</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -147,7 +147,7 @@
 
     label { display: block; font-size: 0.72rem; color: #94a3b8; margin-bottom: 4px; }
 
-    select, input[type="file"], input[type="range"], input[type="text"], textarea, button {
+    select, input[type="file"], input[type="range"], input[type="text"], input[type="password"], textarea, button {
       width: 100%;
       padding: 8px 10px;
       border-radius: 6px;
@@ -158,7 +158,7 @@
       outline: none;
     }
 
-    textarea { height: 90px; font-family: monospace; }
+    textarea { height: 80px; font-family: monospace; }
 
     .btn-play { background: var(--primary); border: none; font-weight: bold; cursor: pointer; color: white; }
     .btn-play:hover { background: var(--primary-dark); }
@@ -167,6 +167,8 @@
     .btn-record:hover { background: #b45309; }
 
     .btn-stt { background: #2563eb; border: none; font-weight: bold; cursor: pointer; color: white; }
+    .btn-ai { background: #9333ea; border: none; font-weight: bold; cursor: pointer; color: white; }
+    .btn-tts { background: #059669; border: none; font-weight: bold; cursor: pointer; color: white; }
 
     .mode-panel { display: none; }
     .mode-panel.active { display: block; }
@@ -188,20 +190,20 @@
 </head>
 <body>
 
-  <!-- PREVIEW PLAYER -->
+  <!-- PREVIEW PLAYER UTAMA (OUTPUT SEMUA TOOL TAMPIL DI SINI) -->
   <div class="player-wrapper">
     <div class="video-player-container" id="playerContainer">
       <div class="info-badge" id="infoBadge">Mode Lagu / Musik</div>
       <div class="channel-watermark" id="channelDisplay">▶ AUC LIRIK</div>
 
-      <!-- BACKGROUND MEDIA -->
+      <!-- BACKGROUND MEDIA (GAMBAR / AI / VIDEO) -->
       <img id="bgImage" class="bg-media active" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1280&q=80" crossOrigin="anonymous">
 
       <video id="bgVideo" class="bg-media" autoplay loop muted playsinline crossOrigin="anonymous">
         <source src="https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4" type="video/mp4">
       </video>
 
-      <!-- OVERLAY SUBTITLE -->
+      <!-- OVERLAY TEKS SUBTITLE / LIRIK / AI TTS OUTPUT -->
       <div class="subtitle-overlay">
         <div class="arabic-text" id="arabicDisplay"></div>
         <div class="sub-text" id="subDisplay">Siap memutar media...</div>
@@ -233,6 +235,43 @@
       <div>
         <label>Nama Channel Youtube / Watermark:</label>
         <input type="text" id="channelNameInput" value="AUC LIRIK" oninput="updateChannelName()">
+      </div>
+    </div>
+
+    <!-- PANEL PENGATURAN API KEY AI (OPTIONAL/GRATIS) -->
+    <div class="control-card" style="border: 1px solid #3b82f6; background: #0f172a;">
+      <div style="grid-column: span 2;">
+        <label style="color: #60a5fa; font-weight: bold; font-size: 0.8rem;">🔑 API Key AI Service (Opsional untuk OpenAI / Stability / Custom Engine):</label>
+        <div style="display:flex; gap:8px; margin-top:4px;">
+          <input type="password" id="apiKeyInput" placeholder="Masukkan OpenAI / Stability API Key (Kosongkan jika menggunakan server gratis Pollinations)...">
+          <button style="width: 120px; background: #2563eb; font-weight: bold;" onclick="saveApiKey()">Simpan API</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOL 1: AI IMAGE GENERATOR (OUTPUT LANGSUNG KE PLAYER) -->
+    <div class="control-card" style="border: 1px solid #9333ea; background: #131722;">
+      <div style="grid-column: span 2;">
+        <label style="color: #c084fc; font-weight: bold; font-size: 0.8rem;">🎨 Tool AI Gambar -> Langsung Dipasang di Player:</label>
+        <div style="display:flex; gap:8px; margin-top:4px;">
+          <input type="text" id="aiPromptInput" placeholder="Ketik deskripsi gambar ex: aesthetic mosque in desert at sunset 8k wallpaper" value="beautiful nature sunset beach cinematic wallpaper">
+          <button class="btn-ai" style="width: 150px;" onclick="generateAIImage()">🎨 Buat Gambar AI</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOL 2: TEXT TO SPEECH / TTS (OUTPUT VOICE & TEXT LANGSUNG KE PLAYER) -->
+    <div class="control-card" style="border: 1px solid #059669; background: #131722;">
+      <div style="grid-column: span 2;">
+        <label style="color: #34d399; font-weight: bold; font-size: 0.8rem;">🗣️ Tool Text to Speech -> Teks & Suara Langsung Tampil di Player:</label>
+        <div style="display:flex; gap:8px; margin-top:4px;">
+          <input type="text" id="ttsTextInput" placeholder="Tulis kalimat..." value="Selamat datang di pembuat video otomatis">
+          <select id="ttsVoiceSelect" style="width: 35%;">
+            <option value="id-ID">🇮🇩 Bahasa Indonesia</option>
+            <option value="en-US">🇺🇸 Bahasa Inggris</option>
+          </select>
+          <button class="btn-tts" style="width: 150px;" onclick="speakTTS()">🗣️ Ucapkan di Player</button>
+        </div>
       </div>
     </div>
 
@@ -269,9 +308,9 @@
           <input type="file" id="uploadSong" accept="audio/*" onchange="handleSongUpload(event)">
         </div>
 
-        <!-- FITUR AUDIO TO TEXT -->
+        <!-- TOOL 3: AUDIO TO TEXT -->
         <div style="grid-column: span 2; background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #2563eb;">
-          <label style="color: #60a5fa; font-weight: bold; font-size: 0.8rem; margin-bottom: 6px;">🎙️ Audio to Text (Transkripsi Lirik Otomatis dari Suara / Audio):</label>
+          <label style="color: #60a5fa; font-weight: bold; font-size: 0.8rem; margin-bottom: 6px;">🎙️ Tool Audio to Text -> Transkripsi Suara Langsung Tampil di Player:</label>
           <div style="display:flex; gap:8px; margin-bottom: 8px;">
             <select id="sttLangSelect" style="width: 40%;">
               <option value="id-ID" selected>🇮🇩 Bahasa Indonesia</option>
@@ -279,7 +318,7 @@
               <option value="ar-SA">🇸🇦 Bahasa Arab (Qur'an/Nasyid)</option>
               <option value="en-US">🇺🇸 Bahasa Inggris</option>
             </select>
-            <button class="btn-stt" id="sttBtn" onclick="toggleAudioToText()">🎙️ Mulai Dengar Audio -> Teks</button>
+            <button class="btn-stt" id="sttBtn" onclick="toggleAudioToText()">🎙️ Mulai Transkripsi Suara</button>
           </div>
         </div>
 
@@ -324,13 +363,13 @@
       </div>
 
       <div>
-        <label>1. Putar Media Saja:</label>
-        <button class="btn-play" onclick="startPlay()">▶️ Putar Media</button>
+        <label>1. Putar Pemutar Utama:</label>
+        <button class="btn-play" onclick="startPlay()">▶️ Putar Player</button>
       </div>
 
       <div>
-        <label>2. Rekam / Render Video Full (Manual Control):</label>
-        <button class="btn-record" id="recBtn" onclick="toggleRecord()">🎥 Mulai Rekam / Render Full Video</button>
+        <label>2. Rekam Seluruh Output Player:</label>
+        <button class="btn-record" id="recBtn" onclick="toggleRecord()">🎥 Rekam & Render Video MP4</button>
       </div>
     </div>
   </div>
@@ -352,11 +391,8 @@
     let mediaRecorder, recordedChunks = [], isRecording = false;
     let canvasAnimationId;
 
-    // Web Audio API Context untuk penggabungan Audio Stream penuh
     let audioCtx, audioSource, audioDestination;
-
-    let recognition = null;
-    let isListening = false;
+    let recognition = null, isListening = false;
 
     const audio = document.getElementById('audioElement');
     const bgVideo = document.getElementById('bgVideo');
@@ -371,6 +407,66 @@
       updateTextSettings();
       initSpeechRecognition();
     };
+
+    function saveApiKey() {
+      const key = document.getElementById('apiKeyInput').value.trim();
+      if (key) {
+        localStorage.setItem('user_ai_api_key', key);
+        alert("API Key berhasil disimpan di memori browser lokal!");
+      } else {
+        localStorage.removeItem('user_ai_api_key');
+        alert("API Key dikosongkan. Menggunakan server AI bawaan.");
+      }
+    }
+
+    /* TOOL 1: AI IMAGE GENERATOR (OUTPUT LANGSUNG DI PLAYER) */
+    function generateAIImage() {
+      const prompt = document.getElementById('aiPromptInput').value.trim();
+      if (!prompt) return alert("Masukkan deskripsi/prompt gambar terlebih dahulu.");
+
+      document.getElementById('subDisplay').innerText = "🎨 Sedang membuat gambar AI...";
+
+      const seed = Math.floor(Math.random() * 1000000);
+      const encodedPrompt = encodeURIComponent(prompt);
+      const aiImageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1280&height=720&seed=${seed}&nologo=true`;
+
+      const tempImg = new Image();
+      tempImg.crossOrigin = "anonymous";
+      tempImg.src = aiImageUrl;
+
+      tempImg.onload = () => {
+        bgImage.src = aiImageUrl;
+        switchBgType('image');
+        document.getElementById('bgTypeSelect').value = 'image';
+        document.getElementById('subDisplay').innerText = "Gambar AI berhasil ditampilkan di Player!";
+      };
+
+      tempImg.onerror = () => {
+        alert("Gagal membuat gambar AI.");
+      };
+    }
+
+    /* TOOL 2: TEXT TO SPEECH / TTS (OUTPUT LANGSUNG KE PLAYER & DAPAT DIBACA PLAYER) */
+    function speakTTS() {
+      const text = document.getElementById('ttsTextInput').value.trim();
+      const lang = document.getElementById('ttsVoiceSelect').value;
+
+      if (!text) return alert("Ketik teks kalimat terlebih dahulu.");
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+        utterance.rate = 0.9;
+
+        // Output teks ditampilkan langsung ke layar player
+        document.getElementById('subDisplay').innerText = text;
+
+        window.speechSynthesis.speak(utterance);
+      } else {
+        alert("Browser Anda tidak mendukung Web Speech Synthesis.");
+      }
+    }
 
     function updateChannelName() {
       const name = document.getElementById('channelNameInput').value || "AUC LIRIK";
@@ -440,7 +536,7 @@
       if (file) {
         audio.src = URL.createObjectURL(file);
         document.getElementById('playingTitle').innerText = `Lagu: ${file.name}`;
-        alert("File MP3 berhasil dimuat! Tekan tombol 'Mulai Rekam / Render Full Video'.");
+        alert("File MP3 berhasil dimuat!");
       }
     }
 
@@ -460,7 +556,7 @@
       alert("URL MP3 dimuat!");
     }
 
-    /* SPEECH-TO-TEXT AI */
+    /* TOOL 3: SPEECH TO TEXT / AUDIO TO TEXT (TRANSKRIPSI REALT-TIME KE PLAYER) */
     function initSpeechRecognition() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) return;
@@ -485,6 +581,7 @@
           const textarea = document.getElementById('lrcManualInput');
           textarea.value += formattedLine;
 
+          // Hasil transkripsi langsung tampil di layar player
           document.getElementById('subDisplay').innerText = transcript;
           parseLrc(textarea.value);
         }
@@ -494,13 +591,13 @@
         if (isListening) recognition.start();
         else {
           const btn = document.getElementById('sttBtn');
-          btn.innerText = "🎙️ Mulai Dengar Audio -> Teks";
+          btn.innerText = "🎙️ Mulai Transkripsi Suara";
         }
       };
     }
 
     function toggleAudioToText() {
-      if (!recognition) return alert("Gunakan browser Chrome / Edge untuk fitur Speech to Text.");
+      if (!recognition) return alert("Gunakan browser Chrome / Edge untuk Speech to Text.");
 
       const btn = document.getElementById('sttBtn');
       const lang = document.getElementById('sttLangSelect').value;
@@ -509,11 +606,11 @@
         recognition.lang = lang;
         recognition.start();
         isListening = true;
-        btn.innerText = "🔴 Mendengarkan Audio...";
+        btn.innerText = "🔴 Transkripsi Aktif...";
       } else {
         isListening = false;
         recognition.stop();
-        btn.innerText = "🎙️ Mulai Dengar Audio -> Teks";
+        btn.innerText = "🎙️ Mulai Transkripsi Suara";
       }
     }
 
@@ -596,7 +693,6 @@
         }
       });
 
-      // OTOMATIS STOP REKAM HANYA JIKA LAGU HABIS
       audio.addEventListener('ended', () => {
         if (currentMode === 'quran' && !isCustomAudio && currentAyatIndex < currentVerses.length - 1) {
           currentAyatIndex++;
@@ -669,7 +765,7 @@
       }
     }
 
-    /* RENDER CANVAS DENGAN AUDIO STREAM FULL */
+    /* RENDER CANVAS DENGAN OUTPUT PLAYER PRESISI */
     function renderFrameAtTime(timeSec) {
       try {
         if (bgType === 'image') {
@@ -717,7 +813,6 @@
       }
     }
 
-    /* PEREKAMAN KONTROL MANUAL KUSTOM */
     function toggleRecord() {
       const recBtn = document.getElementById('recBtn');
 
@@ -725,11 +820,10 @@
         if (!audio.src) return alert("Unggah file MP3 terlebih dahulu!");
 
         try {
-          audio.currentTime = 0; // Ulang dari detik 0
+          audio.currentTime = 0;
 
           const canvasStream = canvas.captureStream(30);
 
-          // Sambungkan Audio Stream melalui AudioContext
           if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             audioSource = audioCtx.createMediaElementSource(audio);
@@ -782,7 +876,7 @@
 
           startPlay();
         } catch(e) {
-          alert("Perekaman gagal dimaksimalkan. Unggah file MP3/Gambar sendiri dari galeri HP agar peramban mengizinkan rekam penuh.");
+          alert("Perekaman gagal dimaksimalkan.");
         }
       } else {
         stopAndSaveRecording();
@@ -795,7 +889,7 @@
         isRecording = false;
 
         const recBtn = document.getElementById('recBtn');
-        recBtn.innerText = "🎥 Mulai Rekam / Render Full Video";
+        recBtn.innerText = "🎥 Rekam & Render Video MP4";
         recBtn.style.background = "#d97706";
       }
     }
