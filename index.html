@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Qur'an Video Player - No Background & YouTube Safe</title>
+  <title>Qur'an Video Player - Dynamic Channel & Auto Sync Audio</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -70,19 +70,37 @@
       text-shadow: 0 1px 3px rgba(0,0,0,0.8);
     }
 
-    /* OVERLAY TEKS TANPA BACKGROUND (NO BOX BACKGROUND) */
+    /* WATERMARK DINAMIS (Dapat diubah via Form Input) */
+    .channel-watermark {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
     .subtitle-overlay {
       position: relative;
       z-index: 10;
       width: 92%;
       margin: 20px;
       text-align: var(--text-align);
-      background: none; /* Dihapus total backgroundnya */
+      background: none;
       border: none;
       box-shadow: none;
     }
 
-    /* Teks Arab dengan Stroke / Shadow Tebal Khas Subtitle Film */
     .arabic-text {
       font-family: 'Amiri', serif;
       font-size: var(--arabic-size);
@@ -106,7 +124,6 @@
       transform: scale(1.08);
     }
 
-    /* Terjemahan dengan Text Shadow Tanpa Background */
     .translation-text {
       font-size: var(--translation-size);
       color: #f1f5f9;
@@ -141,7 +158,7 @@
 
     label { display: block; font-size: 0.72rem; color: #94a3b8; margin-bottom: 4px; }
 
-    select, input[type="file"], input[type="range"], button {
+    select, input[type="file"], input[type="range"], input[type="text"], button {
       width: 100%;
       padding: 8px 10px;
       border-radius: 6px;
@@ -209,11 +226,15 @@
     <div class="video-player-container" id="playerContainer">
       <div class="surah-badge" id="surahBadge">Memuat Surah...</div>
 
+      <!-- WATERMARK KUSTOM NAMA CHANNEL -->
+      <div class="channel-watermark" id="channelDisplay">
+        <span>▶</span> Mukjizat doa
+      </div>
+
       <video id="bgVideo" autoplay loop muted playsinline crossOrigin="anonymous">
         <source id="videoSource" src="https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4" type="video/mp4">
       </video>
 
-      <!-- OVERLAY TEKS NO BACKGROUND -->
       <div class="subtitle-overlay" id="subtitleOverlay">
         <div class="arabic-text" id="arabicDisplay">
           <span class="word">Klik</span> <span class="word">Putar</span>
@@ -226,21 +247,27 @@
   <canvas id="exportCanvas" width="1280" height="720"></canvas>
 
   <div class="controls-wrapper">
+    <!-- BARIS 1: UPLOAD & FORM NAMA CHANNEL -->
     <div class="control-card">
       <div>
-        <label>Pilih Surah:</label>
+        <label>Nama Channel Youtube:</label>
+        <input type="text" id="channelNameInput" value="Mukjizat doa" placeholder="Masukkan nama channel..." oninput="updateChannelName()">
+      </div>
+
+      <div>
+        <label>Pilih Surah (Teks Arab):</label>
         <select id="surahSelect" onchange="loadSurah(this.value)">
           <option value="">Memuat daftar surah...</option>
         </select>
       </div>
 
       <div>
-        <label>Unggah MP3 Sendiri:</label>
+        <label>Unggah MP3 Audio Sendiri:</label>
         <input type="file" id="uploadAudio" accept="audio/*" onchange="handleAudioUpload(event)">
       </div>
 
       <div>
-        <label>Unggah MP4 Latar:</label>
+        <label>Unggah MP4 Latar Video:</label>
         <input type="file" id="uploadVideo" accept="video/mp4" onchange="handleVideoUpload(event)">
       </div>
 
@@ -250,11 +277,12 @@
       </div>
 
       <div>
-        <label>Ekspor Video:</label>
+        <label>Ekspor Video MP4:</label>
         <button class="btn-download" id="recBtn" onclick="toggleRecord()">🎥 Rekam & Unduh Video</button>
       </div>
     </div>
 
+    <!-- BARIS 2: PENGATURAN TEKS -->
     <div class="control-card">
       <div class="setting-group">
         <label>Ukuran Teks Arab: <b id="valArabic">1.6rem</b></label>
@@ -288,9 +316,9 @@
 
   <div class="modal-overlay" id="downloadModal">
     <div class="modal-box">
-      <h3>🎉 Video Bebas Copyright Siap!</h3>
-      <p>Video Al-Qur'an Anda sudah siap diunduh dan aman untuk diunggah ke YouTube.</p>
-      <button class="btn-save" onclick="downloadVideoToDevice()">💾 Simpan Ke HP Now</button>
+      <h3>🎉 Perekaman Selesai!</h3>
+      <p>Video Al-Qur'an siap disimpan dan diunggah ke YouTube Anda.</p>
+      <button class="btn-save" onclick="downloadVideoToDevice()">💾 Simpan Ke HP Sekarang</button>
     </div>
   </div>
 
@@ -323,7 +351,14 @@
       getSurahList();
       initKaraokeEngine();
       updateTextSettings();
+      updateChannelName();
     };
+
+    // 1. Mengubah Nama Channel Secara Dinamis
+    function updateChannelName() {
+      const name = document.getElementById('channelNameInput').value || "Mukjizat doa";
+      document.getElementById('channelDisplay').innerHTML = `<span>▶</span> ${name}`;
+    }
 
     function updateTextSettings() {
       const arabicSize = document.getElementById('sizeArabic').value + 'rem';
@@ -416,6 +451,7 @@
         isCustomAudio = true;
         currentAyatIndex = 0;
         renderAyat(0);
+        document.getElementById('playingTitle').innerText = `Audio Lokal Terpasang: ${file.name}`;
       }
     }
 
@@ -434,6 +470,7 @@
         const durationMs = audio.duration * 1000;
         const currentMs = audio.currentTime * 1000;
 
+        // Auto Sync Teks jika Menggunakan Audio MP3 Unggahan Sendiri
         if (isCustomAudio && currentVerses.length > 1) {
           const ayatIndexByTime = Math.floor((currentMs / durationMs) * currentVerses.length);
           if (ayatIndexByTime !== currentAyatIndex && ayatIndexByTime < currentVerses.length) {
@@ -469,27 +506,28 @@
       });
     }
 
-    /* RENDER CANVAS TANPA BOX BACKGROUND (CLEAN SUBTITLE) */
+    /* RENDER CANVAS DENGAN NAMA CHANNEL CUSTOM DARI INPUT */
     function drawCanvasFrame() {
       if (!isRecording) return;
 
-      // Draw Background Video
       ctx.drawImage(bgVideo, 0, 0, canvas.width, canvas.height);
 
-      // Gradient Shadow Bawah Agar Teks Terbaca Jelas
       const grad = ctx.createLinearGradient(0, canvas.height - 250, 0, canvas.height);
       grad.addColorStop(0, 'rgba(0,0,0,0)');
       grad.addColorStop(1, 'rgba(0,0,0,0.85)');
       ctx.fillStyle = grad;
       ctx.fillRect(0, canvas.height - 250, canvas.width, 250);
 
-      // Shadow Efek Teks
-      ctx.shadowColor = "rgba(0, 0, 0, 0.95)";
-      ctx.shadowBlur = 8;
-      ctx.shadowOffsetX = 2;
-      ctx.shadowOffsetY = 2;
+      // Render Watermark Channel Sesuai Input User
+      const channelName = document.getElementById('channelNameInput').value || "Mukjizat doa";
+      ctx.font = 'bold 22px Inter, sans-serif';
+      ctx.fillStyle = '#fbbf24';
+      ctx.textAlign = 'right';
+      ctx.shadowColor = "rgba(0,0,0,0.9)";
+      ctx.shadowBlur = 6;
+      ctx.fillText(`▶ ${channelName}`, canvas.width - 30, 45);
 
-      // Gambar Terjemahan
+      // Gambar Teks Terjemahan
       ctx.font = '22px Inter, sans-serif';
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
@@ -502,7 +540,6 @@
       const arabText = document.getElementById('arabicDisplay').innerText;
       ctx.fillText(arabText, 640, 580);
 
-      // Reset Shadow
       ctx.shadowColor = "transparent";
 
       canvasAnimationId = requestAnimationFrame(drawCanvasFrame);
@@ -573,11 +610,13 @@
 
     function downloadVideoToDevice() {
       if (exportedBlob) {
+        const channelName = document.getElementById('channelNameInput').value || "Mukjizat_Doa";
+        const cleanName = channelName.replace(/[^a-zA-Z0-9]/g, "_");
         const url = URL.createObjectURL(exportedBlob);
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        a.download = `Quran_NoBG_SafeYT_${Date.now()}.webm`;
+        a.download = `${cleanName}_Quran_Video_${Date.now()}.webm`;
         document.body.appendChild(a);
         a.click();
         
@@ -586,7 +625,7 @@
           window.URL.revokeObjectURL(url);
         }, 100);
       } else {
-        alert("Perekaman belum selesai. Tekan 'Rekam & Unduh Video' terlebih dahulu.");
+        alert("Perekaman belum selesai.");
       }
 
       document.getElementById('downloadModal').style.display = 'none';
