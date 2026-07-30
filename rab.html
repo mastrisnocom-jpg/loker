@@ -36,7 +36,6 @@
         .text-right { text-align: right; }
         .font-bold { font-weight: bold; }
 
-        /* Input Interaktif */
         .editable-input {
             width: 100%;
             border: none;
@@ -51,7 +50,6 @@
             background-color: #e0f2fe;
         }
 
-        /* Mode Export PDF */
         .no-print {
             display: inline-block;
         }
@@ -71,10 +69,9 @@
     <div class="max-w-[210mm] mx-auto mb-4 bg-white p-4 rounded-lg shadow-md flex flex-wrap justify-between items-center gap-3">
         <div>
             <h2 class="font-bold text-slate-800 text-lg">Aplikasi RAB & Work Request</h2>
-            <p class="text-xs text-slate-500">Formulir Presisi & Riwayat Penyimpanan</p>
+            <p class="text-xs text-slate-500">Formulir Presisi & Export CSV Layout Excel</p>
         </div>
         <div class="flex flex-wrap gap-2 items-center">
-            <!-- Upload Logo Manual/Custom -->
             <label class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded text-xs font-semibold cursor-pointer border border-slate-300">
                 🖼️ Upload Logo
                 <input type="file" id="logoUploader" accept="image/*" onchange="previewLogo(event)" class="hidden">
@@ -95,21 +92,18 @@
         </div>
     </div>
 
-    <!-- AREA DOKUMEN WORK REQUEST (A210mm) -->
+    <!-- AREA DOKUMEN WORK REQUEST -->
     <div id="pdfDocument" class="document-page shadow-lg">
         
-        <!-- Header Logo & Judul -->
         <table class="doc-table mb-1" style="border: none;">
             <tr style="border: none;">
                 <td class="w-1/3" style="border: none;">
-                    <!-- Gambar Logo dari Root / Upload -->
                     <img id="appLogo" src="logo.png" onerror="this.onerror=null; this.src='https://via.placeholder.com/180x50?text=BINAYASA';" alt="BINAYASA Logo" class="h-12 object-contain">
                 </td>
                 <td style="border: none;"></td>
             </tr>
         </table>
 
-        <!-- Judul Form -->
         <table class="doc-table mb-2">
             <tr>
                 <td class="text-center font-bold text-sm tracking-wide bg-slate-50">
@@ -118,7 +112,6 @@
             </tr>
         </table>
 
-        <!-- Info Pemohon, Divisi, No. WR, Tanggal -->
         <table class="doc-table mb-2">
             <tr>
                 <td class="w-20 font-bold">Pemohon</td>
@@ -138,7 +131,6 @@
             </tr>
         </table>
 
-        <!-- Uraian Permohonan & TTD Menyetujui -->
         <table class="doc-table mb-2">
             <tr>
                 <td class="w-2/3 p-0" style="vertical-align: top;">
@@ -159,7 +151,6 @@
             </tr>
         </table>
 
-        <!-- Tabel Item Pekerjaan -->
         <table class="doc-table">
             <thead>
                 <tr>
@@ -171,11 +162,8 @@
                     <th class="w-44"><input type="text" id="ttdUnitTitle" value="BSN Kantor Cabang Surabaya" class="editable-input font-bold text-center"></th>
                 </tr>
             </thead>
-            <tbody id="itemRows">
-                <!-- Data baris diproduksi dari JS -->
-            </tbody>
+            <tbody id="itemRows"></tbody>
             
-            <!-- Kalkulasi Pajak & Penanggung Jawab -->
             <tbody>
                 <tr>
                     <td colspan="3" rowspan="6" style="border-right: none;" class="align-bottom p-2">
@@ -231,7 +219,6 @@
             </tbody>
         </table>
 
-        <!-- Footer Pemeriksa & Catatan -->
         <table class="doc-table mt-1">
             <tr>
                 <td colspan="8" class="font-bold">
@@ -270,9 +257,7 @@
                 <h3 class="text-lg font-bold text-slate-800">Riwayat RAB / Work Request</h3>
                 <button onclick="toggleHistoryModal()" class="text-slate-400 hover:text-slate-600 font-bold text-xl">✕</button>
             </div>
-            <div id="historyList" class="max-h-96 overflow-y-auto space-y-2 mb-4">
-                <!-- Daftar Riwayat -->
-            </div>
+            <div id="historyList" class="max-h-96 overflow-y-auto space-y-2 mb-4"></div>
             <div class="flex justify-end">
                 <button onclick="toggleHistoryModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded text-xs font-semibold">Tutup</button>
             </div>
@@ -280,18 +265,17 @@
     </div>
 
     <script>
-        // Data Item Sesuai Gambar Terbaru
         let items = [
             { qty: "4 m", desc: "AC Panasonic 2 PK", price: 8800000 },
             { qty: "5 m", desc: "AC Panasonic 1 PK", price: 6500000 },
             { qty: "1 ls", desc: "Material Instalasi", price: 0 },
-            { qty: "", desc: "  - Kabel NYM 3 X 1,5", price: 2500000, subQty: "2 roll" },
-            { qty: "", desc: "  - Pipa AC 2 PK", price: 180000, subQty: "40 m" },
-            { qty: "", desc: "  - Duct Tape", price: 15000, subQty: "30 rol" },
-            { qty: "", desc: "  - Cat", price: 290000, subQty: "2 gln" },
-            { qty: "", desc: "  - Plamir", price: 150000, subQty: "3 Sak" },
-            { qty: "", desc: "  - Pipa AC 1 PK", price: 150000, subQty: "55 m" },
-            { qty: "", desc: "  - Bracket Outdor AC", price: 150000, subQty: "9 11" },
+            { qty: "2 roll", desc: " - Kabel NYM 3 X 1,5", price: 2500000 },
+            { qty: "40 m", desc: " - Pipa AC 2 PK", price: 180000 },
+            { qty: "30 rol", desc: " - Duct Tape", price: 15000 },
+            { qty: "2 gln", desc: " - Cat", price: 290000 },
+            { qty: "3 Sak", desc: " - Plamir", price: 150000 },
+            { qty: "55 m", desc: " - Pipa AC 1 PK", price: 150000 },
+            { qty: "9 11", desc: " - Bracket Outdor AC", price: 150000 },
             { qty: "10 kg", desc: "Freon R32", price: 250000 },
             { qty: "1 ls", desc: "Jasa Bongkar Pasang 11 AC", price: 12000000 },
             { qty: "1 ls", desc: "mobilitas", price: 3500000 }
@@ -303,15 +287,14 @@
             let subtotal = 0;
 
             items.forEach((item, i) => {
-                // Ekstrak nilai angka dari Qty (misal: "4 m" -> 4)
-                let numQty = parseFloat(item.qty || item.subQty) || 0;
+                let numQty = parseFloat(item.qty) || 0;
                 let rowTotal = numQty * item.price;
                 subtotal += rowTotal;
 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td class="text-center font-bold">${i + 1}</td>
-                    <td><input type="text" value="${item.qty || item.subQty || ''}" onchange="updateItem(${i}, 'qty', this.value)" class="editable-input text-center"></td>
+                    <td><input type="text" value="${item.qty}" onchange="updateItem(${i}, 'qty', this.value)" class="editable-input text-center"></td>
                     <td><input type="text" value="${item.desc}" onchange="updateItem(${i}, 'desc', this.value)" class="editable-input"></td>
                     <td class="w-6 border-r-0">Rp.</td>
                     <td class="border-l-0"><input type="number" value="${item.price}" onchange="updateItem(${i}, 'price', this.value)" class="editable-input text-right"></td>
@@ -324,7 +307,6 @@
                 tbody.appendChild(tr);
             });
 
-            // Hitung Pajak Sesuai Tarif
             const dppDivisor = parseFloat(document.getElementById("dppRate").value) || 1;
             const ppnPercent = parseFloat(document.getElementById("ppnRate").value) || 0;
             const pphPercent = parseFloat(document.getElementById("pphRate").value) || 0;
@@ -363,7 +345,6 @@
             renderRows();
         }
 
-        // Preview Logo yang diupload
         function previewLogo(event) {
             const reader = new FileReader();
             reader.onload = function(){
@@ -373,7 +354,116 @@
             reader.readAsDataURL(event.target.files[0]);
         }
 
-        // --- SISTEM RIWAYAT LOCALSTORAGE ---
+        // --- EXPORT CSV PRESISI DENGAN TAMPILAN LAYOUT EXCEL ---
+        function exportCSV() {
+            const pemohon = document.getElementById("pemohon").value;
+            const divisi = document.getElementById("divisi").value;
+            const noWr = document.getElementById("noWr").value;
+            const tanggal = document.getElementById("tanggal").value;
+            const uraianPermohonan = document.getElementById("uraianPermohonan").value;
+            const unitTitle = document.getElementById("ttdUnitTitle").value;
+            const ttdNama = document.getElementById("ttdNama").value;
+            const ttdJabatan = document.getElementById("ttdJabatan").value;
+            const bebanBsn = document.getElementById("bebanBsnText").value;
+            const bebanPengelola = document.getElementById("bebanPengelolaText").value;
+            
+            const subtotalText = document.getElementById("subtotalVal").innerText;
+            const dppText = document.getElementById("dppVal").innerText;
+            const ppnText = document.getElementById("ppnVal").innerText;
+            const pphText = document.getElementById("pphVal").innerText;
+            const feeText = document.getElementById("feeVal").innerText;
+            const grandTotalText = document.getElementById("grandTotalVal").innerText;
+
+            let csvRows = [];
+
+            // 1. Logo & Judul Form
+            csvRows.push(['BINAYASA', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+            csvRows.push(['PENGELOLA GEDUNG - KONTRAKTOR - PROPERTI', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+            csvRows.push(['']);
+            csvRows.push(['', '', '', '', 'WORK REQUEST', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+            csvRows.push(['']);
+
+            // 2. Metadata Pemohon & No. WR
+            csvRows.push(['Pemohon', ':', `"${pemohon}"`, '', '', '', '', '', '', '', '', '', 'No. WR', ':', `"${noWr}"`]);
+            csvRows.push(['Divisi', ':', `"${divisi}"`, '', '', '', '', '', '', '', '', '', 'Tanggal', ':', `"${tanggal}"`]);
+            csvRows.push(['']);
+
+            // 3. Permohonan & Approval Box
+            csvRows.push(['Uraian Permohonan :', '', '', '', '', '', '', '', '', '', '', '', 'Tanda Tangan', '', '', '', '', '']);
+            csvRows.push(['', '', '', '', '', '', '', '', '', '', '', '', 'Menyetujui', '', '', '', '', '']);
+            csvRows.push(['', `"${uraianPermohonan}"`, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+            csvRows.push(['']);
+            csvRows.push(['', '[X] Segera', '', '', '', '', '', '[ ] Normal', '', '', '', '', '', '', '', '', '', '']);
+            csvRows.push(['']);
+
+            // 4. Header Tabel Utama
+            csvRows.push(['No', 'Qty', 'Uraian', '', '', 'Hrg Satuan', '', 'Total harga', '', `"${unitTitle}"`, '', '', '', '', '', '', '', '']);
+            csvRows.push(['', '', '', '', '', '', '', '', '', 'Dibuat Oleh', '', '', '', '', '', '', '', '']);
+
+            // 5. Item Pekerjaan
+            items.forEach((item, i) => {
+                let numQty = parseFloat(item.qty) || 0;
+                let rowTotal = numQty * item.price;
+                let ttdCol1 = i === 7 ? `"${ttdNama}"` : '';
+                let ttdCol2 = i === 8 ? `"${ttdJabatan}"` : '';
+                let bebanCol = i === 9 ? 'Dibebankan ke :' : (i === 10 ? `[X] ${bebanBsn}` : (i === 12 ? `[ ] ${bebanPengelola}` : ''));
+
+                csvRows.push([
+                    `"${i + 1}"`,
+                    `"${item.qty}"`,
+                    `"${item.desc}"`,
+                    '', '',
+                    'Rp.',
+                    `"${item.price ? item.price.toLocaleString('id-ID') : ''}"`,
+                    'Rp.',
+                    `"${rowTotal ? rowTotal.toLocaleString('id-ID') : '0'}"`,
+                    bebanCol, '', ttdCol1, ttdCol2
+                ]);
+            });
+
+            // 6. Kalkulasi Pajak & Subtotal
+            csvRows.push(['', '', '', '', '', 'Total harga', 'Rp.', `"${subtotalText}"`]);
+            csvRows.push(['', '', '', '', '', 'DPP 1,11', 'Rp.', `"${dppText}"`]);
+            csvRows.push(['', '', '', '', '', 'PPN 11%', 'Rp.', `"${ppnText}"`]);
+            csvRows.push(['', '', '', '', '', 'PPH 23 2%', 'Rp.', `"${pphText}"`]);
+            csvRows.push(['', '', '', '', '', 'Fee 8%', 'Rp.', `"${feeText}"`]);
+            csvRows.push(['', '', '', '', '', 'Total Harga & Pajak', 'Rp.', `"${grandTotalText}"`]);
+            csvRows.push(['']);
+
+            // 7. Footer Informasi
+            csvRows.push(['Waktu Pekerjaan', ':', `"${document.getElementById("waktuPekerjaan").value}"`]);
+            csvRows.push(['Diperiksa oleh', ':', `"${document.getElementById("diperiksaOleh").value}"`, '', '', 'Dikerjakan oleh', ':', `"${document.getElementById("dikerjakanOleh").value}"`]);
+            csvRows.push(['Tanggal', ':', `"${document.getElementById("tglPeriksa").value}"`, '', '', 'Tanggal', ':', `"${document.getElementById("tglKerja").value}"`]);
+            csvRows.push(['Jam', ':', `"${document.getElementById("jamPeriksa").value}"`, '', '', 'Jam', ':', `"${document.getElementById("jamKerja").value}"`]);
+            csvRows.push(['Catatan', ':', `"${document.getElementById("catatan").value}"`, '', '', '', '', 'Persetujuan Tenant']);
+
+            // Proses Download CSV UTF-8
+            let csvContent = "\uFEFF" + csvRows.map(e => e.join(",")).join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Work_Request_${noWr.replace(/[\/\s]/g, '_')}.csv`;
+            link.click();
+        }
+
+        // --- EXPORT PDF & RIWAYAT ---
+        function exportPDF() {
+            const element = document.getElementById('pdfDocument');
+            element.classList.add('pdf-mode');
+
+            const opt = {
+                margin:       3,
+                filename:     `Work_Request_${document.getElementById("noWr").value.replace(/[\/\s]/g, '_')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.classList.remove('pdf-mode');
+            });
+        }
+
         function getHistory() {
             return JSON.parse(localStorage.getItem("rab_history_v2") || "[]");
         }
@@ -455,37 +545,6 @@
             localStorage.setItem("rab_history_v2", JSON.stringify(history));
             updateHistoryBadge();
             renderHistoryList();
-        }
-
-        // --- EXPORT DOKUMEN ---
-        function exportPDF() {
-            const element = document.getElementById('pdfDocument');
-            element.classList.add('pdf-mode');
-
-            const opt = {
-                margin:       3,
-                filename:     `Work_Request_${document.getElementById("noWr").value.replace(/[\/\s]/g, '_')}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(element).save().then(() => {
-                element.classList.remove('pdf-mode');
-            });
-        }
-
-        function exportCSV() {
-            let csv = "No,Qty,Uraian,Harga Satuan,Total Harga\n";
-            items.forEach((item, i) => {
-                let numQty = parseFloat(item.qty || item.subQty) || 0;
-                csv += `"${i+1}","${item.qty || item.subQty || ''}","${item.desc}","${item.price}","${numQty * item.price}"\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `Work_Request_${document.getElementById("noWr").value.replace(/[\/\s]/g, '_')}.csv`;
-            link.click();
         }
 
         renderRows();
