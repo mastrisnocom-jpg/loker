@@ -1,172 +1,74 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Peta Murottal Dunia</title>
-
-    <!-- Leaflet CSS (Peta) -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        header {
-            padding: 16px 20px;
-            background-color: #1e293b;
-            border-bottom: 1px solid #334155;
-            text-align: center;
-        }
-        header h1 { font-size: 20px; color: #38bdf8; }
-        header p { font-size: 13px; color: #94a3b8; }
-
-        /* Container Peta */
-        #map {
-            flex: 1;
-            width: 100%;
-            z-index: 1;
-        }
-
-        /* Panel Audio Player di Bawah */
-        .player-bar {
-            background-color: #1e293b;
-            border-top: 1px solid #334155;
-            padding: 16px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            z-index: 2;
-        }
-        .player-info {
-            flex: 1;
-        }
-        .qori-name { font-weight: bold; font-size: 15px; color: #38bdf8; }
-        .location-name { font-size: 12px; color: #94a3b8; }
-
-        audio {
-            width: 60%;
-            max-width: 400px;
-            height: 40px;
-        }
-
-        @media (max-width: 600px) {
-            .player-bar { flex-direction: column; text-align: center; }
-            audio { width: 100%; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Chat WA Group</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
+    .chat-box { max-width: 600px; margin: 0 auto; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .msg { padding: 10px; border-bottom: 1px solid #eee; }
+    .sender { font-weight: bold; color: #25D366; font-size: 0.9em; }
+    .text { margin-top: 5px; color: #333; }
+  </style>
 </head>
 <body>
 
-    <header>
-        <h1>🗺️ Peta Murottal Al-Qur'an Dunia</h1>
-        <p>Klik marker pada peta untuk mendengarkan lantunan murottal dari berbagai wilayah</p>
-    </header>
+  <div class="chat-box">
+    <h2>Pesan Grup WhatsApp</h2>
+    <div id="messages-container">Memuat pesan...</div>
+  </div>
 
-    <!-- Elemen Peta -->
-    <div id="map"></div>
+  <script>
+    // Ganti dengan kredensial Supabase milik Anda
+    const SUPABASE_URL = 'https://YOUR_SUPABASE_URL.supabase.co';
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const container = document.getElementById('messages-container');
 
-    <!-- Bar Pemutar Audio -->
-    <div class="player-bar">
-        <div class="player-info">
-            <div class="qori-name" id="qoriTitle">Pilih lokasi di peta...</div>
-            <div class="location-name" id="qoriSub">Klik salah satu pin penanda</div>
-        </div>
-        <audio id="audioPlayer" controls autoplay style="display: none;">
-            <source id="audioSource" src="" type="audio/mp3">
-            Browser Anda tidak mendukung elemen audio.
-        </audio>
-    </div>
+    // 1. Ambil data pesan awal dari Supabase
+    async function loadMessages() {
+      const { data, error } = await supabase
+        .from('whatsapp_messages')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+      if (error) {
+        container.innerHTML = 'Gagal memuat pesan.';
+        return;
+      }
 
-    <script>
-        // 1. Inisialisasi Peta Dunia (Tampilan Awal Fokus ke Wilayah Timur Tengah / Asia)
-        const map = L.map('map').setView([21.4225, 39.8262], 3);
+      container.innerHTML = '';
+      data.forEach(msg => appendMessage(msg));
+    }
 
-        // 2. Tambahkan Layer Peta (Menggunakan OpenStreetMap Dark Theme)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-            maxZoom: 18
-        }).addTo(map);
+    // 2. Fungsi untuk menampilkan pesan ke HTML
+    function appendMessage(msg) {
+      const div = document.createElement('div');
+      div.className = 'msg';
+      div.innerHTML = `
+        <div class="sender">${msg.sender_name} (${msg.sender})</div>
+        <div class="text">${msg.message}</div>
+      `;
+      container.prepend(div);
+    }
 
-        // 3. Data Lokasi & Murottal
-        // Anda bisa menambahkan daftar lokasi & URL MP3 Murottal di sini
-        const murottalData = [
-            {
-                name: "Makkah (Masjidil Haram)",
-                qori: "Syaikh Abdurrahman As-Sudais",
-                surah: "Surah Al-Fatihah",
-                coords: [21.4225, 39.8262],
-                audioUrl: "https://server8.mp3quran.net/sds/001.mp3"
-            },
-            {
-                name: "Madinah (Masjid Nabawi)",
-                qori: "Syaikh Ali Al-Hudhaify",
-                surah: "Surah Al-Fatihah",
-                coords: [24.4672, 39.6111],
-                audioUrl: "https://server9.mp3quran.net/hudhaify/001.mp3"
-            },
-            {
-                name: "Mesir (Kairo)",
-                qori: "Syaikh Mahmoud Khalil Al-Hussary",
-                surah: "Surah Al-Fatihah",
-                coords: [30.0444, 31.2357],
-                audioUrl: "https://server13.mp3quran.net/hussary/001.mp3"
-            },
-            {
-                name: "Indonesia (Jakarta)",
-                qori: "Murottal Indonesia",
-                surah: "Surah Al-Fatihah",
-                coords: [-6.2088, 106.8456],
-                audioUrl: "https://server8.mp3quran.net/sds/001.mp3"
-            },
-            {
-                name: "Palestina (Al-Quds / Yerusalem)",
-                qori: "Syaikh Ra'ad Al-Kurdi",
-                surah: "Surah Al-Fatihah",
-                coords: [31.7767, 35.2345],
-                audioUrl: "https://server6.mp3quran.net/kurdi/001.mp3"
-            }
-        ];
-
-        // 4. Tambahkan Marker ke Peta
-        murottalData.forEach(item => {
-            const marker = L.marker(item.coords).addTo(map);
-            
-            // Popup sederhana saat hover
-            marker.bindPopup(`<b>${item.name}</b><br>${item.qori}`);
-
-            // Event saat Marker Di-klik
-            marker.on('click', function() {
-                playMurottal(item);
-            });
-        });
-
-        // 5. Fungsi Pemutar Audio
-        function playMurottal(item) {
-            const audioPlayer = document.getElementById('audioPlayer');
-            const audioSource = document.getElementById('audioSource');
-            const qoriTitle = document.getElementById('qoriTitle');
-            const qoriSub = document.getElementById('qoriSub');
-
-            qoriTitle.innerText = item.qori;
-            qoriSub.innerText = `${item.name} • ${item.surah}`;
-
-            audioSource.src = item.audioUrl;
-            audioPlayer.style.display = 'block';
-            audioPlayer.load();
-            audioPlayer.play();
+    // 3. Dengarkan kiriman data baru secara Real-time
+    supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'whatsapp_messages' },
+        (payload) => {
+          appendMessage(payload.new);
         }
-    </script>
+      )
+      .subscribe();
+
+    loadMessages();
+  </script>
 </body>
 </html>
