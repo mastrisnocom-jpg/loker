@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Qur'an Video Player - 720p HD, Equalizer & Pitch Control</title>
+  <title>Qur'an Video Player - Auto-Fit Text & EQ Presets HD</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -89,25 +89,34 @@
       gap: 5px;
     }
 
+    /* OVERLAY SUBTITLE DENGAN AUTO-FIT MAX BOUNDS */
     .subtitle-overlay {
       position: relative;
       z-index: 10;
-      width: 92%;
-      margin: 20px;
+      width: 90%;
+      max-height: 80%;
+      margin: 15px;
       text-align: var(--text-align);
       background: none;
       border: none;
       box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden; /* Mencegah keluar dari box player */
     }
 
     .arabic-text {
       font-family: 'Amiri', serif;
       font-size: var(--arabic-size);
       direction: rtl;
-      line-height: 1.8;
+      line-height: 1.6;
       margin-bottom: 6px;
       color: #ffffff;
       text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95), 0 0 4px rgba(0,0,0,0.9);
+      max-width: 100%;
+      word-wrap: break-word;
     }
 
     .word {
@@ -120,15 +129,17 @@
       color: var(--karaoke-gold);
       text-shadow: 0 0 12px var(--karaoke-glow), 0 2px 8px rgba(0,0,0,1);
       font-weight: bold;
-      transform: scale(1.08);
+      transform: scale(1.05);
     }
 
     .translation-text {
       font-size: var(--translation-size);
       color: #f1f5f9;
-      line-height: 1.4;
+      line-height: 1.3;
       font-weight: 500;
       text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95), 0 0 4px rgba(0,0,0,0.9);
+      max-width: 100%;
+      word-wrap: break-word;
     }
 
     .controls-wrapper {
@@ -242,11 +253,9 @@
     </div>
   </div>
 
-  <!-- Canvas HD 1280x720 untuk Perekaman HD -->
   <canvas id="exportCanvas" width="1280" height="720"></canvas>
 
   <div class="controls-wrapper">
-    <!-- BARIS 1: NAMA CHANNEL, SURAH & FITUR PITCH/EQUALIZER -->
     <div class="control-card">
       <div>
         <label>Nama Channel Youtube:</label>
@@ -261,21 +270,33 @@
       </div>
 
       <div>
-        <label>Pengatur Pitch / Nada Audio: <b id="valPitch">1.0x</b></label>
-        <input type="range" id="pitchSlider" min="0.7" max="1.3" step="0.05" value="1.0" oninput="updatePitch(this.value)">
-      </div>
-
-      <div>
-        <label>Gaya Visualizer Equalizer:</label>
-        <select id="eqStyle">
-          <option value="bars">Spektrum Batang Gold</option>
-          <option value="wave">Gelombang Audio Sine</option>
-          <option value="none">Matikan Equalizer</option>
+        <label>Preset Equalizer Audio (EQ):</label>
+        <select id="eqPresetSelect" onchange="applyEQPreset(this.value)">
+          <option value="flat" selected>Flat / Normal</option>
+          <option value="bass">Bass Boost (Bass Mantap)</option>
+          <option value="treble">Treble Boost (Suara Jernih)</option>
+          <option value="vocal">Vocal / Murattal Clear</option>
+          <option value="rock">Rock Style</option>
+          <option value="jazz">Jazz / Soft Accent</option>
         </select>
       </div>
 
       <div>
-        <label>Unggah Audio MP3 Sendiri:</label>
+        <label>Pengatur Pitch / Nada: <b id="valPitch">1.0x</b></label>
+        <input type="range" id="pitchSlider" min="0.7" max="1.3" step="0.05" value="1.0" oninput="updatePitch(this.value)">
+      </div>
+
+      <div>
+        <label>Spektrum Visualizer:</label>
+        <select id="eqStyle">
+          <option value="bars">Spektrum Batang Gold</option>
+          <option value="wave">Gelombang Audio Sine</option>
+          <option value="none">Matikan Spektrum</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Unggah MP3 Audio Sendiri:</label>
         <input type="file" id="uploadAudio" accept="audio/*" onchange="handleAudioUpload(event)">
       </div>
 
@@ -295,16 +316,15 @@
       </div>
     </div>
 
-    <!-- BARIS 2: PENGATURAN TEKS SUBTITLE -->
     <div class="control-card">
       <div class="setting-group">
         <label>Ukuran Teks Arab: <b id="valArabic">1.6rem</b></label>
-        <input type="range" id="sizeArabic" min="1.0" max="3.0" step="0.1" value="1.6" oninput="updateTextSettings()">
+        <input type="range" id="sizeArabic" min="0.8" max="2.8" step="0.1" value="1.6" oninput="updateTextSettings()">
       </div>
 
       <div class="setting-group">
         <label>Ukuran Terjemahan: <b id="valTrans">0.9rem</b></label>
-        <input type="range" id="sizeTrans" min="0.6" max="1.5" step="0.05" value="0.9" oninput="updateTextSettings()">
+        <input type="range" id="sizeTrans" min="0.5" max="1.5" step="0.05" value="0.9" oninput="updateTextSettings()">
       </div>
 
       <div class="setting-group">
@@ -353,8 +373,9 @@
     let exportedBlob = null;
     let canvasAnimationId = null;
 
-    // Web Audio API Nodes untuk Equalizer & Pitch
+    // Web Audio API Nodes (Equalizer Biquad Filters)
     let audioCtx, audioSource, audioAnalyser, audioDestination;
+    let lowFilter, midFilter, highFilter;
     let dataArray, bufferLength;
 
     const audio = document.getElementById('audioElement');
@@ -377,7 +398,30 @@
     function updatePitch(val) {
       document.getElementById('valPitch').innerText = val + 'x';
       audio.playbackRate = parseFloat(val);
-      audio.preservesPitch = false; // Memungkinkan nada/pitch audio berubah
+      audio.preservesPitch = false;
+    }
+
+    /* FITUR AUTO SCALING / AUTO FIT TEKS agar tidak meluap dari Box Player */
+    function autoFitText() {
+      const container = document.getElementById('playerContainer');
+      const overlay = document.getElementById('subtitleOverlay');
+      const arabicEl = document.getElementById('arabicDisplay');
+      const transEl = document.getElementById('translationDisplay');
+
+      let currentArabicSize = parseFloat(document.getElementById('sizeArabic').value);
+      let currentTransSize = parseFloat(document.getElementById('sizeTrans').value);
+
+      document.documentElement.style.setProperty('--arabic-size', currentArabicSize + 'rem');
+      document.documentElement.style.setProperty('--translation-size', currentTransSize + 'rem');
+
+      // Pengecekan jika tinggi teks melebihi tinggi container
+      const maxHeight = container.clientHeight * 0.75;
+      while (overlay.clientHeight > maxHeight && currentArabicSize > 0.8) {
+        currentArabicSize -= 0.1;
+        currentTransSize -= 0.05;
+        document.documentElement.style.setProperty('--arabic-size', currentArabicSize + 'rem');
+        document.documentElement.style.setProperty('--translation-size', currentTransSize + 'rem');
+      }
     }
 
     function updateTextSettings() {
@@ -393,6 +437,8 @@
       document.documentElement.style.setProperty('--translation-size', transSize);
       document.documentElement.style.setProperty('--overlay-position', posVert);
       document.documentElement.style.setProperty('--text-align', posAlign);
+
+      autoFitText();
     }
 
     async function getSurahList() {
@@ -455,6 +501,8 @@
       if (!isCustomAudio) {
         audio.src = getAudioUrl(currentSurahNum, verse.verse_number);
       }
+
+      setTimeout(autoFitText, 50);
     }
 
     function startPlay() {
@@ -525,11 +573,49 @@
       });
     }
 
-    /* DRAW CANVAS RENDERER RESOLUSI HD 720P + EQUALIZER */
+    /* MENGATUR PRESET FREKUENSI EQUALIZER (BASS, TREBLE, JAZZ, ROCK, VOCAL) */
+    function applyEQPreset(preset) {
+      if (!lowFilter || !midFilter || !highFilter) return;
+
+      switch(preset) {
+        case 'bass':
+          lowFilter.gain.value = 8;
+          midFilter.gain.value = -1;
+          highFilter.gain.value = -3;
+          break;
+        case 'treble':
+          lowFilter.gain.value = -3;
+          midFilter.gain.value = 1;
+          highFilter.gain.value = 9;
+          break;
+        case 'vocal':
+          lowFilter.gain.value = -2;
+          midFilter.gain.value = 7;
+          highFilter.gain.value = 3;
+          break;
+        case 'rock':
+          lowFilter.gain.value = 6;
+          midFilter.gain.value = -2;
+          highFilter.gain.value = 6;
+          break;
+        case 'jazz':
+          lowFilter.gain.value = 4;
+          midFilter.gain.value = 2;
+          highFilter.gain.value = 4;
+          break;
+        default: // Flat
+          lowFilter.gain.value = 0;
+          midFilter.gain.value = 0;
+          highFilter.gain.value = 0;
+          break;
+      }
+    }
+
+    /* DRAW CANVAS DENGAN AUTO FIT TEKS KANVAS & EQUALIZER VISUALIZER */
     function drawCanvasFrame() {
       if (!isRecording) return;
 
-      // Draw Background Video ke Canvas 1280x720
+      // Draw Video 1280x720
       ctx.drawImage(bgVideo, 0, 0, canvas.width, canvas.height);
 
       // Gradient Shadow Bawah
@@ -539,7 +625,7 @@
       ctx.fillStyle = grad;
       ctx.fillRect(0, canvas.height - 250, canvas.width, 250);
 
-      // RENDER AUDIO EQUALIZER
+      // Render Visualizer Spektrum
       const eqStyle = document.getElementById('eqStyle').value;
       if (eqStyle !== 'none' && audioAnalyser) {
         audioAnalyser.getByteFrequencyData(dataArray);
@@ -570,7 +656,7 @@
         }
       }
 
-      // Render Watermark Channel Pojok Kanan Atas
+      // Render Watermark
       const channelName = document.getElementById('channelNameInput').value || "Mukjizat doa";
       ctx.font = 'bold 24px Inter, sans-serif';
       ctx.fillStyle = '#fbbf24';
@@ -579,22 +665,46 @@
       ctx.shadowBlur = 6;
       ctx.fillText(`▶ ${channelName}`, canvas.width - 40, 50);
 
-      // Render Teks Terjemahan
+      // Render Teks Auto-Wrap Canvas
+      const transText = document.getElementById('translationDisplay').innerText;
+      const arabText = document.getElementById('arabicDisplay').innerText;
+
+      ctx.textAlign = 'center';
+      
+      // Ukuran Dinamis Teks Terjemahan di Canvas
       ctx.font = '22px Inter, sans-serif';
       ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'center';
-      const transText = document.getElementById('translationDisplay').innerText;
-      ctx.fillText(transText, 640, 640);
+      wrapTextCanvas(ctx, transText, 640, 640, 1100, 28);
 
-      // Render Teks Arab
+      // Ukuran Dinamis Teks Arab di Canvas
       ctx.font = 'bold 36px Amiri, serif';
       ctx.fillStyle = '#fbbf24';
-      const arabText = document.getElementById('arabicDisplay').innerText;
-      ctx.fillText(arabText, 640, 580);
+      ctx.fillText(arabText, 640, 570);
 
       ctx.shadowColor = "transparent";
 
       canvasAnimationId = requestAnimationFrame(drawCanvasFrame);
+    }
+
+    /* FUNGSI WRAP TEKS CANVAS SUPAYA TIDAK MELEBIHI LAYAR VIDEO HD */
+    function wrapTextCanvas(context, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      let testY = y;
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = context.measureText(testLine);
+        const testWidth = metrics.width;
+        if (testWidth > maxWidth && n > 0) {
+          context.fillText(line, x, testY);
+          line = words[n] + ' ';
+          testY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      context.fillText(line, x, testY);
     }
 
     async function toggleRecord() {
@@ -602,14 +712,25 @@
 
       if (!isRecording) {
         try {
-          // Stream Canvas HD 720p pada 30 FPS
           const canvasStream = canvas.captureStream(30);
 
           if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             audioSource = audioCtx.createMediaElementSource(audio);
             
-            // Analyser Node untuk Equalizer
+            // Inisialisasi Filter Biquad Equalizer
+            lowFilter = audioCtx.createBiquadFilter();
+            lowFilter.type = 'lowshelf';
+            lowFilter.frequency.value = 320;
+
+            midFilter = audioCtx.createBiquadFilter();
+            midFilter.type = 'peaking';
+            midFilter.frequency.value = 1000;
+
+            highFilter = audioCtx.createBiquadFilter();
+            highFilter.type = 'highshelf';
+            highFilter.frequency.value = 3200;
+
             audioAnalyser = audioCtx.createAnalyser();
             audioAnalyser.fftSize = 64;
             bufferLength = audioAnalyser.frequencyBinCount;
@@ -617,9 +738,15 @@
 
             audioDestination = audioCtx.createMediaStreamDestination();
             
-            audioSource.connect(audioAnalyser);
-            audioSource.connect(audioDestination);
-            audioSource.connect(audioCtx.destination);
+            // Routing Rantai Node Audio: Source -> Low -> Mid -> High -> Analyser -> Output
+            audioSource.connect(lowFilter);
+            lowFilter.connect(midFilter);
+            midFilter.connect(highFilter);
+            highFilter.connect(audioAnalyser);
+            audioAnalyser.connect(audioDestination);
+            audioAnalyser.connect(audioCtx.destination);
+
+            applyEQPreset(document.getElementById('eqPresetSelect').value);
           }
 
           const audioTrack = audioDestination.stream.getAudioTracks()[0];
@@ -629,7 +756,7 @@
 
           recordedChunks = [];
           
-          let options = { mimeType: 'video/webm;codecs=vp8,opus', videoBitsPerSecond: 2500000 }; // Target Bitrate HD 720p
+          let options = { mimeType: 'video/webm;codecs=vp8,opus', videoBitsPerSecond: 2500000 };
           if (!MediaRecorder.isTypeSupported(options.mimeType)) {
             options = { mimeType: 'video/webm' };
           }
