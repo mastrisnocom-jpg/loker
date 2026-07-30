@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Al-Qur'an Digital</title>
+  <style>
+    :root {
+      --primary: #0d9488;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    header h1 {
+      color: var(--primary);
+      margin-bottom: 5px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .select-group {
+      margin-bottom: 20px;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 1rem;
+      background-color: white;
+      cursor: pointer;
+    }
+
+    .surah-header {
+      background: var(--primary);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .verse-card {
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 18px;
+      margin-bottom: 15px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .arabic {
+      font-size: 1.8rem;
+      text-align: right;
+      direction: rtl;
+      line-height: 2.2;
+      margin-bottom: 12px;
+      color: #0f172a;
+      font-family: 'Amiri', 'Traditional Arabic', serif;
+    }
+
+    .translation {
+      font-size: 0.95rem;
+      color: #475569;
+      line-height: 1.6;
+    }
+
+    .verse-num {
+      display: inline-block;
+      background: #e2e8f0;
+      color: #334155;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 28px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Al-Qur'an Digital</h1>
+      <p>Baca dan Dengarkan Murattal</p>
+    </header>
+
+    <div class="select-group">
+      <select id="surahSelect" onchange="loadSurah(this.value)">
+        <option value="">-- Pilih Surah --</option>
+      </select>
+    </div>
+
+    <div id="surahContent"></div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://equran.id/api/v2';
+
+    // 1. Ambil daftar surah saat halaman dimuat
+    async function getSurahList() {
+      try {
+        const res = await fetch(`${API_BASE}/surat`);
+        const result = await res.json();
+        const select = document.getElementById('surahSelect');
+
+        result.data.forEach(surah => {
+          const option = document.createElement('option');
+          option.value = surah.nomor;
+          option.textContent = `${surah.nomor}. ${surah.namaLatin} (${surah.arti})`;
+          select.appendChild(option);
+        });
+
+        // Muat Surah Al-Fatihah secara default
+        select.value = "1";
+        loadSurah(1);
+      } catch (err) {
+        console.error('Gagal mengambil daftar surah:', err);
+      }
+    }
+
+    // 2. Ambil detail ayat & audio dari surah yang dipilih
+    async function loadSurah(nomor) {
+      if (!nomor) return;
+
+      const container = document.getElementById('surahContent');
+      container.innerHTML = '<p style="text-align:center;">Memuat ayat...</p>';
+
+      try {
+        const res = await fetch(`${API_BASE}/surat/${nomor}`);
+        const result = await res.json();
+        const surah = result.data;
+
+        // Pilih audio (contoh: Sheikh Misyari Rasyid)
+        const audioUrl = surah.audioFull['05'] || Object.values(surah.audioFull)[0];
+
+        let html = `
+          <div class="surah-header">
+            <h2>${surah.namaLatin} (${surah.nama})</h2>
+            <p>${surah.tempatTurun} • ${surah.jumlahAyat} Ayat</p>
+            <audio controls src="${audioUrl}"></audio>
+          </div>
+        `;
+
+        surah.ayat.forEach(item => {
+          html += `
+            <div class="verse-card">
+              <div class="verse-num">${item.nomorAyat}</div>
+              <div class="arabic">${item.teksArab}</div>
+              <div class="translation">${item.teksIndonesia}</div>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+      } catch (err) {
+        container.innerHTML = '<p style="text-align:center; color:red;">Gagal memuat data ayat.</p>';
+      }
+    }
+
+    // Jalankan aplikasi
+    getSurahList();
+  </script>
+</body>
+</html>
+
