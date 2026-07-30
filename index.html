@@ -3,72 +3,315 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Chat WA Group</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <title>Dashboard Hub Menu</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
-    .chat-box { max-width: 600px; margin: 0 auto; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .msg { padding: 10px; border-bottom: 1px solid #eee; }
-    .sender { font-weight: bold; color: #25D366; font-size: 0.9em; }
-    .text { margin-top: 5px; color: #333; }
+    :root {
+      --bg-color: #0b0f17;
+      --card-bg: #111827;
+      --card-hover: #1f2937;
+      --border-color: #1f2937;
+      --text-color: #e5e7eb;
+      --badge-bg: #eab308;
+      --badge-text: #000000;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    /* Grid Layout: 3 Kolom di Layar Lebar */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    /* Styling Kartu Menu */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: var(--text-color);
+      position: relative;
+      transition: all 0.2s ease-in-out;
+      min-height: 100px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    .card:hover {
+      background-color: var(--card-hover);
+      transform: translateY(-2px);
+      border-color: #374151;
+    }
+
+    /* Styling Ikon/Emoji */
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    /* Styling Teks Judul Menu */
+    .card-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-align: center;
+    }
+
+    /* Badge "NEW" */
+    .badge-new {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background-color: var(--badge-bg);
+      color: var(--badge-text);
+      font-size: 0.55rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Floating Donasi (QRIS) di Kanan Bawah */
+    .floating-qris {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      background: #ffffff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+      border: 2px solid #e5e7eb;
+    }
+
+    .floating-qris img {
+      width: 80%;
+      height: 80%;
+      object-fit: contain;
+    }
+
+    /* Responsive untuk Layar HP (1-2 Kolom) */
+    @media (max-width: 600px) {
+      .grid-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+      .card {
+        padding: 15px 8px;
+        min-height: 90px;
+      }
+      .card-icon {
+        font-size: 1.6rem;
+      }
+      .card-title {
+        font-size: 0.65rem;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <div class="chat-box">
-    <h2>Pesan Grup WhatsApp</h2>
-    <div id="messages-container">Memuat pesan...</div>
+  <div class="container">
+    <div class="grid-container">
+
+      <!-- Row 1 -->
+      <a href="#" class="card">
+        <div class="card-icon">🤖</div>
+        <div class="card-title">Aplikasi Android</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">📖</div>
+        <div class="card-title">Kampung Quran</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">📊</div>
+        <div class="card-title">Vizualizer</div>
+      </a>
+
+      <!-- Row 2 -->
+      <a href="#" class="card">
+        <span class="badge-new">NEW</span>
+        <div class="card-icon">🎛️</div>
+        <div class="card-title">Peta Konten Music</div>
+      </a>
+
+      <a href="#" class="card">
+        <span class="badge-new">NEW</span>
+        <div class="card-icon">📿</div>
+        <div class="card-title">Peta Konten Murottal</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">🎵</div>
+        <div class="card-title">Plan Music</div>
+      </a>
+
+      <!-- Row 3 -->
+      <a href="#" class="card">
+        <div class="card-icon">🎼</div>
+        <div class="card-title">Kampung Lirik</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">🎶</div>
+        <div class="card-title">Kampung Lagu</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">📅</div>
+        <div class="card-title">Plan Konten</div>
+      </a>
+
+      <!-- Row 4 -->
+      <a href="#" class="card">
+        <div class="card-icon">📜</div>
+        <div class="card-title">Gudang Konten</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">🎙️</div>
+        <div class="card-title">Suaraku</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">📜</div>
+        <div class="card-title">Ceritaku</div>
+      </a>
+
+      <!-- Row 5 -->
+      <a href="#" class="card">
+        <div class="card-icon">🖼️</div>
+        <div class="card-title">Script to Prompt</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">🖼️</div>
+        <div class="card-title">Prompt Vision</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">🎨</div>
+        <div class="card-title">Gambarku</div>
+      </a>
+
+      <!-- Row 6 -->
+      <a href="#" class="card">
+        <div class="card-icon">📷</div>
+        <div class="card-title">Fotoku</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">🎬</div>
+        <div class="card-title">Prompt Video</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">📺</div>
+        <div class="card-title">Asisten SEO YT</div>
+      </a>
+
+      <!-- Row 7 -->
+      <a href="#" class="card">
+        <div class="card-icon">🎯</div>
+        <div class="card-title">Sniper YT</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">📐</div>
+        <div class="card-title">Thumbnail Maker (Site)</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">🎵</div>
+        <div class="card-title">GPTS Tukang Music</div>
+      </a>
+
+      <!-- Row 8 -->
+      <a href="#" class="card">
+        <div class="card-icon">📦</div>
+        <div class="card-title">Gudang Konten Pro V1</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">🎨</div>
+        <div class="card-title">Script to Image</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">📺</div>
+        <div class="card-title">Buat Channel</div>
+      </a>
+
+      <!-- Row 9 -->
+      <a href="#" class="card">
+        <div class="card-icon">🗄️</div>
+        <div class="card-title">Brangkas-YT</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">🖼️</div>
+        <div class="card-title">Visual to Prompt</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">💖</div>
+        <div class="card-title">Qolbu Spoken</div>
+      </a>
+
+      <!-- Row 10 -->
+      <a href="#" class="card">
+        <div class="card-icon">🎤</div>
+        <div class="card-title">Voicer AI</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">🎶</div>
+        <div class="card-title">Prompt Suno Instrumen</div>
+      </a>
+
+      <a href="#" class="card">
+        <div class="card-icon">🎹</div>
+        <div class="card-title">Prompt Instrument</div>
+      </a>
+
+    </div>
   </div>
 
-  <script>
-    // Ganti dengan kredensial Supabase milik Anda
-    const SUPABASE_URL = 'https://YOUR_SUPABASE_URL.supabase.co';
-    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-    
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const container = document.getElementById('messages-container');
+  <!-- Floating QRIS / Donasi Icon -->
+  <div class="floating-qris" title="Scan QRIS">
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=QRIS" alt="QRIS">
+  </div>
 
-    // 1. Ambil data pesan awal dari Supabase
-    async function loadMessages() {
-      const { data, error } = await supabase
-        .from('whatsapp_messages')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (error) {
-        container.innerHTML = 'Gagal memuat pesan.';
-        return;
-      }
-
-      container.innerHTML = '';
-      data.forEach(msg => appendMessage(msg));
-    }
-
-    // 2. Fungsi untuk menampilkan pesan ke HTML
-    function appendMessage(msg) {
-      const div = document.createElement('div');
-      div.className = 'msg';
-      div.innerHTML = `
-        <div class="sender">${msg.sender_name} (${msg.sender})</div>
-        <div class="text">${msg.message}</div>
-      `;
-      container.prepend(div);
-    }
-
-    // 3. Dengarkan kiriman data baru secara Real-time
-    supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'whatsapp_messages' },
-        (payload) => {
-          appendMessage(payload.new);
-        }
-      )
-      .subscribe();
-
-    loadMessages();
-  </script>
 </body>
 </html>
