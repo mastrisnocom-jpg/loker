@@ -46,6 +46,8 @@
 
     .bg-media {
       position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -496,7 +498,7 @@
       <div style="grid-column: span 2; display: flex; gap: 8px;">
         <button class="btn-play" onclick="startPlay()">▶️ Putar</button>
         <button class="btn-pause" onclick="pausePlay()">⏸️ Jeda (Pause)</button>
-        <button class="btn-record" id="recBtn" onclick="toggleRecord()">🎥 Rekam Video MP4</button>
+        <button class="btn-record" id="recBtn" onclick="toggleRecord()">🎥 Rekam Video MP4 Fullscreen</button>
       </div>
     </div>
   </div>
@@ -605,6 +607,32 @@
           pulse: Math.random() * 0.05
         });
       }
+    }
+
+    /* ALGORITMA OBJECT-FIT COVER UNTUK RENDERING KANVAS FULL SCREEN */
+    function drawCoverImage(context, img, targetWidth, targetHeight) {
+      if (!img || !img.complete || img.naturalWidth === 0) return;
+      const imgWidth = img.naturalWidth || img.videoWidth || targetWidth;
+      const imgHeight = img.naturalHeight || img.videoHeight || targetHeight;
+
+      const imgRatio = imgWidth / imgHeight;
+      const targetRatio = targetWidth / targetHeight;
+
+      let drawWidth, drawHeight, offsetX, offsetY;
+
+      if (imgRatio > targetRatio) {
+        drawHeight = targetHeight;
+        drawWidth = targetHeight * imgRatio;
+        offsetX = (targetWidth - drawWidth) / 2;
+        offsetY = 0;
+      } else {
+        drawWidth = targetWidth;
+        drawHeight = targetWidth / imgRatio;
+        offsetX = 0;
+        offsetY = (targetHeight - drawHeight) / 2;
+      }
+
+      context.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
     }
 
     function drawFxAndSpectrum(context, width, height) {
@@ -1207,13 +1235,13 @@
       }
     }
 
-    /* RENDER EXPORT CANVAS + FX ANIMATION FOR MP4 RECORDING */
+    /* RENDER EXPORT CANVAS + FX ANIMATION FOR MP4 RECORDING FULL SCREEN */
     function renderFrameForExport() {
       try {
         if (bgType === 'image') {
-          exportCtx.drawImage(bgImage, 0, 0, exportCanvas.width, exportCanvas.height);
+          drawCoverImage(exportCtx, bgImage, exportCanvas.width, exportCanvas.height);
         } else {
-          exportCtx.drawImage(bgVideo, 0, 0, exportCanvas.width, exportCanvas.height);
+          drawCoverImage(exportCtx, bgVideo, exportCanvas.width, exportCanvas.height);
         }
       } catch(e) {
         exportCtx.fillStyle = "#0f172a";
@@ -1274,7 +1302,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Render_Video_${Date.now()}.mp4`;
+            a.download = `Render_Video_Full_${Date.now()}.mp4`;
             a.click();
           };
 
@@ -1306,7 +1334,7 @@
         isRecording = false;
 
         const recBtn = document.getElementById('recBtn');
-        recBtn.innerText = "🎥 Rekam Video MP4";
+        recBtn.innerText = "🎥 Rekam Video MP4 Fullscreen";
         recBtn.style.background = "#d97706";
       }
     }
