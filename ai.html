@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Islami & Lyric Video Studio HD 720p</title>
-  
+  <title>Islami & Lyric Video Studio HD 720p - Audio to Text AI</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -158,13 +158,23 @@
       outline: none;
     }
 
-    textarea { height: 80px; font-family: monospace; }
+    textarea { height: 90px; font-family: monospace; }
 
     .btn-play { background: var(--primary); border: none; font-weight: bold; cursor: pointer; color: white; }
     .btn-play:hover { background: var(--primary-dark); }
-    
+
     .btn-download { background: #d97706; border: none; font-weight: bold; cursor: pointer; color: white; }
     .btn-download:hover { background: #b45309; }
+
+    .btn-stt { background: #2563eb; border: none; font-weight: bold; cursor: pointer; color: white; }
+    .btn-stt:hover { background: #1d4ed8; }
+    .btn-stt.listening { background: #dc2626; animation: pulse 1.5s infinite; }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
 
     .mode-panel { display: none; }
     .mode-panel.active { display: block; }
@@ -194,7 +204,7 @@
 
       <!-- BACKGROUND MEDIA -->
       <img id="bgImage" class="bg-media active" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1280&q=80" crossOrigin="anonymous">
-      
+
       <video id="bgVideo" class="bg-media" autoplay loop muted playsinline crossOrigin="anonymous">
         <source src="https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4" type="video/mp4">
       </video>
@@ -252,7 +262,7 @@
       </div>
     </div>
 
-    <!-- PANEL 2: LAGU & LIRIK -->
+    <!-- PANEL 2: LAGU & LIRIK + FITUR AUDIO TO TEXT -->
     <div id="songPanel" class="mode-panel active">
       <div class="control-card">
         <div>
@@ -268,8 +278,23 @@
           <input type="file" id="uploadSong" accept="audio/*" onchange="handleSongUpload(event)">
         </div>
 
+        <!-- FITUR AUDIO TO TEXT (SPEECH TO TEXT AI) -->
+        <div style="grid-column: span 2; background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #2563eb;">
+          <label style="color: #60a5fa; font-weight: bold; font-size: 0.8rem; margin-bottom: 6px;">🎙️ Audio to Text (Transkripsi Lirik Otomatis dari Suara / Audio):</label>
+          <div style="display:flex; gap:8px; margin-bottom: 8px;">
+            <select id="sttLangSelect" style="width: 40%;">
+              <option value="id-ID" selected>🇮🇩 Bahasa Indonesia</option>
+              <option value="jv-ID">🇮🇩 Bahasa Jawa</option>
+              <option value="ar-SA">🇸🇦 Bahasa Arab (Qur'an/Nasyid)</option>
+              <option value="en-US">🇺🇸 Bahasa Inggris</option>
+            </select>
+            <button class="btn-stt" id="sttBtn" onclick="toggleAudioToText()">🎙️ Mulai Dengar Audio -> Teks</button>
+          </div>
+          <small style="color: #94a3b8; font-size: 0.7rem; display: block;">*Putar lagu lalu klik tombol ini untuk mengubah audio/suara menjadi teks lirik bertimestamp [LRC] secara otomatis.</small>
+        </div>
+
         <div style="grid-column: span 2;">
-          <label>3. Cari Lirik Lagu .LRC Otomatis:</label>
+          <label>3. Cari Lirik Lagu .LRC Otomatis (Database Internet):</label>
           <div style="display:flex; gap:5px;">
             <input type="text" id="lyricQueryInput" placeholder="Judul lagu ex: Denny Caknan Kartonyono Medot Janji">
             <button style="width:100px; background:#0d9488; font-weight:bold;" onclick="searchSongLyricsOnly()">Cari Lirik</button>
@@ -277,7 +302,7 @@
         </div>
 
         <div style="grid-column: span 2;">
-          <label>Editor Lirik Sync Format .LRC (Otomatis Terisi / Edit Manual):</label>
+          <label>Editor Lirik Sync Format .LRC (Otomatis Terisi dari Transkripsi / Edit Manual):</label>
           <textarea id="lrcManualInput" placeholder="[00:06.78] Lirik lagu baris pertama&#10;[00:12.45] Lirik lagu baris kedua..."></textarea>
         </div>
       </div>
@@ -338,6 +363,10 @@
     let mediaRecorder, recordedChunks = [], isRecording = false;
     let canvasAnimationId;
 
+    // Speech-to-Text Recognition Engine
+    let recognition = null;
+    let isListening = false;
+
     const audio = document.getElementById('audioElement');
     const bgVideo = document.getElementById('bgVideo');
     const bgImage = document.getElementById('bgImage');
@@ -349,6 +378,7 @@
       initSyncEngine();
       updateChannelName();
       updateTextSettings();
+      initSpeechRecognition();
     };
 
     function updateChannelName() {
@@ -439,6 +469,79 @@
       alert("URL MP3 dimuat! Klik 'Putar Media Sekarang'");
     }
 
+    /* FITUR AUDIO TO TEXT (SPEECH RECOGNITION AI) */
+    function initSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        console.warn("Browser tidak mendukung Web Speech Recognition API.");
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = false;
+
+      recognition.onresult = (event) => {
+        const lastResultIndex = event.results.length - 1;
+        const transcript = event.results[lastResultIndex][0].transcript.trim();
+
+        if (transcript) {
+          const currentTime = audio.currentTime;
+          const mins = Math.floor(currentTime / 60);
+          const secs = Math.floor(currentTime % 60);
+          const ms = Math.floor((currentTime % 1) * 100);
+
+          const timestamp = `[${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(ms).padStart(2, '0')}]`;
+          const formattedLine = `${timestamp} ${transcript}
+`;
+
+          const textarea = document.getElementById('lrcManualInput');
+          textarea.value += formattedLine;
+
+          // Update real-time ke overlay player
+          document.getElementById('subDisplay').innerText = transcript;
+          parseLrc(textarea.value);
+        }
+      };
+
+      recognition.onerror = (err) => {
+        console.error("Speech Recognition error:", err);
+      };
+
+      recognition.onend = () => {
+        if (isListening) {
+          recognition.start();
+        } else {
+          const btn = document.getElementById('sttBtn');
+          btn.classList.remove('listening');
+          btn.innerText = "🎙️ Mulai Dengar Audio -> Teks";
+        }
+      };
+    }
+
+    function toggleAudioToText() {
+      if (!recognition) {
+        return alert("Fitur Audio to Text didukung penuh di browser Google Chrome / Edge.");
+      }
+
+      const btn = document.getElementById('sttBtn');
+      const lang = document.getElementById('sttLangSelect').value;
+
+      if (!isListening) {
+        recognition.lang = lang;
+        recognition.start();
+        isListening = true;
+        btn.classList.add('listening');
+        btn.innerText = "🔴 Mendengarkan Audio... (Klik Stop)";
+        alert("Fitur Audio to Text aktif! Silakan putar audio/lagu Anda.");
+      } else {
+        isListening = false;
+        recognition.stop();
+        btn.classList.remove('listening');
+        btn.innerText = "🎙️ Mulai Dengar Audio -> Teks";
+      }
+    }
+
     async function searchSongLyricsOnly() {
       const q = document.getElementById('lyricQueryInput').value.trim();
       if (!q) return alert("Ketik kata kunci nama penyanyi / judul lagu.");
@@ -453,7 +556,7 @@
           alert(`Lirik berhasil dimuat untuk: ${data[0].trackName} - ${data[0].artistName}`);
           document.getElementById('subDisplay').innerText = "Lirik siap dimainkan!";
         } else {
-          alert("Lirik tidak ditemukan di server. Silakan isi teks manual di area textarea.");
+          alert("Lirik tidak ditemukan di server. Silakan gunakan fitur Audio to Text atau isi teks manual.");
         }
       } catch (e) {
         alert("Gagal terhubung ke server lirik.");
@@ -533,7 +636,8 @@
 
     function parseLrc(lrcText) {
       songLyrics = [];
-      const lines = lrcText.split('\n');
+      const lines = lrcText.split('
+');
       const reg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
       lines.forEach(l => {
         const m = reg.exec(l);
@@ -645,7 +749,7 @@
         try {
           const stream = canvas.captureStream(30);
           recordedChunks = [];
-          
+
           let options = { mimeType: 'video/webm' };
           if (!MediaRecorder.isTypeSupported('video/webm')) {
             options = { mimeType: 'video/mp4' };
