@@ -2,218 +2,288 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator RAB Proyek Konstruksi</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Work Request & RAB - BINAYASA</title>
+    <!-- Tailwind CSS untuk UI Input -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- jsPDF & AutoTable CDN untuk Cetak PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.autotable.min.js"></script>
+    <!-- html2pdf.js untuk ekspor PDF presisi -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* CSS khusus untuk Dokumen Formulir */
+        .document-page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 10mm;
+            margin: auto;
+            background: white;
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #000;
+            box-sizing: border-box;
+        }
+
+        .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .doc-table th, .doc-table td {
+            border: 1px solid #000;
+            padding: 4px;
+            vertical-align: top;
+        }
+
+        .no-border-td {
+            border: none !important;
+        }
+
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+
+        /* Menyembunyikan elemen input saat cetak */
+        .editable-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: inherit;
+        }
+    </style>
 </head>
-<body class="bg-slate-100 font-sans p-4 md:p-8">
+<body class="bg-slate-200 p-4">
 
-    <div class="max-w-5xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-lg">
-        <!-- Header Aplikasi -->
-        <div class="border-b pb-4 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-800">Aplikasi Penghitungan RAB</h1>
-                <p class="text-sm text-slate-500">Rencana Anggaran Biaya Proyek & Ekspor PDF/CSV</p>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition shadow">
-                    📥 Ekspor CSV
-                </button>
-                <button onclick="exportPDF()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition shadow">
-                    📄 Ekspor PDF
-                </button>
-            </div>
-        </div>
-
-        <!-- Informasi Proyek -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
-            <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Proyek</label>
-                <input type="text" id="projectName" value="Pembangunan Rumah Type 70" class="w-full p-2 text-sm border rounded focus:ring-2 focus:ring-blue-500 outline-none">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Pemilik / Klien</label>
-                <input type="text" id="clientName" value="Budi Santoso" class="w-full p-2 text-sm border rounded focus:ring-2 focus:ring-blue-500 outline-none">
-            </div>
-        </div>
-
-        <!-- Tabel RAB -->
-        <div class="overflow-x-auto mb-6">
-            <table class="w-full text-left border-collapse text-sm" id="rabTable">
-                <thead>
-                    <tr class="bg-slate-800 text-white">
-                        <th class="p-3 border border-slate-700 w-12 text-center">No</th>
-                        <th class="p-3 border border-slate-700">Uraian Pekerjaan</th>
-                        <th class="p-3 border border-slate-700 w-24 text-center">Volume</th>
-                        <th class="p-3 border border-slate-700 w-20 text-center">Satuan</th>
-                        <th class="p-3 border border-slate-700 w-36 text-right">Harga Satuan (Rp)</th>
-                        <th class="p-3 border border-slate-700 w-36 text-right">Total (Rp)</th>
-                        <th class="p-3 border border-slate-700 w-12 text-center">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="rabBody">
-                    <!-- Dynamic Rows -->
-                </tbody>
-            </table>
-        </div>
-
-        <button onclick="addRow()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium mb-6">
-            + Tambah Baris Pekerjaan
-        </button>
-
-        <!-- Ringkasan Biaya -->
-        <div class="flex flex-col md:flex-row justify-end">
-            <div class="w-full md:w-1/2 bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
-                <div class="flex justify-between text-sm">
-                    <span class="text-slate-600">Subtotal Real Cost:</span>
-                    <span id="subtotalText" class="font-semibold">Rp 0</span>
-                </div>
-                <div class="flex justify-between text-sm items-center">
-                    <span class="text-slate-600">Overhead / Margin (%):</span>
-                    <input type="number" id="marginPercent" value="10" min="0" oninput="calculateTotal()" class="w-20 p-1 text-right border rounded text-sm">
-                </div>
-                <div class="flex justify-between text-base font-bold text-blue-700 pt-2 border-t border-slate-300">
-                    <span>GRAND TOTAL (RAB):</span>
-                    <span id="grandTotalText">Rp 0</span>
-                </div>
-            </div>
+    <!-- Tombol Aksi Webapp -->
+    <div class="max-w-[210mm] mx-auto mb-4 flex justify-between items-center bg-white p-4 rounded shadow">
+        <h2 class="font-bold text-slate-800">Formulir Work Request / RAB</h2>
+        <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-semibold">
+                📥 Export CSV
+            </button>
+            <button onclick="exportPDF()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold">
+                📄 Export PDF Presisi
+            </button>
         </div>
     </div>
 
-    <!-- Script Logika -->
+    <!-- AREA DOKUMEN WORK REQUEST (Akan di-export ke PDF) -->
+    <div id="pdfDocument" class="document-page shadow-lg">
+        
+        <!-- Header & Logo -->
+        <table class="doc-table mb-2">
+            <tr>
+                <td class="w-1/3 text-center" style="border: none;">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full border-2 border-blue-600 flex items-center justify-center font-bold text-blue-800 text-xs">B</div>
+                        <span class="text-lg font-bold text-blue-900 tracking-wider">BINAYASA</span>
+                    </div>
+                </td>
+                <td class="text-center font-bold text-base" style="border: none;">
+                    WORK REQUEST
+                </td>
+                <td style="border: none;"></td>
+            </tr>
+        </table>
+
+        <!-- Info Pemohon & Tanggal -->
+        <table class="doc-table mb-2">
+            <tr>
+                <td class="w-20 font-bold">Pemohon</td>
+                <td class="w-2 text-center">:</td>
+                <td><input type="text" class="editable-input" value="Pengelola Gedung BSN Kantor Cabang Surabaya"></td>
+                <td class="w-20 font-bold">No. WR</td>
+                <td class="w-2 text-center">:</td>
+                <td class="w-32"><input type="text" class="editable-input" value="/WR-SBY-S/ /2026"></td>
+            </tr>
+            <tr>
+                <td class="font-bold">Divisi</td>
+                <td class="text-center">:</td>
+                <td><input type="text" class="editable-input" value="Bank BSN Kantor Cabang Surabaya"></td>
+                <td class="font-bold">Tanggal</td>
+                <td class="text-center">:</td>
+                <td><input type="text" class="editable-input" value="/ /2026"></td>
+            </tr>
+        </table>
+
+        <!-- Main Layout (Permohonan + Tanda Tangan) -->
+        <table class="doc-table mb-2">
+            <tr>
+                <!-- Kiri: Uraian & Status -->
+                <td class="w-2/3 p-0" style="vertical-align: top;">
+                    <div class="p-2 border-b border-black font-bold">Uraian Permohonan :</div>
+                    <div class="p-2 min-h-[80px]">
+                        - Permohonan penggantian dan Pemindahan AC KC, dan KCP BSN Surabaya
+                    </div>
+                    <div class="p-2 border-t border-black flex gap-8">
+                        <label class="flex items-center gap-1"><input type="checkbox"> Segera</label>
+                        <label class="flex items-center gap-1"><input type="checkbox" checked> Normal</label>
+                    </div>
+                </td>
+                <!-- Kanan: Tanda Tangan Menyetujui -->
+                <td class="w-1/3 p-0" style="vertical-align: top;">
+                    <div class="p-1 text-center font-bold border-b border-black">Tanda Tangan</div>
+                    <div class="p-1 text-center font-bold border-b border-black">Menyetujui</div>
+                    <div class="h-24"></div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Tabel Rincian Pekerjaan & TTD Pembuat -->
+        <table class="doc-table">
+            <thead>
+                <tr>
+                    <th class="w-8">No</th>
+                    <th class="w-12">Qty</th>
+                    <th>Uraian</th>
+                    <th class="w-24">Hrg Satuan</th>
+                    <th class="w-24">Total harga</th>
+                    <th class="w-48">BSN Kantor Cabang Surabaya</th>
+                </tr>
+            </thead>
+            <tbody id="itemRows">
+                <!-- Data baris akan diisi oleh JS -->
+            </tbody>
+            <!-- Summary Kalkulasi Tax & Fee -->
+            <tbody>
+                <tr>
+                    <td colspan="3" rowspan="5" style="border-right: none;"></td>
+                    <td class="font-bold">Total harga</td>
+                    <td class="text-right font-bold" id="subtotalVal">Rp 535.500</td>
+                    <td rowspan="5" class="p-2" style="vertical-align: top;">
+                        <div class="text-center font-bold mb-8">Dibuat Oleh</div>
+                        <div class="text-center underline font-bold">Sutrisno</div>
+                        <div class="text-center text-xs">Kepala Unit</div>
+                        <div class="mt-2 text-xs">
+                            Dibebankan ke :<br>
+                            <label><input type="checkbox" checked> BSN Surabaya</label><br>
+                            <label><input type="checkbox"> Pengelola gedung</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>DPP 1,11</td>
+                    <td class="text-right" id="dppVal">Rp 482.432</td>
+                </tr>
+                <tr>
+                    <td>PPN 11%</td>
+                    <td class="text-right" id="ppnVal">Rp 53.068</td>
+                </tr>
+                <tr>
+                    <td>PPH 23 2%</td>
+                    <td class="text-right" id="pphVal">Rp 9.649</td>
+                </tr>
+                <tr>
+                    <td>Fee 8%</td>
+                    <td class="text-right" id="feeVal">Rp 42.840</td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="font-bold">Waktu Pekerjaan</td>
+                    <td class="font-bold">Total Harga & Pajak</td>
+                    <td class="text-right font-bold" id="grandTotalVal">Rp 641.056</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Footer Catatan & Waktu -->
+        <table class="doc-table mt-2">
+            <tr>
+                <td class="w-1/2">
+                    Diperiksa oleh :<br>
+                    Tanggal :<br>
+                    Jam :
+                </td>
+                <td class="w-1/2">
+                    Dikerjakan oleh :<br>
+                    Tanggal :<br>
+                    Jam :
+                </td>
+            </tr>
+            <tr>
+                <td class="h-16" style="vertical-align: top;">Catatan :</td>
+                <td style="vertical-align: top;" class="text-center font-bold">Persetujuan Tenant</td>
+            </tr>
+        </table>
+
+    </div>
+
     <script>
-        let items = [
-            { desc: "Pembersihan Lapangan & Pengukuran", vol: 120, unit: "m2", price: 25000 },
-            { desc: "Galian Tanah Pondasi", vol: 35, unit: "m3", price: 75000 },
-            { desc: "Pondasi Batu Kali (1:4)", vol: 18.5, unit: "m3", price: 850000 },
-            { desc: "Pasangan Dinding Bata Merah", vol: 140, unit: "m2", price: 135000 }
+        // Data Contoh Sesuai Gambar Anda
+        const items = [
+            { qty: 11, desc: "andi", price: 10500 },
+            { qty: 8, desc: "sopyan", price: 10500 },
+            { qty: 11, desc: "tris", price: 10500 },
+            { qty: 7, desc: "fandis", price: 10500 },
+            { qty: 3, desc: "ricki", price: 10500 },
+            { qty: 11, desc: "fikri", price: 10500 },
+            { qty: 0, desc: "", price: 0 },
+            { qty: 0, desc: "", price: 0 },
+            { qty: 0, desc: "", price: 0 }
         ];
 
-        function renderTable() {
-            const tbody = document.getElementById("rabBody");
+        function renderRows() {
+            const tbody = document.getElementById("itemRows");
             tbody.innerHTML = "";
+            let subtotal = 0;
 
-            items.forEach((item, index) => {
-                const rowTotal = item.vol * item.price;
+            items.forEach((item, i) => {
+                const total = item.qty * item.price;
+                subtotal += total;
+
                 const tr = document.createElement("tr");
-                tr.className = "hover:bg-slate-50";
                 tr.innerHTML = `
-                    <td class="p-2 border text-center">${index + 1}</td>
-                    <td class="p-2 border"><input type="text" value="${item.desc}" onchange="updateItem(${index}, 'desc', this.value)" class="w-full p-1 bg-transparent"></td>
-                    <td class="p-2 border text-center"><input type="number" value="${item.vol}" onchange="updateItem(${index}, 'vol', this.value)" class="w-full p-1 text-center bg-transparent"></td>
-                    <td class="p-2 border text-center"><input type="text" value="${item.unit}" onchange="updateItem(${index}, 'unit', this.value)" class="w-full p-1 text-center bg-transparent"></td>
-                    <td class="p-2 border text-right"><input type="number" value="${item.price}" onchange="updateItem(${index}, 'price', this.value)" class="w-full p-1 text-right bg-transparent"></td>
-                    <td class="p-2 border text-right font-medium">Rp ${rowTotal.toLocaleString('id-ID')}</td>
-                    <td class="p-2 border text-center">
-                        <button onclick="removeRow(${index})" class="text-red-500 hover:text-red-700 font-bold">✕</button>
-                    </td>
+                    <td class="text-center">${i + 1}</td>
+                    <td class="text-center">${item.qty || ''}</td>
+                    <td>${item.desc}</td>
+                    <td class="text-right">${item.price ? 'Rp ' + item.price.toLocaleString('id-ID') : ''}</td>
+                    <td class="text-right">${total ? 'Rp ' + total.toLocaleString('id-ID') : 'Rp 0'}</td>
+                    ${i === 0 ? '<td rowspan="9" style="border-bottom:none;"></td>' : ''}
                 `;
                 tbody.appendChild(tr);
             });
 
-            calculateTotal();
+            // Kalkulasi Pajak sesuai Rumus di Lembar Kerja
+            const dpp = Math.round(subtotal / 1.11);
+            const ppn = Math.round(dpp * 0.11);
+            const pph = Math.round(dpp * 0.02);
+            const fee = Math.round(subtotal * 0.08);
+            const grandTotal = subtotal + ppn + fee - pph; // Penyesuaian total
+
+            document.getElementById("subtotalVal").innerText = "Rp " + subtotal.toLocaleString('id-ID');
+            document.getElementById("dppVal").innerText = "Rp " + dpp.toLocaleString('id-ID');
+            document.getElementById("ppnVal").innerText = "Rp " + ppn.toLocaleString('id-ID');
+            document.getElementById("pphVal").innerText = "Rp " + pph.toLocaleString('id-ID');
+            document.getElementById("feeVal").innerText = "Rp " + fee.toLocaleString('id-ID');
+            document.getElementById("grandTotalVal").innerText = "Rp " + grandTotal.toLocaleString('id-ID');
         }
 
-        function updateItem(index, field, value) {
-            if (field === 'vol' || field === 'price') {
-                items[index][field] = parseFloat(value) || 0;
-            } else {
-                items[index][field] = value;
-            }
-            renderTable();
-        }
-
-        function addRow() {
-            items.push({ desc: "Pekerjaan Baru", vol: 1, unit: "ls", price: 0 });
-            renderTable();
-        }
-
-        function removeRow(index) {
-            items.splice(index, 1);
-            renderTable();
-        }
-
-        function calculateTotal() {
-            const subtotal = items.reduce((sum, item) => sum + (item.vol * item.price), 0);
-            const margin = parseFloat(document.getElementById("marginPercent").value) || 0;
-            const grandTotal = subtotal + (subtotal * (margin / 100));
-
-            document.getElementById("subtotalText").innerText = "Rp " + subtotal.toLocaleString('id-ID');
-            document.getElementById("grandTotalText").innerText = "Rp " + grandTotal.toLocaleString('id-ID');
-        }
-
-        // Ekspor ke CSV
-        function exportCSV() {
-            const projectName = document.getElementById("projectName").value;
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += `Rencana Anggaran Biaya (RAB) - ${projectName}\n\n`;
-            csvContent += "No,Uraian Pekerjaan,Volume,Satuan,Harga Satuan (Rp),Total (Rp)\n";
-
-            items.forEach((item, index) => {
-                const total = item.vol * item.price;
-                csvContent += `"${index + 1}","${item.desc}",${item.vol},"${item.unit}",${item.price},${total}\n`;
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `RAB_${projectName.replace(/\s+/g, '_')}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // Ekspor ke PDF
+        // Export PDF menggunakan html2pdf
         function exportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            const projectName = document.getElementById("projectName").value;
-            const clientName = document.getElementById("clientName").value;
-
-            doc.setFontSize(16);
-            doc.text("RENCANA ANGGARAN BIAYA (RAB)", 14, 20);
-
-            doc.setFontSize(10);
-            doc.text(`Proyek: ${projectName}`, 14, 28);
-            doc.text(`Klien: ${clientName}`, 14, 34);
-            doc.text(`Tanggal: ${new Date().toLocaleDateString('id-ID')}`, 14, 40);
-
-            const tableData = items.map((item, index) => [
-                index + 1,
-                item.desc,
-                item.vol,
-                item.unit,
-                "Rp " + item.price.toLocaleString('id-ID'),
-                "Rp " + (item.vol * item.price).toLocaleString('id-ID')
-            ]);
-
-            doc.autoTable({
-                startY: 46,
-                head: [['No', 'Uraian Pekerjaan', 'Vol', 'Sat', 'Harga Satuan', 'Total']],
-                body: tableData,
-                theme: 'grid',
-                headStyles: { fillColor: [30, 41, 59] }
-            });
-
-            const finalY = doc.lastAutoTable.finalY + 10;
-            const subtotal = items.reduce((sum, item) => sum + (item.vol * item.price), 0);
-            const margin = parseFloat(document.getElementById("marginPercent").value) || 0;
-            const grandTotal = subtotal + (subtotal * (margin / 100));
-
-            doc.text(`Subtotal: Rp ${subtotal.toLocaleString('id-ID')}`, 14, finalY);
-            doc.text(`Overhead/Margin (${margin}%): Rp ${(subtotal * (margin / 100)).toLocaleString('id-ID')}`, 14, finalY + 6);
-            doc.setFontSize(12);
-            doc.text(`GRAND TOTAL: Rp ${grandTotal.toLocaleString('id-ID')}`, 14, finalY + 14);
-
-            doc.save(`RAB_${projectName.replace(/\s+/g, '_')}.pdf`);
+            const element = document.getElementById('pdfDocument');
+            const opt = {
+                margin:       5,
+                filename:     'Work_Request_BINAYASA.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
         }
 
-        renderTable();
+        // Export CSV
+        function exportCSV() {
+            let csv = "No,Qty,Uraian,Harga Satuan,Total Harga\n";
+            items.forEach((item, i) => {
+                csv += `"${i+1}","${item.qty}","${item.desc}","${item.price}","${item.qty * item.price}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'Work_Request.csv';
+            link.click();
+        }
+
+        renderRows();
     </script>
 </body>
 </html>
