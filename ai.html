@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Studio Video Lirik, AI Generator & Dynamic VO HD 720p</title>
+  <title>Studio Video Lirik, AI Text-to-Video & Dynamic VO HD 720p</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -183,6 +183,7 @@
 
     .btn-stt { background: #2563eb; border: none; font-weight: bold; cursor: pointer; color: white; }
     .btn-ai { background: #9333ea; border: none; font-weight: bold; cursor: pointer; color: white; }
+    .btn-video-ai { background: #e11d48; border: none; font-weight: bold; cursor: pointer; color: white; }
     .btn-tts { background: #059669; border: none; font-weight: bold; cursor: pointer; color: white; }
 
     .mode-panel { display: none; }
@@ -215,7 +216,7 @@
       <img id="bgImage" class="bg-media active" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1280&q=80" crossOrigin="anonymous">
 
       <video id="bgVideo" class="bg-media" autoplay loop muted playsinline crossOrigin="anonymous">
-        <source src="https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4" type="video/mp4">
+        <source id="videoSource" src="https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4" type="video/mp4">
       </video>
 
       <!-- OVERLAY SUBTITLE DINAMIS KATA PER KATA -->
@@ -253,7 +254,29 @@
       </div>
     </div>
 
-    <!-- TOOL 1: TEXT TO SPEECH / VO DENGAN TAMPILAN DINAMIS -->
+    <!-- TOOL AI FITUR BARU: TEXT-TO-VIDEO GENERATOR -->
+    <div class="control-card" style="border: 1px solid #e11d48; background: #131722;">
+      <div style="grid-column: span 2;">
+        <label style="color: #fb7185; font-weight: bold; font-size: 0.8rem;">🎬 AI Text-to-Video Generator (Ubah Teks Jadi Video Background Movable):</label>
+        <div style="display:flex; gap:8px; margin-top:4px;">
+          <input type="text" id="aiVideoPromptInput" placeholder="Ketik prompt video ex: clouds flying over ocean cinematic, flowing river in green forest 4k" value="clouds flying over ocean sunset cinematic">
+          <button class="btn-video-ai" style="width: 170px;" onclick="generateAIVideo()">🎬 Buat Video AI</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOL AI IMAGE GENERATOR -->
+    <div class="control-card" style="border: 1px solid #9333ea; background: #131722;">
+      <div style="grid-column: span 2;">
+        <label style="color: #c084fc; font-weight: bold; font-size: 0.8rem;">🎨 Tool AI Gambar (Text-to-Image) -> Dipasang di Player:</label>
+        <div style="display:flex; gap:8px; margin-top:4px;">
+          <input type="text" id="aiPromptInput" placeholder="Ketik deskripsi gambar..." value="beautiful nature sunset beach cinematic wallpaper">
+          <button class="btn-ai" style="width: 150px;" onclick="generateAIImage()">🎨 Buat Gambar AI</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOL TEXT TO SPEECH / VO -->
     <div class="control-card" style="border: 1px solid #059669; background: #131722;">
       <div style="grid-column: span 2;">
         <label style="color: #34d399; font-weight: bold; font-size: 0.8rem;">🗣️ Text to Speech / Voice Over (Sinkron Kata per Kata di Player):</label>
@@ -264,17 +287,6 @@
             <option value="en-US">🇺🇸 Bahasa Inggris</option>
           </select>
           <button class="btn-tts" style="width: 160px;" onclick="speakTTSDynamic()">🗣️ Ucapkan VO Dinamis</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TOOL 2: AI IMAGE GENERATOR -->
-    <div class="control-card" style="border: 1px solid #9333ea; background: #131722;">
-      <div style="grid-column: span 2;">
-        <label style="color: #c084fc; font-weight: bold; font-size: 0.8rem;">🎨 Tool AI Gambar -> Langsung Dipasang di Player:</label>
-        <div style="display:flex; gap:8px; margin-top:4px;">
-          <input type="text" id="aiPromptInput" placeholder="Ketik deskripsi gambar..." value="beautiful nature sunset beach cinematic wallpaper">
-          <button class="btn-ai" style="width: 150px;" onclick="generateAIImage()">🎨 Buat Gambar AI</button>
         </div>
       </div>
     </div>
@@ -412,7 +424,35 @@
       initSpeechRecognition();
     };
 
-    /* FITUR VO DINAMIS: SPEECH SYNTHESIS SINKRON KATA PER KATA */
+    /* FITUR BARU: AI TEXT-TO-VIDEO GENERATOR */
+    function generateAIVideo() {
+      const prompt = document.getElementById('aiVideoPromptInput').value.trim();
+      if (!prompt) return alert("Masukkan prompt video terlebih dahulu.");
+
+      document.getElementById('subDisplay').innerText = "🎬 Sedang memproses AI Video...";
+
+      const seed = Math.floor(Math.random() * 100000);
+      const encodedPrompt = encodeURIComponent(prompt);
+      const aiVideoUrl = `https://video.pollinations.ai/prompt/${encodedPrompt}?width=1280&height=720&seed=${seed}`;
+
+      bgVideo.src = aiVideoUrl;
+      switchBgType('video');
+      document.getElementById('bgTypeSelect').value = 'video';
+
+      bgVideo.onloadeddata = () => {
+        bgVideo.play();
+        document.getElementById('subDisplay').innerText = "Video AI dipasang!";
+      };
+
+      bgVideo.onerror = () => {
+        // Fallback jika video gagal load
+        bgVideo.src = "https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4";
+        bgVideo.play();
+        alert("Gagal memuat video AI spesifik. Menggunakan video latar standar.");
+      };
+    }
+
+    /* FITUR VO DINAMIS: SPEECH SYNTHESIS */
     function speakTTSDynamic() {
       const text = document.getElementById('ttsTextInput').value.trim();
       const lang = document.getElementById('ttsVoiceSelect').value;
@@ -425,11 +465,9 @@
         utterance.lang = lang;
         utterance.rate = 0.9;
 
-        // Pecah kalimat menjadi array kata untuk animasi per-kata
         activeWords = text.split(' ');
         renderWordSpans(activeWords);
 
-        // Event saat setiap kata diucapkan oleh Voice Over
         utterance.onboundary = (event) => {
           if (event.name === 'word') {
             const charIndex = event.charIndex;
@@ -445,7 +483,7 @@
         };
 
         utterance.onend = () => {
-          highlightWordSpan(-1); // Reset
+          highlightWordSpan(-1);
         };
 
         window.speechSynthesis.speak(utterance);
@@ -717,7 +755,6 @@
             activeWords = lineText.split(' ');
             renderWordSpans(activeWords);
 
-            // Hitung kecepatan kata dinamis untuk lagu
             const nextTime = (songLyrics[currentSongLyricIndex + 1]) ? songLyrics[currentSongLyricIndex + 1].time : audio.duration;
             const lineDuration = nextTime - songLyrics[currentSongLyricIndex].time;
             const timePerWord = lineDuration / activeWords.length;
@@ -894,7 +931,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Render_Dynamic_VO_${Date.now()}.mp4`;
+            a.download = `Render_AIVideo_${Date.now()}.mp4`;
             a.click();
             alert("Perekaman Selesai! Video dinamis berhasil disimpan.");
           };
