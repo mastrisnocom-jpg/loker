@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Qur'an Video Player - Dynamic Channel & Auto Sync Audio</title>
+  <title>Qur'an Video Player - 720p HD, Equalizer & Pitch Control</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,7 +23,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
-    body { background-color: var(--bg); color: white; padding-bottom: 120px; }
+    body { background-color: var(--bg); color: white; padding-bottom: 130px; }
 
     .player-wrapper {
       width: 100%;
@@ -70,7 +70,6 @@
       text-shadow: 0 1px 3px rgba(0,0,0,0.8);
     }
 
-    /* WATERMARK DINAMIS (Dapat diubah via Form Input) */
     .channel-watermark {
       position: absolute;
       top: 15px;
@@ -226,7 +225,6 @@
     <div class="video-player-container" id="playerContainer">
       <div class="surah-badge" id="surahBadge">Memuat Surah...</div>
 
-      <!-- WATERMARK KUSTOM NAMA CHANNEL -->
       <div class="channel-watermark" id="channelDisplay">
         <span>▶</span> Mukjizat doa
       </div>
@@ -244,25 +242,40 @@
     </div>
   </div>
 
+  <!-- Canvas HD 1280x720 untuk Perekaman HD -->
   <canvas id="exportCanvas" width="1280" height="720"></canvas>
 
   <div class="controls-wrapper">
-    <!-- BARIS 1: UPLOAD & FORM NAMA CHANNEL -->
+    <!-- BARIS 1: NAMA CHANNEL, SURAH & FITUR PITCH/EQUALIZER -->
     <div class="control-card">
       <div>
         <label>Nama Channel Youtube:</label>
-        <input type="text" id="channelNameInput" value="Mukjizat doa" placeholder="Masukkan nama channel..." oninput="updateChannelName()">
+        <input type="text" id="channelNameInput" value="Mukjizat doa" placeholder="Nama channel..." oninput="updateChannelName()">
       </div>
 
       <div>
-        <label>Pilih Surah (Teks Arab):</label>
+        <label>Pilih Surah:</label>
         <select id="surahSelect" onchange="loadSurah(this.value)">
-          <option value="">Memuat daftar surah...</option>
+          <option value="">Memuat surah...</option>
         </select>
       </div>
 
       <div>
-        <label>Unggah MP3 Audio Sendiri:</label>
+        <label>Pengatur Pitch / Nada Audio: <b id="valPitch">1.0x</b></label>
+        <input type="range" id="pitchSlider" min="0.7" max="1.3" step="0.05" value="1.0" oninput="updatePitch(this.value)">
+      </div>
+
+      <div>
+        <label>Gaya Visualizer Equalizer:</label>
+        <select id="eqStyle">
+          <option value="bars">Spektrum Batang Gold</option>
+          <option value="wave">Gelombang Audio Sine</option>
+          <option value="none">Matikan Equalizer</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Unggah Audio MP3 Sendiri:</label>
         <input type="file" id="uploadAudio" accept="audio/*" onchange="handleAudioUpload(event)">
       </div>
 
@@ -277,12 +290,12 @@
       </div>
 
       <div>
-        <label>Ekspor Video MP4:</label>
-        <button class="btn-download" id="recBtn" onclick="toggleRecord()">🎥 Rekam & Unduh Video</button>
+        <label>Ekspor Video HD 720p:</label>
+        <button class="btn-download" id="recBtn" onclick="toggleRecord()">🎥 Rekam & Unduh 720p</button>
       </div>
     </div>
 
-    <!-- BARIS 2: PENGATURAN TEKS -->
+    <!-- BARIS 2: PENGATURAN TEKS SUBTITLE -->
     <div class="control-card">
       <div class="setting-group">
         <label>Ukuran Teks Arab: <b id="valArabic">1.6rem</b></label>
@@ -316,8 +329,8 @@
 
   <div class="modal-overlay" id="downloadModal">
     <div class="modal-box">
-      <h3>🎉 Perekaman Selesai!</h3>
-      <p>Video Al-Qur'an siap disimpan dan diunggah ke YouTube Anda.</p>
+      <h3>🎉 Ekspor HD 720p Selesai!</h3>
+      <p>Video Al-Qur'an siap disimpan langsung ke HP/Komputer Anda.</p>
       <button class="btn-save" onclick="downloadVideoToDevice()">💾 Simpan Ke HP Sekarang</button>
     </div>
   </div>
@@ -340,7 +353,9 @@
     let exportedBlob = null;
     let canvasAnimationId = null;
 
-    let audioCtx, audioSource, audioDestination;
+    // Web Audio API Nodes untuk Equalizer & Pitch
+    let audioCtx, audioSource, audioAnalyser, audioDestination;
+    let dataArray, bufferLength;
 
     const audio = document.getElementById('audioElement');
     const bgVideo = document.getElementById('bgVideo');
@@ -354,10 +369,15 @@
       updateChannelName();
     };
 
-    // 1. Mengubah Nama Channel Secara Dinamis
     function updateChannelName() {
       const name = document.getElementById('channelNameInput').value || "Mukjizat doa";
       document.getElementById('channelDisplay').innerHTML = `<span>▶</span> ${name}`;
+    }
+
+    function updatePitch(val) {
+      document.getElementById('valPitch').innerText = val + 'x';
+      audio.playbackRate = parseFloat(val);
+      audio.preservesPitch = false; // Memungkinkan nada/pitch audio berubah
     }
 
     function updateTextSettings() {
@@ -451,7 +471,7 @@
         isCustomAudio = true;
         currentAyatIndex = 0;
         renderAyat(0);
-        document.getElementById('playingTitle').innerText = `Audio Lokal Terpasang: ${file.name}`;
+        document.getElementById('playingTitle').innerText = `Audio Sendiri: ${file.name}`;
       }
     }
 
@@ -470,7 +490,6 @@
         const durationMs = audio.duration * 1000;
         const currentMs = audio.currentTime * 1000;
 
-        // Auto Sync Teks jika Menggunakan Audio MP3 Unggahan Sendiri
         if (isCustomAudio && currentVerses.length > 1) {
           const ayatIndexByTime = Math.floor((currentMs / durationMs) * currentVerses.length);
           if (ayatIndexByTime !== currentAyatIndex && ayatIndexByTime < currentVerses.length) {
@@ -506,35 +525,68 @@
       });
     }
 
-    /* RENDER CANVAS DENGAN NAMA CHANNEL CUSTOM DARI INPUT */
+    /* DRAW CANVAS RENDERER RESOLUSI HD 720P + EQUALIZER */
     function drawCanvasFrame() {
       if (!isRecording) return;
 
+      // Draw Background Video ke Canvas 1280x720
       ctx.drawImage(bgVideo, 0, 0, canvas.width, canvas.height);
 
+      // Gradient Shadow Bawah
       const grad = ctx.createLinearGradient(0, canvas.height - 250, 0, canvas.height);
       grad.addColorStop(0, 'rgba(0,0,0,0)');
       grad.addColorStop(1, 'rgba(0,0,0,0.85)');
       ctx.fillStyle = grad;
       ctx.fillRect(0, canvas.height - 250, canvas.width, 250);
 
-      // Render Watermark Channel Sesuai Input User
+      // RENDER AUDIO EQUALIZER
+      const eqStyle = document.getElementById('eqStyle').value;
+      if (eqStyle !== 'none' && audioAnalyser) {
+        audioAnalyser.getByteFrequencyData(dataArray);
+
+        if (eqStyle === 'bars') {
+          const barWidth = (canvas.width / bufferLength) * 2.5;
+          let x = 0;
+          for (let i = 0; i < bufferLength; i++) {
+            const barHeight = (dataArray[i] / 255) * 80;
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillRect(x, canvas.height - barHeight - 20, barWidth - 2, barHeight);
+            x += barWidth;
+          }
+        } else if (eqStyle === 'wave') {
+          ctx.beginPath();
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#fbbf24';
+          const sliceWidth = canvas.width / bufferLength;
+          let x = 0;
+          for (let i = 0; i < bufferLength; i++) {
+            const v = dataArray[i] / 128.0;
+            const y = (v * 40) + (canvas.height - 100);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+            x += sliceWidth;
+          }
+          ctx.stroke();
+        }
+      }
+
+      // Render Watermark Channel Pojok Kanan Atas
       const channelName = document.getElementById('channelNameInput').value || "Mukjizat doa";
-      ctx.font = 'bold 22px Inter, sans-serif';
+      ctx.font = 'bold 24px Inter, sans-serif';
       ctx.fillStyle = '#fbbf24';
       ctx.textAlign = 'right';
       ctx.shadowColor = "rgba(0,0,0,0.9)";
       ctx.shadowBlur = 6;
-      ctx.fillText(`▶ ${channelName}`, canvas.width - 30, 45);
+      ctx.fillText(`▶ ${channelName}`, canvas.width - 40, 50);
 
-      // Gambar Teks Terjemahan
+      // Render Teks Terjemahan
       ctx.font = '22px Inter, sans-serif';
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
       const transText = document.getElementById('translationDisplay').innerText;
       ctx.fillText(transText, 640, 640);
 
-      // Gambar Teks Arab
+      // Render Teks Arab
       ctx.font = 'bold 36px Amiri, serif';
       ctx.fillStyle = '#fbbf24';
       const arabText = document.getElementById('arabicDisplay').innerText;
@@ -550,12 +602,22 @@
 
       if (!isRecording) {
         try {
+          // Stream Canvas HD 720p pada 30 FPS
           const canvasStream = canvas.captureStream(30);
 
           if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             audioSource = audioCtx.createMediaElementSource(audio);
+            
+            // Analyser Node untuk Equalizer
+            audioAnalyser = audioCtx.createAnalyser();
+            audioAnalyser.fftSize = 64;
+            bufferLength = audioAnalyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+
             audioDestination = audioCtx.createMediaStreamDestination();
+            
+            audioSource.connect(audioAnalyser);
             audioSource.connect(audioDestination);
             audioSource.connect(audioCtx.destination);
           }
@@ -567,7 +629,7 @@
 
           recordedChunks = [];
           
-          let options = { mimeType: 'video/webm;codecs=vp8,opus' };
+          let options = { mimeType: 'video/webm;codecs=vp8,opus', videoBitsPerSecond: 2500000 }; // Target Bitrate HD 720p
           if (!MediaRecorder.isTypeSupported(options.mimeType)) {
             options = { mimeType: 'video/webm' };
           }
@@ -594,12 +656,12 @@
           drawCanvasFrame();
           startPlay();
         } catch (err) {
-          alert("Gagal memulai perekaman video.");
+          alert("Gagal memulai perekaman video HD.");
         }
       } else {
         mediaRecorder.stop();
         isRecording = false;
-        recBtn.innerText = "🎥 Rekam & Unduh Video";
+        recBtn.innerText = "🎥 Rekam & Unduh 720p";
         recBtn.style.background = "#d97706";
       }
     }
@@ -616,7 +678,7 @@
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        a.download = `${cleanName}_Quran_Video_${Date.now()}.webm`;
+        a.download = `${cleanName}_HD720p_${Date.now()}.webm`;
         document.body.appendChild(a);
         a.click();
         
