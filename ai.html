@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Islami & Song Video Studio HD 720p - Auto MP3 & Lyrics</title>
+  <title>Islami & Song Video Studio HD 720p - Complete Fixed</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,6 +29,7 @@
       padding: 0 15px;
     }
 
+    /* CONTAINER VIDEO HD 16:9 */
     .video-player-container {
       position: relative;
       width: 100%;
@@ -84,12 +85,18 @@
       color: #cbd5e1;
     }
 
+    /* OVERLAY SUBTITLE TEKS */
     .subtitle-overlay {
       position: relative;
       z-index: 10;
       width: 90%;
+      max-height: 80%;
       margin: 20px;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
 
     .arabic-text {
@@ -100,6 +107,8 @@
       margin-bottom: 6px;
       color: #ffffff;
       text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
+      word-wrap: break-word;
+      max-width: 100%;
     }
 
     .word { display: inline-block; padding: 0 3px; transition: all 0.15s ease; }
@@ -111,6 +120,8 @@
       line-height: 1.4;
       font-weight: 500;
       text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95);
+      word-wrap: break-word;
+      max-width: 100%;
     }
 
     .controls-wrapper {
@@ -128,6 +139,13 @@
       gap: 12px;
       border: 1px solid #334155;
       margin-bottom: 12px;
+    }
+
+    .setting-group {
+      background: #0f172a;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #334155;
     }
 
     label { display: block; font-size: 0.72rem; color: #94a3b8; margin-bottom: 4px; }
@@ -152,19 +170,21 @@
     .mode-panel.active { display: block; }
 
     .song-results {
-      max-height: 120px;
+      max-height: 140px;
       overflow-y: auto;
       background: #0f172a;
-      border: 1px solid #334155;
+      border: 1px solid #38bdf8;
       border-radius: 6px;
-      margin-top: 4px;
+      margin-top: 6px;
     }
 
     .song-item {
-      padding: 6px 10px;
+      padding: 8px 10px;
       font-size: 0.78rem;
       cursor: pointer;
       border-bottom: 1px solid #1e293b;
+      display: flex;
+      justify-content: space-between;
     }
     .song-item:hover { background: #0284c7; }
 
@@ -186,7 +206,7 @@
 <body>
 
   <div class="player-wrapper">
-    <div class="video-player-container">
+    <div class="video-player-container" id="playerContainer">
       <div class="info-badge" id="infoBadge">Mode Al-Qur'an</div>
       <div class="channel-watermark" id="channelDisplay">▶ Mukjizat doa</div>
 
@@ -198,7 +218,7 @@
       </video>
 
       <!-- OVERLAY SUBTITLE TEKS -->
-      <div class="subtitle-overlay">
+      <div class="subtitle-overlay" id="subtitleOverlay">
         <div class="arabic-text" id="arabicDisplay">
           <span class="word">Klik</span> <span class="word">Putar</span>
         </div>
@@ -257,8 +277,8 @@
         <div style="grid-column: span 2;">
           <label>Cari Lagu & Audio MP3 Otomatis (Internet):</label>
           <div style="display:flex; gap:5px;">
-            <input type="text" id="songQuery" placeholder="Ketik kata kunci musik/lagu ex: Instrument, Piano, Relaxing...">
-            <button style="width:90px; background:#0284c7; font-weight:bold;" onclick="searchSongAndLyrics()">Cari Lagu</button>
+            <input type="text" id="songQuery" placeholder="Ketik kata kunci ex: Relaxing, Piano, Acoustic, Instrumental...">
+            <button style="width:100px; background:#0284c7; font-weight:bold;" onclick="searchSongAndLyrics()">Cari Lagu</button>
           </div>
           <div class="song-results" id="songResults" style="display:none;"></div>
         </div>
@@ -272,6 +292,19 @@
           <label>Lirik Format .LRC (Otomatis / Manual):</label>
           <textarea id="lrcManualInput" placeholder="[00:12.30] Lirik lagu di sini..."></textarea>
         </div>
+      </div>
+    </div>
+
+    <!-- PANEL KHUSUS: PENGATUR UKURAN TEKS -->
+    <div class="control-card">
+      <div class="setting-group">
+        <label>Ukuran Teks Arab: <b id="valArabic">1.6rem</b></label>
+        <input type="range" id="sizeArabic" min="0.8" max="2.8" step="0.1" value="1.6" oninput="updateTextSettings()">
+      </div>
+
+      <div class="setting-group">
+        <label>Ukuran Terjemahan/Lirik: <b id="valTrans">0.9rem</b></label>
+        <input type="range" id="sizeTrans" min="0.5" max="1.6" step="0.05" value="0.9" oninput="updateTextSettings()">
       </div>
     </div>
 
@@ -344,11 +377,24 @@
       getSurahList();
       initSyncEngine();
       updateChannelName();
+      updateTextSettings();
     };
 
     function updateChannelName() {
       const name = document.getElementById('channelNameInput').value || "Mukjizat doa";
       document.getElementById('channelDisplay').innerHTML = `▶ ${name}`;
+    }
+
+    /* PENGATUR UKURAN TEKS TERHUBUNG REAL-TIME */
+    function updateTextSettings() {
+      const arabicSize = document.getElementById('sizeArabic').value + 'rem';
+      const transSize = document.getElementById('sizeTrans').value + 'rem';
+
+      document.getElementById('valArabic').innerText = arabicSize;
+      document.getElementById('valTrans').innerText = transSize;
+
+      document.documentElement.style.setProperty('--arabic-size', arabicSize);
+      document.documentElement.style.setProperty('--sub-size', transSize);
     }
 
     function switchContentMode(mode) {
@@ -398,7 +444,7 @@
       }
     }
 
-    /* PENCARIAN AUDIO MP3 & LIRIK OTOMATIS CARI DI INTERNET */
+    /* PENCARIAN AUDIO MP3 OTOMATIS DARI SERVER PUBLIK AMEIN */
     async function searchSongAndLyrics() {
       const q = document.getElementById('songQuery').value;
       if (!q) return alert("Masukkan kata kunci lagu terlebih dahulu.");
@@ -408,33 +454,35 @@
       resultsContainer.innerHTML = '<div style="padding:8px; font-size:0.75rem;">Mencari file lagu MP3...</div>';
 
       try {
-        // Cari Audio MP3 via API Free Music Archive
-        const resAudio = await fetch(`https://freemusicarchive.org/api/get/tracks.json?api_key=60A3B01D429A2E33&limit=5&q=${encodeURIComponent(q)}`);
+        // Menggunakan API Jamendo Client Publik
+        const resAudio = await fetch(`https://api.jamendo.com/v3.0/tracks/?client_id=56d30270&format=json&limit=5&search=${encodeURIComponent(q)}`);
         const dataAudio = await resAudio.json();
 
         let html = '';
-        if (dataAudio.aTracks && dataAudio.aTracks.length > 0) {
-          dataAudio.aTracks.forEach(track => {
+        if (dataAudio.results && dataAudio.results.length > 0) {
+          dataAudio.results.forEach(track => {
             html += `
-              <div class="song-item" onclick="selectOnlineAudio('${track.track_file_url}', '${track.track_title}')">
-                🎵 <b>${track.track_title}</b> (${track.artist_name || 'Free Audio'})
+              <div class="song-item" onclick="selectOnlineAudio('${track.audio}', '${track.name}')">
+                <span>🎵 <b>${track.name}</b></span>
+                <span style="color:#38bdf8;">▶ Putar</span>
               </div>
             `;
           });
         } else {
-          // Fallback Contoh Audio Gratis
+          // Fallback Lagu
           html = `
-            <div class="song-item" onclick="selectOnlineAudio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', 'Instrumental Sound 1')">🎵 Audio Instrumental Relaxing 1</div>
-            <div class="song-item" onclick="selectOnlineAudio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', 'Instrumental Sound 2')">🎵 Audio Instrumental Relaxing 2</div>
+            <div class="song-item" onclick="selectOnlineAudio('https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3', 'Acoustic Guitar Soft')">🎵 Acoustic Guitar Soft</div>
+            <div class="song-item" onclick="selectOnlineAudio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3', 'Relaxing Piano Ambient')">🎵 Relaxing Piano Ambient</div>
           `;
         }
 
         resultsContainer.innerHTML = html;
-
-        // Sekaligus Cari Lirik Otomatis
         searchLyricsOnly(q);
       } catch (err) {
-        resultsContainer.innerHTML = '<div style="padding:8px; font-size:0.75rem; color:#ef4444;">Gagal memuat lagu otomatis. Silakan gunakan MP3 sendiri.</div>';
+        resultsContainer.innerHTML = `
+          <div class="song-item" onclick="selectOnlineAudio('https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3', 'Acoustic Guitar Soft')">🎵 Acoustic Guitar Soft (Contoh)</div>
+          <div class="song-item" onclick="selectOnlineAudio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3', 'Relaxing Piano Ambient')">🎵 Relaxing Piano Ambient (Contoh)</div>
+        `;
       }
     }
 
@@ -442,7 +490,7 @@
       audio.src = url;
       document.getElementById('playingTitle').innerText = `Lagu Dipilih: ${title}`;
       document.getElementById('songResults').style.display = 'none';
-      alert(`Berhasil memuat MP3 lagu: ${title}`);
+      alert(`Berhasil memuat audio: ${title}`);
     }
 
     async function searchLyricsOnly(query) {
