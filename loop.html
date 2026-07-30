@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Auto Video Looper</title>
   
-  <!-- Menggunakan FFmpeg 0.12+ UMD Build (Bebas dari masalah SharedArrayBuffer) -->
+  <!-- FFmpeg 0.12+ UMD Build (Bebas Error SharedArrayBuffer) -->
   <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.7/dist/umd/ffmpeg.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/util.umd.js"></script>
 
@@ -56,37 +56,10 @@
       margin-bottom: 20px;
     }
 
-    .setting-group {
-      margin-bottom: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    label {
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-
-    select, input[type="number"] {
-      background: var(--bg);
-      border: 1px solid var(--muted);
-      color: var(--text);
-      padding: 10px;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      outline: none;
-    }
-
-    .custom-input-box {
-      display: none;
-      margin-top: 8px;
-    }
-
     .upload-box {
       border: 2px dashed var(--muted);
       border-radius: 8px;
-      padding: 30px 20px;
+      padding: 25px 20px;
       text-align: center;
       cursor: pointer;
       transition: border-color 0.2s;
@@ -99,6 +72,83 @@
 
     input[type="file"] {
       display: none;
+    }
+
+    .setting-group {
+      margin-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    input[type="number"] {
+      background: var(--bg);
+      border: 1px solid var(--muted);
+      color: var(--text);
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .info-card {
+      background: var(--bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+    }
+
+    .info-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .info-label {
+      color: var(--muted);
+    }
+
+    .info-value {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .highlight {
+      color: #38bdf8;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn:hover:not(:disabled) {
+      background-color: var(--accent-hover);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     .status-container {
@@ -119,7 +169,7 @@
     .log-text {
       font-size: 0.8rem;
       color: var(--muted);
-      max-height: 100px;
+      max-height: 80px;
       overflow-y: auto;
       font-family: monospace;
     }
@@ -143,39 +193,40 @@
       font-weight: 600;
       margin-top: 15px;
     }
-
-    .download-btn:hover {
-      background-color: var(--accent-hover);
-    }
   </style>
 </head>
 <body>
 
   <div class="container">
     <h1>Instant Video Looper</h1>
-    <p class="subtitle">Otomatis menggabungkan video tanpa re-encoding saat file dipilih.</p>
+    <p class="subtitle">Upload video, tentukan jumlah perulangan (loop), dan dapatkan estimasi durasi hasilnya.</p>
 
-    <!-- SETTING DURASI TARGET -->
+    <!-- AREA UPLOAD VIDEO -->
+    <div class="upload-box" id="uploadBox" onclick="document.getElementById('videoInput').click()">
+      <span id="boxLabel">Memuat engine FFmpeg... Mohon tunggu.</span>
+      <input type="file" id="videoInput" accept="video/*" disabled onchange="handleVideoUpload(event)">
+    </div>
+
+    <!-- SETTING JUMLAH LOOP -->
     <div class="setting-group">
-      <label for="targetDuration">Target Durasi Hasil Video:</label>
-      <select id="targetDuration" onchange="toggleCustomInput()">
-        <option value="3600" selected>1 Jam (60 Menit)</option>
-        <option value="1800">30 Menit</option>
-        <option value="900">15 Menit</option>
-        <option value="300">5 Menit</option>
-        <option value="custom">Custom (Menit)</option>
-      </select>
-      
-      <div class="custom-input-box" id="customInputBox">
-        <input type="number" id="customMinutes" placeholder="Masukkan durasi dalam menit (misal: 45)" min="1">
+      <label for="loopCount">Jumlah Perulangan (Loop):</label>
+      <input type="number" id="loopCount" value="60" min="1" placeholder="Misal: 60" oninput="calculateOutputDuration()">
+    </div>
+
+    <!-- INFORMASI HASIL DURASI AUTOMATIS -->
+    <div class="info-card" id="infoCard">
+      <div class="info-row">
+        <span class="info-label">Durasi Video Asli:</span>
+        <span class="info-value" id="originalDurationText">00:00</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Hasil Estimasi Durasi Akhir:</span>
+        <span class="info-value highlight" id="estimatedDurationText">0 Menit</span>
       </div>
     </div>
 
-    <!-- AREA UPLOAD -->
-    <div class="upload-box" id="uploadBox" onclick="document.getElementById('videoInput').click()">
-      <span id="boxLabel">Memuat engine FFmpeg... Mohon tunggu.</span>
-      <input type="file" id="videoInput" accept="video/*" disabled onchange="startAutoLoop(event)">
-    </div>
+    <!-- TOMBOL PROSES -->
+    <button id="processBtn" class="btn" onclick="startLoopProcess()" disabled>Mulai Loop Video</button>
 
     <!-- STATUS PROSES -->
     <div class="status-container" id="statusContainer">
@@ -183,6 +234,7 @@
       <div class="log-text" id="logText"></div>
     </div>
 
+    <!-- PREVIEW & DOWNLOAD -->
     <video id="previewVideo" controls></video>
     <a id="downloadBtn" class="download-btn" download="video_loop.mp4">Unduh Hasil Video</a>
   </div>
@@ -191,44 +243,39 @@
     const { FFmpeg } = FFmpegWASM;
     const { fetchFile } = FFmpegUtil;
     let ffmpeg = null;
+    let selectedFile = null;
+    let videoDuration = 0; // dalam detik
 
     const boxLabel = document.getElementById('boxLabel');
     const videoInput = document.getElementById('videoInput');
+    const infoCard = document.getElementById('infoCard');
+    const originalDurationText = document.getElementById('originalDurationText');
+    const estimatedDurationText = document.getElementById('estimatedDurationText');
+    const processBtn = document.getElementById('processBtn');
+    
     const statusContainer = document.getElementById('statusContainer');
     const statusText = document.getElementById('statusText');
     const logText = document.getElementById('logText');
     const previewVideo = document.getElementById('previewVideo');
     const downloadBtn = document.getElementById('downloadBtn');
 
-    function toggleCustomInput() {
-      const select = document.getElementById('targetDuration');
-      const customBox = document.getElementById('customInputBox');
-      if (select.value === 'custom') {
-        customBox.style.display = 'block';
-      } else {
-        customBox.style.display = 'none';
-      }
-    }
-
-    // Load FFmpeg 0.12 Core secara aman tanpa butuh SharedArrayBuffer
+    // Inisialisasi FFmpeg
     window.addEventListener('load', async () => {
       try {
         statusContainer.style.display = 'block';
         statusText.textContent = "Mengunduh & Menyiapkan Engine FFmpeg...";
 
         ffmpeg = new FFmpeg();
-        
         ffmpeg.on('log', ({ message }) => {
           logText.textContent = message;
         });
 
-        // Load core single-thread
         await ffmpeg.load({
           coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js'
         });
 
         statusText.textContent = "Engine Siap!";
-        boxLabel.textContent = "Pilih / Drop File Video Di Sini (Otomatis Diproses)";
+        boxLabel.textContent = "Klik / Upload File Video Di Sini";
         videoInput.disabled = false;
       } catch (err) {
         statusText.textContent = "Gagal memuat FFmpeg engine.";
@@ -236,71 +283,101 @@
       }
     });
 
-    // Kalkulasi target detik berdasarkan setting pengguna
-    function getTargetSeconds() {
-      const selectVal = document.getElementById('targetDuration').value;
-      if (selectVal === 'custom') {
-        const customVal = parseFloat(document.getElementById('customMinutes').value);
-        return (customVal && customVal > 0) ? customVal * 60 : 3600;
-      }
-      return parseInt(selectVal, 10);
+    // 1. Fungsi Format Detik ke Menit & Detik
+    function formatTime(seconds) {
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      const secs = Math.floor(seconds % 60);
+
+      let result = [];
+      if (hrs > 0) result.push(`${hrs} Jam`);
+      if (mins > 0 || hrs > 0) result.push(`${mins} Menit`);
+      result.push(`${secs} Detik`);
+
+      return result.join(" ");
     }
 
-    async function startAutoLoop(event) {
+    // 2. Baca Video Saat Di-upload
+    function handleVideoUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
 
-      previewVideo.style.display = 'none';
-      downloadBtn.style.display = 'none';
-      statusContainer.style.display = 'block';
-      videoInput.disabled = true;
-
-      statusText.textContent = "Menganalisis durasi video...";
+      selectedFile = file;
+      boxLabel.innerHTML = `<strong>${file.name}</strong> terpilih`;
 
       const tempVideo = document.createElement('video');
       tempVideo.preload = 'metadata';
       tempVideo.src = URL.createObjectURL(file);
 
-      tempVideo.onloadedmetadata = async function() {
+      tempVideo.onloadedmetadata = function() {
         URL.revokeObjectURL(tempVideo.src);
+        videoDuration = tempVideo.duration; // Dapatkan durasi asli
         
-        const durationSec = tempVideo.duration;
-        const targetSec = getTargetSeconds();
-        const loopCount = Math.ceil(targetSec / durationSec);
+        infoCard.style.display = 'block';
+        originalDurationText.textContent = formatTime(videoDuration);
 
-        statusText.textContent = `Memproses: Mengulang video ${loopCount}x secara instan...`;
-
-        const inputName = 'input.mp4';
-        const outputName = 'output_loop.mp4';
-        
-        await ffmpeg.writeFile(inputName, await fetchFile(file));
-
-        const loopsToPerform = loopCount - 1;
-
-        // Jalankan perintah loop tanpa re-encode
-        await ffmpeg.exec([
-          '-stream_loop', `${loopsToPerform}`,
-          '-i', inputName,
-          '-c', 'copy',
-          outputName
-        ]);
-
-        statusText.textContent = "Selesai! Video hasil penggabungan siap diputar/diunduh.";
-
-        const data = await ffmpeg.readFile(outputName);
-        const videoBlob = new Blob([data.buffer], { type: 'video/mp4' });
-        const videoUrl = URL.createObjectURL(videoBlob);
-
-        previewVideo.src = videoUrl;
-        previewVideo.style.display = 'block';
-
-        downloadBtn.href = videoUrl;
-        downloadBtn.style.display = 'block';
-
-        await ffmpeg.deleteFile(inputName);
-        await ffmpeg.deleteFile(outputName);
-        videoInput.disabled = false;
+        calculateOutputDuration();
+        processBtn.disabled = false;
       };
+    }
+
+    // 3. Hitung Otomatis Durasi Hasil Output
+    function calculateOutputDuration() {
+      if (!videoDuration) return;
+
+      const loopInput = parseInt(document.getElementById('loopCount').value, 10);
+      const loops = (loopInput && loopInput > 0) ? loopInput : 1;
+
+      const totalSeconds = videoDuration * loops;
+      estimatedDurationText.textContent = formatTime(totalSeconds);
+    }
+
+    // 4. Proses Penggabungan Video
+    async function startLoopProcess() {
+      if (!selectedFile || !ffmpeg) return;
+
+      const loopCount = parseInt(document.getElementById('loopCount').value, 10) || 1;
+
+      // Reset UI
+      previewVideo.style.display = 'none';
+      downloadBtn.style.display = 'none';
+      statusContainer.style.display = 'block';
+      processBtn.disabled = true;
+
+      statusText.textContent = `Memproses: Mengulang video ${loopCount}x secara instan...`;
+
+      const inputName = 'input.mp4';
+      const outputName = 'output_loop.mp4';
+
+      await ffmpeg.writeFile(inputName, await fetchFile(selectedFile));
+
+      // FFmpeg loop count = jumlah perulangan tambahan (loopCount - 1)
+      const loopsToPerform = loopCount - 1;
+
+      // Jalankan FFmpeg tanpa re-encoding (-c copy)
+      await ffmpeg.exec([
+        '-stream_loop', `${loopsToPerform}`,
+        '-i', inputName,
+        '-c', 'copy',
+        outputName
+      ]);
+
+      statusText.textContent = "Selesai! Video hasil penggabungan siap diputar/diunduh.";
+
+      const data = await ffmpeg.readFile(outputName);
+      const videoBlob = new Blob([data.buffer], { type: 'video/mp4' });
+      const videoUrl = URL.createObjectURL(videoBlob);
+
+      previewVideo.src = videoUrl;
+      previewVideo.style.display = 'block';
+
+      downloadBtn.href = videoUrl;
+      downloadBtn.style.display = 'block';
+
+      // Cleanup
+      await ffmpeg.deleteFile(inputName);
+      await ffmpeg.deleteFile(outputName);
+      processBtn.disabled = false;
     }
   </script>
 </body>
