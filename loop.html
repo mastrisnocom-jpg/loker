@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auto Video Looper (1 Jam)</title>
+  <!-- Load FFmpeg.wasm dari CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: var(--card);
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+
+    .upload-box {
+      border: 2px dashed var(--muted);
+      border-radius: 8px;
+      padding: 35px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      margin-bottom: 20px;
+    }
+
+    .upload-box:hover {
+      border-color: var(--accent);
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .status-container {
+      margin-top: 15px;
+      background: var(--bg);
+      padding: 15px;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .status-text {
+      font-size: 0.9rem;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .log-text {
+      font-size: 0.8rem;
+      color: var(--muted);
+      max-height: 100px;
+      overflow-y: auto;
+      font-family: monospace;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .download-btn {
+      display: none;
+      width: 100%;
+      padding: 12px;
+      background-color: var(--accent);
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-top: 15px;
+    }
+
+    .download-btn:hover {
+      background-color: var(--accent-hover);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Instant Video Looper 1 Jam</h1>
+    <p class="subtitle">Otomatis menggabungkan video tanpa re-encoding saat file dipilih.</p>
+
+    <div class="upload-box" id="uploadBox" onclick="document.getElementById('videoInput').click()">
+      <span id="boxLabel">Memuat engine FFmpeg... Mohon tunggu.</span>
+      <input type="file" id="videoInput" accept="video/*" disabled onchange="startAutoLoop(event)">
+    </div>
+
+    <div class="status-container" id="statusContainer">
+      <div class="status-text" id="statusText">Menyiapkan...</div>
+      <div class="log-text" id="logText"></div>
+    </div>
+
+    <video id="previewVideo" controls></video>
+    <a id="downloadBtn" class="download-btn" download="video_1jam.mp4">Unduh Video (1 Jam)</a>
+  </div>
+
+  <script>
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    const ffmpeg = createFFmpeg({ log: true });
+
+    const boxLabel = document.getElementById('boxLabel');
+    const videoInput = document.getElementById('videoInput');
+    const statusContainer = document.getElementById('statusContainer');
+    const statusText = document.getElementById('statusText');
+    const logText = document.getElementById('logText');
+    const previewVideo = document.getElementById('previewVideo');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    // 1. Otomatis inisialisasi FFmpeg saat webapp dibuka
+    window.addEventListener('load', async () => {
+      try {
+        statusContainer.style.display = 'block';
+        statusText.textContent = "Mengunduh & Menyiapkan Engine FFmpeg...";
+        
+        await ffmpeg.load();
+
+        statusText.textContent = "Engine Siap!";
+        boxLabel.textContent = "Pilih / Drop File Video Di Sini (Otomatis Diproses)";
+        videoInput.disabled = false;
+      } catch (err) {
+        statusText.textContent = "Gagal memuat FFmpeg engine.";
+        logText.textContent = err.message;
+      }
+    });
+
+    // 2. Otomatis proses begitu pengguna memilih video
+    async function startAutoLoop(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // Reset tampilan
+      previewVideo.style.display = 'none';
+      downloadBtn.style.display = 'none';
+      statusContainer.style.display = 'block';
+      videoInput.disabled = true;
+
+      statusText.textContent = "Menganalisis durasi video...";
+
+      // Dapatkan durasi video asli
+      const tempVideo = document.createElement('video');
+      tempVideo.preload = 'metadata';
+      tempVideo.src = URL.createObjectURL(file);
+
+      tempVideo.onloadedmetadata = async function() {
+        URL.revokeObjectURL(tempVideo.src);
+        
+        const durationSec = tempVideo.duration; // detik
+        const targetSec = 3600; // 1 Jam = 3600 detik
+        const loopCount = Math.ceil(targetSec / durationSec);
+
+        statusText.textContent = `Memproses: Mengulang video ${loopCount}x secara cepat...`;
+
+        // Tulis file ke memori virtual FFmpeg
+        const inputName = 'input.mp4';
+        const outputName = 'output_1jam.mp4';
+        
+        ffmpeg.FS('writeFile', inputName, await fetchFile(file));
+
+        // Menggunakan flag -stream_loop untuk meloop stream secara instan tanpa re-encode
+        // -stream_loop dihitung dari 0 (loopCount - 1)
+        const loopsToPerform = loopCount - 1;
+
+        ffmpeg.setLogger(({ message }) => {
+          logText.textContent = message;
+        });
+
+        // Eksekusi Command FFmpeg
+        await ffmpeg.run(
+          '-stream_loop', `${loopsToPerform}`,
+          '-i', inputName,
+          '-c', 'copy',
+          outputName
+        );
+
+        statusText.textContent = "Selesai! Video 1 Jam siap diputar.";
+
+        // Ambil hasil pemrosesan dari virtual FS
+        const data = ffmpeg.FS('readFile', outputName);
+        const videoBlob = new Blob([data.buffer], { type: 'video/mp4' });
+        const videoUrl = URL.createObjectURL(videoBlob);
+
+        // Tampilkan video & tombol unduh
+        previewVideo.src = videoUrl;
+        previewVideo.style.display = 'block';
+
+        downloadBtn.href = videoUrl;
+        downloadBtn.style.display = 'block';
+
+        // Bersihkan memori virtual
+        ffmpeg.FS('unlink', inputName);
+        ffmpeg.FS('unlink', outputName);
+        videoInput.disabled = false;
+      };
+    }
+  </script>
+</body>
+</html>
