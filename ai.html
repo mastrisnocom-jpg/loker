@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Islami & Lyric Video Studio - Dual Mode Rekam & Render</title>
+  <title>Studio Video Lirik & Qur'an HD 720p</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -166,35 +166,7 @@
     .btn-record { background: #d97706; border: none; font-weight: bold; cursor: pointer; color: white; }
     .btn-record:hover { background: #b45309; }
 
-    .btn-render { background: #7c3aed; border: none; font-weight: bold; cursor: pointer; color: white; }
-    .btn-render:hover { background: #6d28d9; }
-
     .btn-stt { background: #2563eb; border: none; font-weight: bold; cursor: pointer; color: white; }
-
-    .progress-box {
-      grid-column: span 2;
-      background: #0f172a;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #7c3aed;
-      display: none;
-    }
-
-    .progress-bar-bg {
-      width: 100%;
-      height: 12px;
-      background: #334155;
-      border-radius: 6px;
-      overflow: hidden;
-      margin-top: 6px;
-    }
-
-    .progress-bar-fill {
-      width: 0%;
-      height: 100%;
-      background: #7c3aed;
-      transition: width 0.1s ease;
-    }
 
     .mode-panel { display: none; }
     .mode-panel.active { display: block; }
@@ -339,7 +311,7 @@
       </div>
     </div>
 
-    <!-- MENU EKSPOR: 2 PILIHAN (REKAM / RENDER OFFLINE) -->
+    <!-- EKSPOR KONTROL REKAM MANUAL -->
     <div class="control-card">
       <div>
         <label>Unggah Gambar Latar Kustom (JPG/PNG):</label>
@@ -352,31 +324,20 @@
       </div>
 
       <div>
-        <label>Pilihan 1: Rekam Layar Real-time</label>
-        <button class="btn-record" id="recBtn" onclick="toggleRecord()">🔴 1. Rekam Real-time MP4</button>
+        <label>1. Putar Media Saja:</label>
+        <button class="btn-play" onclick="startPlay()">▶️ Putar Media</button>
       </div>
 
       <div>
-        <label>Pilihan 2: Render Offline Cepat (Frame-by-Frame)</label>
-        <button class="btn-render" id="renderBtn" onclick="startOfflineRender()">⚡ 2. Render Offline Video</button>
-      </div>
-
-      <!-- PROGRESS BAR UNTUK RENDER OFFLINE -->
-      <div class="progress-box" id="progressBox">
-        <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#cbd5e1;">
-          <span id="renderStatusText">Memproses Render...</span>
-          <span id="renderPercentText">0%</span>
-        </div>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill" id="progressBarFill"></div>
-        </div>
+        <label>2. Rekam / Render Video Full (Manual Control):</label>
+        <button class="btn-record" id="recBtn" onclick="toggleRecord()">🎥 Mulai Rekam / Render Full Video</button>
       </div>
     </div>
   </div>
 
   <div class="player-bar">
     <div style="font-size:0.8rem; font-weight:600; color:#38bdf8;" id="playingTitle">Siap Memutar Media</div>
-    <audio id="audioElement" controls style="width:100%; max-width:600px;"></audio>
+    <audio id="audioElement" controls style="width:100%; max-width:600px;" crossOrigin="anonymous"></audio>
   </div>
 
   <script>
@@ -390,6 +351,9 @@
 
     let mediaRecorder, recordedChunks = [], isRecording = false;
     let canvasAnimationId;
+
+    // Web Audio API Context untuk penggabungan Audio Stream penuh
+    let audioCtx, audioSource, audioDestination;
 
     let recognition = null;
     let isListening = false;
@@ -476,7 +440,7 @@
       if (file) {
         audio.src = URL.createObjectURL(file);
         document.getElementById('playingTitle').innerText = `Lagu: ${file.name}`;
-        alert("File MP3 berhasil dimuat!");
+        alert("File MP3 berhasil dimuat! Tekan tombol 'Mulai Rekam / Render Full Video'.");
       }
     }
 
@@ -574,6 +538,23 @@
       }
     }
 
+    function startPlay() {
+      if (!audio.src) {
+        return alert("Pilih file MP3 atau muat lagu terlebih dahulu!");
+      }
+
+      if (currentMode === 'song' && document.getElementById('lrcManualInput').value) {
+        parseLrc(document.getElementById('lrcManualInput').value);
+      }
+
+      audio.play().then(() => {
+        if (bgType === 'video') bgVideo.play().catch(() => {});
+        document.getElementById('playingTitle').innerText = "▶ Sedang Memutar...";
+      }).catch(err => {
+        alert("Pilih file MP3 dari galeri HP jika audio streaming terhambat.");
+      });
+    }
+
     function initSyncEngine() {
       audio.addEventListener('timeupdate', () => {
         if (!audio.duration) return;
@@ -615,6 +596,7 @@
         }
       });
 
+      // OTOMATIS STOP REKAM HANYA JIKA LAGU HABIS
       audio.addEventListener('ended', () => {
         if (currentMode === 'quran' && !isCustomAudio && currentAyatIndex < currentVerses.length - 1) {
           currentAyatIndex++;
@@ -687,6 +669,7 @@
       }
     }
 
+    /* RENDER CANVAS DENGAN AUDIO STREAM FULL */
     function renderFrameAtTime(timeSec) {
       try {
         if (bgType === 'image') {
@@ -711,7 +694,6 @@
       ctx.textAlign = 'right';
       ctx.fillText(`▶ ${channelName}`, canvas.width - 40, 50);
 
-      // Cari lirik aktif berdasarkan waktu
       let activeText = "";
       if (currentMode === 'song' && songLyrics.length > 0) {
         for (let i = 0; i < songLyrics.length; i++) {
@@ -735,22 +717,39 @@
       }
     }
 
-    /* PILIHAN 1: REKAM REAL-TIME */
+    /* PEREKAMAN KONTROL MANUAL KUSTOM */
     function toggleRecord() {
+      const recBtn = document.getElementById('recBtn');
+
       if (!isRecording) {
         if (!audio.src) return alert("Unggah file MP3 terlebih dahulu!");
 
         try {
-          audio.currentTime = 0;
-          const stream = canvas.captureStream(30);
-          recordedChunks = [];
+          audio.currentTime = 0; // Ulang dari detik 0
 
+          const canvasStream = canvas.captureStream(30);
+
+          // Sambungkan Audio Stream melalui AudioContext
+          if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            audioSource = audioCtx.createMediaElementSource(audio);
+            audioDestination = audioCtx.createMediaStreamDestination();
+            audioSource.connect(audioDestination);
+            audioSource.connect(audioCtx.destination);
+          }
+
+          const audioTrack = audioDestination.stream.getAudioTracks()[0];
+          if (audioTrack) {
+            canvasStream.addTrack(audioTrack);
+          }
+
+          recordedChunks = [];
           let options = { mimeType: 'video/webm' };
           if (!MediaRecorder.isTypeSupported('video/webm')) {
             options = { mimeType: 'video/mp4' };
           }
 
-          mediaRecorder = new MediaRecorder(stream, options);
+          mediaRecorder = new MediaRecorder(canvasStream, options);
 
           mediaRecorder.ondataavailable = (e) => {
             if (e.data && e.data.size > 0) recordedChunks.push(e.data);
@@ -762,31 +761,28 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Record_Realtime_${Date.now()}.mp4`;
+            a.download = `Render_Full_Video_${Date.now()}.mp4`;
             a.click();
+            alert("Perekaman Selesai! File MP4 berdurasi penuh berhasil disimpan.");
           };
 
-          mediaRecorder.start(500);
+          mediaRecorder.start(1000);
           isRecording = true;
 
-          const recBtn = document.getElementById('recBtn');
-          recBtn.innerText = "⏹️ Merekam Real-time... (Klik Stop)";
+          recBtn.innerText = "⏹️ Hentikan & Simpan Video";
           recBtn.style.background = "#dc2626";
 
-          function loop() {
+          function renderLoop() {
             if (isRecording) {
               renderFrameAtTime(audio.currentTime);
-              canvasAnimationId = requestAnimationFrame(loop);
+              canvasAnimationId = requestAnimationFrame(renderLoop);
             }
           }
-          loop();
+          renderLoop();
 
-          if (currentMode === 'song' && document.getElementById('lrcManualInput').value) {
-            parseLrc(document.getElementById('lrcManualInput').value);
-          }
-          audio.play();
+          startPlay();
         } catch(e) {
-          alert("Gagal memulai perekaman real-time.");
+          alert("Perekaman gagal dimaksimalkan. Unggah file MP3/Gambar sendiri dari galeri HP agar peramban mengizinkan rekam penuh.");
         }
       } else {
         stopAndSaveRecording();
@@ -799,73 +795,9 @@
         isRecording = false;
 
         const recBtn = document.getElementById('recBtn');
-        recBtn.innerText = "🔴 1. Rekam Real-time MP4";
+        recBtn.innerText = "🎥 Mulai Rekam / Render Full Video";
         recBtn.style.background = "#d97706";
       }
-    }
-
-    /* PILIHAN 2: RENDER OFFLINE FAST (FRAME-BY-FRAME) */
-    async function startOfflineRender() {
-      if (!audio.src || !audio.duration) {
-        return alert("Muat file MP3 dan pastikan durasi audio terbaca sebelum melakukan Render!");
-      }
-
-      if (currentMode === 'song' && document.getElementById('lrcManualInput').value) {
-        parseLrc(document.getElementById('lrcManualInput').value);
-      }
-
-      const progressBox = document.getElementById('progressBox');
-      const progressBarFill = document.getElementById('progressBarFill');
-      const renderStatusText = document.getElementById('renderStatusText');
-      const renderPercentText = document.getElementById('renderPercentText');
-
-      progressBox.style.display = 'block';
-
-      const totalDuration = audio.duration;
-      const fps = 25;
-      const totalFrames = Math.floor(totalDuration * fps);
-
-      const stream = canvas.captureStream(fps);
-      const renderChunks = [];
-      const offlineRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-
-      offlineRecorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) renderChunks.push(e.data);
-      };
-
-      offlineRecorder.onstop = () => {
-        const blob = new Blob(renderChunks, { type: 'video/mp4' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Render_Offline_${Date.now()}.mp4`;
-        a.click();
-
-        renderStatusText.innerText = "Render Selesai! Video Diunduh.";
-        setTimeout(() => { progressBox.style.display = 'none'; }, 3000);
-      };
-
-      offlineRecorder.start();
-
-      let frame = 0;
-      function processNextFrame() {
-        if (frame <= totalFrames) {
-          const currentTime = frame / fps;
-          renderFrameAtTime(currentTime);
-
-          const percent = Math.floor((frame / totalFrames) * 100);
-          progressBarFill.style.width = percent + '%';
-          renderPercentText.innerText = percent + '%';
-          renderStatusText.innerText = `Mewarnai Frame ${frame}/${totalFrames}...`;
-
-          frame++;
-          setTimeout(processNextFrame, 10); // Proses cepat per 10ms
-        } else {
-          offlineRecorder.stop();
-        }
-      }
-
-      processNextFrame();
     }
   </script>
 </body>
