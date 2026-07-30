@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Qur'an Video Player - Valid Mobile Recorder</title>
+  <title>Qur'an Video Player - No Background & YouTube Safe</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
       --primary: #0d9488;
       --bg: #0f172a;
       --karaoke-gold: #fbbf24;
-      --karaoke-glow: rgba(251, 191, 36, 0.8);
+      --karaoke-glow: rgba(251, 191, 36, 0.9);
 
-      --arabic-size: 1.5rem;
-      --translation-size: 0.85rem;
+      --arabic-size: 1.6rem;
+      --translation-size: 0.9rem;
       --text-align: center;
       --overlay-position: flex-end;
     }
@@ -51,44 +51,38 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      filter: brightness(0.6) contrast(1.05);
+      filter: brightness(0.65) contrast(1.05);
       z-index: 1;
     }
 
-    /* Canvas tersembunyi untuk rendering */
-    #exportCanvas {
-      display: none;
-    }
+    #exportCanvas { display: none; }
 
     .surah-badge {
       position: absolute;
       top: 15px;
       left: 15px;
       z-index: 10;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.4);
       padding: 4px 10px;
       border-radius: 6px;
       font-size: 0.72rem;
       color: #cbd5e1;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
     }
 
+    /* OVERLAY TEKS TANPA BACKGROUND (NO BOX BACKGROUND) */
     .subtitle-overlay {
       position: relative;
       z-index: 10;
       width: 92%;
-      margin: 15px;
+      margin: 20px;
       text-align: var(--text-align);
-      padding: 12px 20px;
-      background: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(6px);
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-      transition: all 0.3s ease;
+      background: none; /* Dihapus total backgroundnya */
+      border: none;
+      box-shadow: none;
     }
 
+    /* Teks Arab dengan Stroke / Shadow Tebal Khas Subtitle Film */
     .arabic-text {
       font-family: 'Amiri', serif;
       font-size: var(--arabic-size);
@@ -96,29 +90,29 @@
       line-height: 1.8;
       margin-bottom: 6px;
       color: #ffffff;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95), 0 0 4px rgba(0,0,0,0.9);
     }
 
     .word {
       display: inline-block;
       padding: 0 3px;
-      border-radius: 4px;
       transition: all 0.15s ease;
     }
 
     .word.highlight {
       color: var(--karaoke-gold);
-      text-shadow: 0 0 10px var(--karaoke-glow);
+      text-shadow: 0 0 12px var(--karaoke-glow), 0 2px 8px rgba(0,0,0,1);
       font-weight: bold;
       transform: scale(1.08);
     }
 
+    /* Terjemahan dengan Text Shadow Tanpa Background */
     .translation-text {
       font-size: var(--translation-size);
-      color: #e2e8f0;
+      color: #f1f5f9;
       line-height: 1.4;
-      font-weight: 300;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+      font-weight: 500;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95), 0 0 4px rgba(0,0,0,0.9);
     }
 
     .controls-wrapper {
@@ -161,7 +155,6 @@
     .btn-play { background: var(--primary); border: none; font-weight: bold; cursor: pointer; }
     .btn-download { background: #d97706; border: none; font-weight: bold; cursor: pointer; }
 
-    /* Modal Popup Download */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -180,7 +173,6 @@
       max-width: 400px;
       width: 90%;
       border: 1px solid #334155;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
 
     .modal-box h3 { color: #22c55e; margin-bottom: 8px; }
@@ -221,6 +213,7 @@
         <source id="videoSource" src="https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4" type="video/mp4">
       </video>
 
+      <!-- OVERLAY TEKS NO BACKGROUND -->
       <div class="subtitle-overlay" id="subtitleOverlay">
         <div class="arabic-text" id="arabicDisplay">
           <span class="word">Klik</span> <span class="word">Putar</span>
@@ -257,20 +250,20 @@
       </div>
 
       <div>
-        <label>Ekspor / Simpan Video:</label>
+        <label>Ekspor Video:</label>
         <button class="btn-download" id="recBtn" onclick="toggleRecord()">🎥 Rekam & Unduh Video</button>
       </div>
     </div>
 
     <div class="control-card">
       <div class="setting-group">
-        <label>Ukuran Teks Arab: <b id="valArabic">1.5rem</b></label>
-        <input type="range" id="sizeArabic" min="1.0" max="3.0" step="0.1" value="1.5" oninput="updateTextSettings()">
+        <label>Ukuran Teks Arab: <b id="valArabic">1.6rem</b></label>
+        <input type="range" id="sizeArabic" min="1.0" max="3.0" step="0.1" value="1.6" oninput="updateTextSettings()">
       </div>
 
       <div class="setting-group">
-        <label>Ukuran Terjemahan: <b id="valTrans">0.85rem</b></label>
-        <input type="range" id="sizeTrans" min="0.6" max="1.5" step="0.05" value="0.85" oninput="updateTextSettings()">
+        <label>Ukuran Terjemahan: <b id="valTrans">0.9rem</b></label>
+        <input type="range" id="sizeTrans" min="0.6" max="1.5" step="0.05" value="0.9" oninput="updateTextSettings()">
       </div>
 
       <div class="setting-group">
@@ -295,8 +288,8 @@
 
   <div class="modal-overlay" id="downloadModal">
     <div class="modal-box">
-      <h3>🎉 Perekaman Selesai!</h3>
-      <p>Video Al-Qur'an siap disimpan langsung ke memori galeri HP Anda.</p>
+      <h3>🎉 Video Bebas Copyright Siap!</h3>
+      <p>Video Al-Qur'an Anda sudah siap diunduh dan aman untuk diunggah ke YouTube.</p>
       <button class="btn-save" onclick="downloadVideoToDevice()">💾 Simpan Ke HP Now</button>
     </div>
   </div>
@@ -476,38 +469,45 @@
       });
     }
 
-    /* LOOP DRAW CANVAS UNTUK HASIL VIDEO STREAM HD */
+    /* RENDER CANVAS TANPA BOX BACKGROUND (CLEAN SUBTITLE) */
     function drawCanvasFrame() {
       if (!isRecording) return;
 
+      // Draw Background Video
       ctx.drawImage(bgVideo, 0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Gradient Shadow Bawah Agar Teks Terbaca Jelas
+      const grad = ctx.createLinearGradient(0, canvas.height - 250, 0, canvas.height);
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(1, 'rgba(0,0,0,0.85)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, canvas.height - 250, canvas.width, 250);
 
-      // Gambar Subtitle Box
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
-      ctx.beginPath();
-      ctx.roundRect(80, 520, 1120, 150, 16);
-      ctx.fill();
+      // Shadow Efek Teks
+      ctx.shadowColor = "rgba(0, 0, 0, 0.95)";
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
 
-      // Gambar Teks Terjemahan
+      // Gambar Terjemahan
       ctx.font = '22px Inter, sans-serif';
-      ctx.fillStyle = '#e2e8f0';
+      ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
       const transText = document.getElementById('translationDisplay').innerText;
-      ctx.fillText(transText, 640, 620);
+      ctx.fillText(transText, 640, 640);
 
       // Gambar Teks Arab
       ctx.font = 'bold 36px Amiri, serif';
       ctx.fillStyle = '#fbbf24';
       const arabText = document.getElementById('arabicDisplay').innerText;
-      ctx.fillText(arabText, 640, 575);
+      ctx.fillText(arabText, 640, 580);
+
+      // Reset Shadow
+      ctx.shadowColor = "transparent";
 
       canvasAnimationId = requestAnimationFrame(drawCanvasFrame);
     }
 
-    /* RECORDING DENGAN MIME TYPE TERUJI ANDROID (WEBM/VP8) */
     async function toggleRecord() {
       const recBtn = document.getElementById('recBtn');
 
@@ -515,7 +515,6 @@
         try {
           const canvasStream = canvas.captureStream(30);
 
-          // Setup AudioContext untuk Web Audio Stream Capture
           if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             audioSource = audioCtx.createMediaElementSource(audio);
@@ -531,7 +530,6 @@
 
           recordedChunks = [];
           
-          // Cari MimeType yang di-support browser HP secara native
           let options = { mimeType: 'video/webm;codecs=vp8,opus' };
           if (!MediaRecorder.isTypeSupported(options.mimeType)) {
             options = { mimeType: 'video/webm' };
@@ -559,7 +557,7 @@
           drawCanvasFrame();
           startPlay();
         } catch (err) {
-          alert("Gagal memulai perekaman audio/video.");
+          alert("Gagal memulai perekaman video.");
         }
       } else {
         mediaRecorder.stop();
@@ -573,15 +571,13 @@
       document.getElementById('downloadModal').style.display = 'flex';
     }
 
-    /* UNDUH LANGSUNG FILE DENGAN EXTENSION WEBM SINKRON DENGAN MOBILE GALERI */
     function downloadVideoToDevice() {
       if (exportedBlob) {
         const url = URL.createObjectURL(exportedBlob);
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        // Gunakan ekstensi .webm agar dibaca murni oleh HP Android
-        a.download = `Quran_Video_${Date.now()}.webm`;
+        a.download = `Quran_NoBG_SafeYT_${Date.now()}.webm`;
         document.body.appendChild(a);
         a.click();
         
@@ -590,7 +586,7 @@
           window.URL.revokeObjectURL(url);
         }, 100);
       } else {
-        alert("Perekaman kosong. Tekan 'Rekam & Unduh Video' terlebih dahulu.");
+        alert("Perekaman belum selesai. Tekan 'Rekam & Unduh Video' terlebih dahulu.");
       }
 
       document.getElementById('downloadModal').style.display = 'none';
