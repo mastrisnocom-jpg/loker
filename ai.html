@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Islami & Song Video Studio HD 720p - Full Song Player</title>
+  <title>Islami & Song Video Studio HD 720p - YouTube & Lyric Search</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -167,26 +167,6 @@
     .mode-panel { display: none; }
     .mode-panel.active { display: block; }
 
-    .song-results {
-      max-height: 160px;
-      overflow-y: auto;
-      background: #0f172a;
-      border: 1px solid #38bdf8;
-      border-radius: 6px;
-      margin-top: 6px;
-    }
-
-    .song-item {
-      padding: 8px 10px;
-      font-size: 0.78rem;
-      cursor: pointer;
-      border-bottom: 1px solid #1e293b;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .song-item:hover { background: #0284c7; }
-
     .player-bar {
       position: fixed;
       bottom: 0; left: 0; right: 0;
@@ -221,7 +201,7 @@
         <div class="arabic-text" id="arabicDisplay">
           <span class="word">Klik</span> <span class="word">Putar</span>
         </div>
-        <div class="sub-text" id="subDisplay">Pilih lagu lalu tekan 'Putar'</div>
+        <div class="sub-text" id="subDisplay">Masukkan link YouTube / MP3 lalu tekan 'Putar'</div>
       </div>
     </div>
   </div>
@@ -270,27 +250,40 @@
       </div>
     </div>
 
-    <!-- PANEL 2: KONTEN LAGU DENGAN OPSIONAL LAGU FULL -->
+    <!-- PANEL 2: KONTEN LAGU DENGAN DUKUNGAN LINK YOUTUBE & PENCARIAN LIRIK SEPARATIF -->
     <div id="songPanel" class="mode-panel active">
       <div class="control-card">
-        <div style="grid-column: span 2;">
-          <label>1. Masukkan Link Direct MP3 / Cari Perpustakaan Lagu Full:</label>
+        
+        <!-- FORM 1: MASUKKAN LINK YOUTUBE / DIRECT MP3 -->
+        <div>
+          <label>1. Tempel Link YouTube / Direct MP3 Link:</label>
           <div style="display:flex; gap:5px;">
-            <input type="text" id="songQuery" value="Denny Caknan" placeholder="Ketik nama lagu atau paste URL MP3 direct...">
-            <button style="width:110px; background:#0284c7; font-weight:bold;" onclick="searchFullAudioAndLyrics()">Cari Lagu Full</button>
+            <input type="text" id="youtubeUrlInput" placeholder="https://www.youtube.com/watch?v=..." value="">
+            <button style="width:110px; background:#dc2626; font-weight:bold;" onclick="loadAudioFromYouTube()">Muat Audio</button>
           </div>
-          <div class="song-results" id="songResults" style="display:none;"></div>
         </div>
 
+        <!-- FORM 2: UNGGAH FILE MP3 LOKAL -->
         <div>
-          <label>2. Atau Unggah File MP3 Lagu Full dari HP/Komputer:</label>
+          <label>2. Atau Unggah File MP3 Lagu Full:</label>
           <input type="file" id="uploadSong" accept="audio/*" onchange="handleSongUpload(event)">
         </div>
 
+        <!-- FORM 3: KHUSUS PENCARIAN LIRIK OTOMATIS -->
         <div style="grid-column: span 2;">
-          <label>Lirik Format .LRC (Otomatis Terisi / Edit Manual):</label>
+          <label>3. Cari Lirik Lagu Otomatis (Ketik Nama Artis / Judul Lagu):</label>
+          <div style="display:flex; gap:5px;">
+            <input type="text" id="lyricQueryInput" value="Denny Caknan Kartonyono Medot Janji" placeholder="misal: Sheila on 7 Dan / Denny Caknan Crito Mustahil">
+            <button style="width:110px; background:#0284c7; font-weight:bold;" onclick="searchSongLyricsOnly()">Cari Lirik</button>
+          </div>
+        </div>
+
+        <!-- FORM 4: AREA TEXTAREA LIRIK FORMAT .LRC -->
+        <div style="grid-column: span 2;">
+          <label>Teks Lirik Format .LRC (Otomatis Terisi / Edit Manual):</label>
           <textarea id="lrcManualInput" placeholder="[00:06.78] Lirik lagu di sini..."></textarea>
         </div>
+
       </div>
     </div>
 
@@ -408,7 +401,7 @@
         document.getElementById('songPanel').classList.add('active');
         document.getElementById('infoBadge').innerText = "Mode Lagu / Musik";
         document.getElementById('arabicDisplay').innerHTML = "";
-        document.getElementById('subDisplay').innerText = "Cari lagu atau unggah MP3...";
+        document.getElementById('subDisplay').innerText = "Masukkan link YouTube atau MP3...";
       }
     }
 
@@ -443,71 +436,60 @@
       }
     }
 
-    /* PENCARIAN DENGAN DUKUNGAN AUDIO FULL & ARCHIVE API */
-    async function searchFullAudioAndLyrics() {
-      const q = document.getElementById('songQuery').value.trim();
-      if (!q) return alert("Masukkan kata kunci atau link lagu.");
+    /* FITUR 1: MEMUAT AUDIO DARI LINK YOUTUBE ATAU DIRECT MP3 */
+    function loadAudioFromYouTube() {
+      const inputUrl = document.getElementById('youtubeUrlInput').value.trim();
+      if (!inputUrl) return alert("Masukkan Link YouTube atau Direct MP3 terlebih dahulu!");
 
-      const resultsContainer = document.getElementById('songResults');
-      resultsContainer.style.display = 'block';
-
-      // Jika memasukkan Link Direct MP3 langsung
-      if (q.startsWith("http://") || q.startsWith("https://")) {
-        audio.src = q;
-        document.getElementById('playingTitle').innerText = `Lagu dari URL Direct MP3`;
-        resultsContainer.style.display = 'none';
-        alert("Berhasil memuat URL lagu MP3 full!");
-        searchLyricsOnly(q);
+      // 1. Jika pengguna memasukkan Link Direct MP3 (misal: .mp3)
+      if (inputUrl.endsWith('.mp3') || inputUrl.includes('archive.org') || inputUrl.includes('cdn')) {
+        audio.src = inputUrl;
+        document.getElementById('playingTitle').innerText = `Lagu dari URL MP3 Direct`;
+        alert("Berhasil memuat audio dari Link Direct MP3!");
         return;
       }
 
-      resultsContainer.innerHTML = '<div style="padding:10px; font-size:0.8rem; text-align:center;">🔍 Mencari audio lagu penuh dari Internet Archive...</div>';
+      // 2. Ekstrak Video ID YouTube
+      let videoId = '';
+      const ytMatch = inputUrl.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
 
-      try {
-        // Cari Lagu Berdurasi Penuh dari Perpustakaan Internet Archive
-        const resAudio = await fetch(`https://archive.org/advancedsearch.php?q=${encodeURIComponent(q)}+AND+mediatype:audio&fl[]=identifier,title,creator&sort[]=&rows=5&page=1&output=json`);
-        const dataAudio = await resAudio.json();
-
-        let html = '';
-        if (dataAudio.response && dataAudio.response.docs.length > 0) {
-          dataAudio.response.docs.forEach(doc => {
-            const trackUrl = `https://archive.org/download/${doc.identifier}/${doc.identifier}_vbr.mp3`;
-            const docTitle = (doc.title || doc.identifier).replace(/'/g, "\\'");
-            
-            html += `
-              <div class="song-item" onclick="selectOnlineAudio('${trackUrl}', '${docTitle}', '${docTitle}')">
-                <span>🎵 <b>${doc.title || doc.identifier}</b></span>
-                <span style="color:#38bdf8; font-weight:bold;">▶ Putar Lagu Full</span>
-              </div>
-            `;
-          });
-        } else {
-          html = '<div style="padding:10px; font-size:0.8rem; color:#ef4444;">Lagu full dari server archive tidak ditemukan. Silakan gunakan tombol Unggah File MP3 Lagu Full.</div>';
-        }
-
-        resultsContainer.innerHTML = html;
-        searchLyricsOnly(q);
-      } catch (err) {
-        resultsContainer.innerHTML = '<div style="padding:10px; font-size:0.8rem; color:#ef4444;">Gagal terhubung ke server lagu full. Gunakan opsi unggah MP3 lagu Anda sendiri.</div>';
+      if (ytMatch && ytMatch[1]) {
+        videoId = ytMatch[1];
+        // Stream Audio dari Server Proxy YouTube Audio
+        const proxyAudioUrl = `https://api.cobalt.tools/api/stream?url=https://www.youtube.com/watch?v=${videoId}`;
+        
+        // Alternatif Fallback Stream
+        audio.src = `https://inv.tux.pizza/latest_version?id=${videoId}&itag=140`;
+        document.getElementById('playingTitle').innerText = `Lagu dari YouTube (ID: ${videoId})`;
+        alert("Berhasil memuat audio dari YouTube! Silakan tekan 'Muat Lirik' di bawah.");
+      } else {
+        alert("Format Link YouTube tidak valid. Contoh valid: https://www.youtube.com/watch?v=xxxxxx atau https://youtu.be/xxxxxx");
       }
     }
 
-    function selectOnlineAudio(url, title, trackOnly) {
-      audio.src = url;
-      document.getElementById('playingTitle').innerText = `Lagu Full: ${title}`;
-      document.getElementById('songResults').style.display = 'none';
-      searchLyricsOnly(trackOnly || title);
-    }
+    /* FITUR 2: KHUSUS MENCARI LIRIK LAGU OTOMATIS BERDASARKAN QUERY */
+    async function searchSongLyricsOnly() {
+      const query = document.getElementById('lyricQueryInput').value.trim();
+      if (!query) return alert("Masukkan judul lagu / nama penyanyi untuk mencari lirik.");
 
-    async function searchLyricsOnly(query) {
+      document.getElementById('subDisplay').innerText = "🔍 Mencari lirik lagu...";
+
       try {
         const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(query)}`);
         const data = await res.json();
+
         if (data.length > 0 && data[0].syncedLyrics) {
           document.getElementById('lrcManualInput').value = data[0].syncedLyrics;
           parseLrc(data[0].syncedLyrics);
+          alert(`Lirik untuk "${data[0].trackName} - ${data[0].artistName}" berhasil ditemukan!`);
+          document.getElementById('subDisplay').innerText = "Lirik dimuat! Tekan 'Putar Media'";
+        } else {
+          alert("Lirik tersinkronisasi (.lrc) tidak ditemukan. Silakan isi lirik manual pada kolom textarea.");
+          document.getElementById('subDisplay').innerText = "Lirik tidak ditemukan di server.";
         }
-      } catch (e) {}
+      } catch (err) {
+        alert("Gagal terhubung ke server lirik.");
+      }
     }
 
     /* ENGINE SINKRONISASI REAL-TIME */
