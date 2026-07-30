@@ -1,317 +1,390 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Hub Menu</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auto Video Looper</title>
   <style>
     :root {
-      --bg-color: #0b0f17;
-      --card-bg: #111827;
-      --card-hover: #1f2937;
-      --border-color: #1f2937;
-      --text-color: #e5e7eb;
-      --badge-bg: #eab308;
-      --badge-text: #000000;
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --text: #f8fafc;
+      --muted: #94a3b8;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: system-ui, -apple-system, sans-serif;
     }
 
     body {
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      padding: 20px;
+      background-color: var(--bg);
+      color: var(--text);
       display: flex;
       justify-content: center;
+      align-items: center;
       min-height: 100vh;
+      padding: 20px;
     }
 
     .container {
-      width: 100%;
-      max-width: 900px;
-    }
-
-    /* Grid Layout: 3 Kolom di Layar Lebar */
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-
-    /* Styling Kartu Menu */
-    .card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
+      background-color: var(--card);
       border-radius: 12px;
-      padding: 20px 10px;
+      padding: 30px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    .upload-box {
+      border: 2px dashed var(--muted);
+      border-radius: 8px;
+      padding: 25px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      margin-bottom: 20px;
+    }
+
+    .upload-box:hover {
+      border-color: var(--accent);
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .setting-group {
+      margin-bottom: 15px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-      color: var(--text-color);
-      position: relative;
-      transition: all 0.2s ease-in-out;
-      min-height: 100px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+      gap: 6px;
     }
 
-    .card:hover {
-      background-color: var(--card-hover);
-      transform: translateY(-2px);
-      border-color: #374151;
+    label {
+      font-size: 0.85rem;
+      color: var(--muted);
     }
 
-    /* Styling Ikon/Emoji */
-    .card-icon {
-      font-size: 2rem;
-      margin-bottom: 10px;
+    input[type="number"] {
+      background: var(--bg);
+      border: 1px solid var(--muted);
+      color: var(--text);
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
     }
 
-    /* Styling Teks Judul Menu */
-    .card-title {
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      text-align: center;
-    }
-
-    /* Badge "NEW" */
-    .badge-new {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background-color: var(--badge-bg);
-      color: var(--badge-text);
-      font-size: 0.55rem;
-      font-weight: 800;
-      padding: 2px 6px;
-      border-radius: 4px;
-      letter-spacing: 0.5px;
-    }
-
-    /* Floating Donasi (QRIS) di Kanan Bawah */
-    .floating-qris {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 50px;
-      height: 50px;
-      background: #ffffff;
+    .info-card {
+      background: var(--bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 8px;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .info-row {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+      justify-content: space-between;
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+    }
+
+    .info-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .info-label {
+      color: var(--muted);
+    }
+
+    .info-value {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .highlight {
+      color: #38bdf8;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.95rem;
       cursor: pointer;
-      border: 2px solid #e5e7eb;
+      transition: background 0.2s;
     }
 
-    .floating-qris img {
-      width: 80%;
-      height: 80%;
-      object-fit: contain;
+    .btn:hover:not(:disabled) {
+      background-color: var(--accent-hover);
     }
 
-    /* Responsive untuk Layar HP (1-2 Kolom) */
-    @media (max-width: 600px) {
-      .grid-container {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-      }
-      .card {
-        padding: 15px 8px;
-        min-height: 90px;
-      }
-      .card-icon {
-        font-size: 1.6rem;
-      }
-      .card-title {
-        font-size: 0.65rem;
-      }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .progress-box {
+      margin-top: 20px;
+      display: none;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: var(--bg);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 0.1s;
+    }
+
+    .status-text {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 6px;
+      text-align: right;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .download-btn {
+      display: none;
+      width: 100%;
+      padding: 12px;
+      background-color: var(--accent);
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-top: 15px;
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <div class="grid-container">
+    <h1>Instant Video Looper</h1>
+    <p class="subtitle">Upload video, tentukan jumlah perulangan (loop), dan hitung otomatis durasi hasil akhirnya.</p>
 
-      <!-- Row 1 -->
-      <a href="#" class="card">
-        <div class="card-icon">🤖</div>
-        <div class="card-title">Aplikasi Android</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">📖</div>
-        <div class="card-title">Kampung Quran</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">📊</div>
-        <div class="card-title">Vizualizer</div>
-      </a>
-
-      <!-- Row 2 -->
-      <a href="#" class="card">
-        <span class="badge-new">NEW</span>
-        <div class="card-icon">🎛️</div>
-        <div class="card-title">Peta Konten Music</div>
-      </a>
-
-      <a href="#" class="card">
-        <span class="badge-new">NEW</span>
-        <div class="card-icon">📿</div>
-        <div class="card-title">Peta Konten Murottal</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">🎵</div>
-        <div class="card-title">Plan Music</div>
-      </a>
-
-      <!-- Row 3 -->
-      <a href="#" class="card">
-        <div class="card-icon">🎼</div>
-        <div class="card-title">Kampung Lirik</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">🎶</div>
-        <div class="card-title">Kampung Lagu</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">📅</div>
-        <div class="card-title">Plan Konten</div>
-      </a>
-
-      <!-- Row 4 -->
-      <a href="#" class="card">
-        <div class="card-icon">📜</div>
-        <div class="card-title">Gudang Konten</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">🎙️</div>
-        <div class="card-title">Suaraku</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">📜</div>
-        <div class="card-title">Ceritaku</div>
-      </a>
-
-      <!-- Row 5 -->
-      <a href="#" class="card">
-        <div class="card-icon">🖼️</div>
-        <div class="card-title">Script to Prompt</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">🖼️</div>
-        <div class="card-title">Prompt Vision</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">🎨</div>
-        <div class="card-title">Gambarku</div>
-      </a>
-
-      <!-- Row 6 -->
-      <a href="#" class="card">
-        <div class="card-icon">📷</div>
-        <div class="card-title">Fotoku</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">🎬</div>
-        <div class="card-title">Prompt Video</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">📺</div>
-        <div class="card-title">Asisten SEO YT</div>
-      </a>
-
-      <!-- Row 7 -->
-      <a href="#" class="card">
-        <div class="card-icon">🎯</div>
-        <div class="card-title">Sniper YT</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">📐</div>
-        <div class="card-title">Thumbnail Maker (Site)</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">🎵</div>
-        <div class="card-title">GPTS Tukang Music</div>
-      </a>
-
-      <!-- Row 8 -->
-      <a href="#" class="card">
-        <div class="card-icon">📦</div>
-        <div class="card-title">Gudang Konten Pro V1</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">🎨</div>
-        <div class="card-title">Script to Image</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">📺</div>
-        <div class="card-title">Buat Channel</div>
-      </a>
-
-      <!-- Row 9 -->
-      <a href="#" class="card">
-        <div class="card-icon">🗄️</div>
-        <div class="card-title">Brangkas-YT</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">🖼️</div>
-        <div class="card-title">Visual to Prompt</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">💖</div>
-        <div class="card-title">Qolbu Spoken</div>
-      </a>
-
-      <!-- Row 10 -->
-      <a href="#" class="card">
-        <div class="card-icon">🎤</div>
-        <div class="card-title">Voicer AI</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">🎶</div>
-        <div class="card-title">Prompt Suno Instrumen</div>
-      </a>
-
-      <a href="#" class="card">
-        <div class="card-icon">🎹</div>
-        <div class="card-title">Prompt Instrument</div>
-      </a>
-
+    <!-- AREA UPLOAD VIDEO -->
+    <div class="upload-box" onclick="document.getElementById('videoInput').click()">
+      <span id="boxLabel">📁 Klik / Upload File Video Di Sini</span>
+      <input type="file" id="videoInput" accept="video/*" onchange="handleVideoUpload(event)">
     </div>
+
+    <!-- SETTING JUMLAH LOOP -->
+    <div class="setting-group">
+      <label for="loopCount">Jumlah Perulangan (Loop):</label>
+      <input type="number" id="loopCount" value="60" min="1" placeholder="Misal: 60" oninput="calculateOutputDuration()">
+    </div>
+
+    <!-- INFORMASI HASIL DURASI OTOMATIS -->
+    <div class="info-card" id="infoCard">
+      <div class="info-row">
+        <span class="info-label">Durasi Video Asli:</span>
+        <span class="info-value" id="originalDurationText">0 Detik</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Hasil Estimasi Durasi Akhir:</span>
+        <span class="info-value highlight" id="estimatedDurationText">0 Menit</span>
+      </div>
+    </div>
+
+    <!-- TOMBOL PROSES -->
+    <button id="processBtn" class="btn" onclick="startLoopProcess()" disabled>Mulai Loop Video</button>
+
+    <!-- PROGRESS BAR -->
+    <div class="progress-box" id="progressBox">
+      <label id="progressLabel" style="font-size:0.85rem; color:var(--muted);">Memproses Video...</label>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="status-text" id="statusText">0%</div>
+    </div>
+
+    <!-- PREVIEW & DOWNLOAD -->
+    <video id="previewVideo" controls></video>
+    <a id="downloadBtn" class="download-btn" download="video_loop.webm">Unduh Hasil Video</a>
   </div>
 
-  <!-- Floating QRIS / Donasi Icon -->
-  <div class="floating-qris" title="Scan QRIS">
-    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=QRIS" alt="QRIS">
-  </div>
+  <script>
+    let selectedFile = null;
+    let videoDuration = 0; // dalam detik
 
+    const boxLabel = document.getElementById('boxLabel');
+    const infoCard = document.getElementById('infoCard');
+    const originalDurationText = document.getElementById('originalDurationText');
+    const estimatedDurationText = document.getElementById('estimatedDurationText');
+    const processBtn = document.getElementById('processBtn');
+    
+    const progressBox = document.getElementById('progressBox');
+    const progressFill = document.getElementById('progressFill');
+    const statusText = document.getElementById('statusText');
+    const previewVideo = document.getElementById('previewVideo');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    // 1. Format Waktu Detik ke Jam, Menit, Detik
+    function formatTime(seconds) {
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      const secs = Math.floor(seconds % 60);
+
+      let result = [];
+      if (hrs > 0) result.push(`${hrs} Jam`);
+      if (mins > 0 || hrs > 0) result.push(`${mins} Menit`);
+      result.push(`${secs} Detik`);
+
+      return result.join(" ");
+    }
+
+    // 2. Baca File Video Langsung Tanpa Lib Luar
+    function handleVideoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      selectedFile = file;
+      boxLabel.innerHTML = `✅ <strong>${file.name}</strong> terpilih`;
+
+      const tempVideo = document.createElement('video');
+      tempVideo.preload = 'metadata';
+      tempVideo.src = URL.createObjectURL(file);
+
+      tempVideo.onloadedmetadata = function() {
+        URL.revokeObjectURL(tempVideo.src);
+        videoDuration = tempVideo.duration;
+        
+        infoCard.style.display = 'block';
+        originalDurationText.textContent = formatTime(videoDuration);
+
+        calculateOutputDuration();
+        processBtn.disabled = false;
+      };
+    }
+
+    // 3. Kalkulator Durasi Otomatis
+    function calculateOutputDuration() {
+      if (!videoDuration) return;
+
+      const loopInput = parseInt(document.getElementById('loopCount').value, 10);
+      const loops = (loopInput && loopInput > 0) ? loopInput : 1;
+
+      const totalSeconds = videoDuration * loops;
+      estimatedDurationText.textContent = formatTime(totalSeconds);
+    }
+
+    // 4. Proses Loop Menggunakan Browser MediaRecorder
+    async function startLoopProcess() {
+      if (!selectedFile) return;
+
+      const loopCount = parseInt(document.getElementById('loopCount').value, 10) || 1;
+
+      // Reset & Tampilkan Progress Bar
+      previewVideo.style.display = 'none';
+      downloadBtn.style.display = 'none';
+      progressBox.style.display = 'block';
+      processBtn.disabled = true;
+
+      const videoElement = document.createElement('video');
+      videoElement.src = URL.createObjectURL(selectedFile);
+      videoElement.muted = true;
+      videoElement.playsInline = true;
+      
+      await videoElement.play();
+
+      const canvas = document.createElement('canvas');
+      canvas.width = videoElement.videoWidth || 640;
+      canvas.height = videoElement.videoHeight || 360;
+      const ctx = canvas.getContext('2d');
+
+      const stream = canvas.captureStream(30);
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      const chunks = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const videoURL = URL.createObjectURL(blob);
+
+        previewVideo.src = videoURL;
+        previewVideo.style.display = 'block';
+
+        downloadBtn.href = videoURL;
+        downloadBtn.style.display = 'block';
+
+        processBtn.disabled = false;
+        progressBox.style.display = 'none';
+      };
+
+      mediaRecorder.start();
+
+      let currentLoop = 0;
+      const totalFramesNeeded = loopCount * videoDuration * 30;
+      let framesProcessed = 0;
+
+      function renderFrame() {
+        if (currentLoop >= loopCount) {
+          mediaRecorder.stop();
+          videoElement.pause();
+          return;
+        }
+
+        ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+        framesProcessed++;
+
+        const progress = Math.min(Math.round((framesProcessed / totalFramesNeeded) * 100), 100);
+        progressFill.style.width = `${progress}%`;
+        statusText.textContent = `${progress}%`;
+
+        if (videoElement.ended) {
+          currentLoop++;
+          if (currentLoop < loopCount) {
+            videoElement.currentTime = 0;
+            videoElement.play();
+          }
+        }
+
+        requestAnimationFrame(renderFrame);
+      }
+
+      renderFrame();
+    }
+  </script>
 </body>
 </html>
