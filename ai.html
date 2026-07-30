@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Islami & Song Video Studio HD 720p - YouTube & Lyric Search</title>
+  <title>Islami & Lyric Video Studio HD 720p</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,9 +12,9 @@
   <style>
     :root {
       --primary: #0d9488;
+      --primary-dark: #0f766e;
       --bg: #0f172a;
       --gold: #fbbf24;
-      --cyan: #38bdf8;
       --arabic-size: 1.6rem;
       --sub-size: 0.9rem;
     }
@@ -69,7 +69,6 @@
       font-weight: 700;
       color: var(--gold);
       border: 1px solid rgba(251, 191, 36, 0.4);
-      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
     }
 
     .info-badge {
@@ -159,10 +158,13 @@
       outline: none;
     }
 
-    textarea { height: 70px; font-family: monospace; }
+    textarea { height: 80px; font-family: monospace; }
 
-    .btn-play { background: var(--primary); border: none; font-weight: bold; cursor: pointer; }
-    .btn-download { background: #d97706; border: none; font-weight: bold; cursor: pointer; }
+    .btn-play { background: var(--primary); border: none; font-weight: bold; cursor: pointer; color: white; }
+    .btn-play:hover { background: var(--primary-dark); }
+    
+    .btn-download { background: #d97706; border: none; font-weight: bold; cursor: pointer; color: white; }
+    .btn-download:hover { background: #b45309; }
 
     .mode-panel { display: none; }
     .mode-panel.active { display: block; }
@@ -184,32 +186,32 @@
 </head>
 <body>
 
+  <!-- PREVIEW PLAYER -->
   <div class="player-wrapper">
     <div class="video-player-container" id="playerContainer">
-      <div class="info-badge" id="infoBadge">Mode Lagu Full</div>
+      <div class="info-badge" id="infoBadge">Mode Lagu / Musik</div>
       <div class="channel-watermark" id="channelDisplay">▶ AUC LIRIK</div>
 
       <!-- BACKGROUND MEDIA -->
-      <img id="bgImage" class="bg-media active" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1280&q=80" alt="Background Gambar">
+      <img id="bgImage" class="bg-media active" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1280&q=80" crossOrigin="anonymous">
       
       <video id="bgVideo" class="bg-media" autoplay loop muted playsinline crossOrigin="anonymous">
         <source src="https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4" type="video/mp4">
       </video>
 
-      <!-- OVERLAY SUBTITLE TEKS -->
-      <div class="subtitle-overlay" id="subtitleOverlay">
-        <div class="arabic-text" id="arabicDisplay">
-          <span class="word">Klik</span> <span class="word">Putar</span>
-        </div>
-        <div class="sub-text" id="subDisplay">Masukkan link YouTube / MP3 lalu tekan 'Putar'</div>
+      <!-- OVERLAY SUBTITLE -->
+      <div class="subtitle-overlay">
+        <div class="arabic-text" id="arabicDisplay"></div>
+        <div class="sub-text" id="subDisplay">Siap memutar media...</div>
       </div>
     </div>
   </div>
 
+  <!-- CANVAS KHUSUS PEREKAMAN -->
   <canvas id="exportCanvas" width="1280" height="720"></canvas>
 
   <div class="controls-wrapper">
-    <!-- MODE KONTEN & CHANNEL -->
+    <!-- REGISTRASI MODE & WATERMARK -->
     <div class="control-card">
       <div>
         <label>Pilih Mode Konten:</label>
@@ -228,12 +230,12 @@
       </div>
 
       <div>
-        <label>Nama Channel Youtube:</label>
+        <label>Nama Channel Youtube / Watermark:</label>
         <input type="text" id="channelNameInput" value="AUC LIRIK" oninput="updateChannelName()">
       </div>
     </div>
 
-    <!-- PANEL 1: KONTEN AL-QURAN -->
+    <!-- PANEL 1: AL-QURAN -->
     <div id="quranPanel" class="mode-panel">
       <div class="control-card">
         <div>
@@ -244,104 +246,84 @@
         </div>
 
         <div>
-          <label>Unggah Audio MP3 Sendiri (Opsional):</label>
+          <label>Unggah MP3 Murattal Sendiri (Opsional):</label>
           <input type="file" id="uploadAudioQuran" accept="audio/*" onchange="handleAudioUpload(event)">
         </div>
       </div>
     </div>
 
-    <!-- PANEL 2: KONTEN LAGU DENGAN DUKUNGAN LINK YOUTUBE & PENCARIAN LIRIK SEPARATIF -->
+    <!-- PANEL 2: LAGU & LIRIK -->
     <div id="songPanel" class="mode-panel active">
       <div class="control-card">
-        
-        <!-- FORM 1: MASUKKAN LINK YOUTUBE / DIRECT MP3 -->
         <div>
-          <label>1. Tempel Link YouTube / Direct MP3 Link:</label>
+          <label>1. Muat Audio dari URL Direct MP3 / Stream:</label>
           <div style="display:flex; gap:5px;">
-            <input type="text" id="youtubeUrlInput" placeholder="https://www.youtube.com/watch?v=..." value="">
-            <button style="width:110px; background:#dc2626; font-weight:bold;" onclick="loadAudioFromYouTube()">Muat Audio</button>
+            <input type="text" id="audioUrlInput" placeholder="https://domain.com/audio.mp3">
+            <button style="width:100px; background:#0284c7; font-weight:bold;" onclick="loadAudioFromUrl()">Muat URL</button>
           </div>
         </div>
 
-        <!-- FORM 2: UNGGAH FILE MP3 LOKAL -->
         <div>
-          <label>2. Atau Unggah File MP3 Lagu Full:</label>
+          <label>2. Atau Unggah File MP3 Lagu Full dari HP/Komputer:</label>
           <input type="file" id="uploadSong" accept="audio/*" onchange="handleSongUpload(event)">
         </div>
 
-        <!-- FORM 3: KHUSUS PENCARIAN LIRIK OTOMATIS -->
         <div style="grid-column: span 2;">
-          <label>3. Cari Lirik Lagu Otomatis (Ketik Nama Artis / Judul Lagu):</label>
+          <label>3. Cari Lirik Lagu .LRC Otomatis:</label>
           <div style="display:flex; gap:5px;">
-            <input type="text" id="lyricQueryInput" value="Denny Caknan Kartonyono Medot Janji" placeholder="misal: Sheila on 7 Dan / Denny Caknan Crito Mustahil">
-            <button style="width:110px; background:#0284c7; font-weight:bold;" onclick="searchSongLyricsOnly()">Cari Lirik</button>
+            <input type="text" id="lyricQueryInput" placeholder="Judul lagu ex: Denny Caknan Kartonyono Medot Janji">
+            <button style="width:100px; background:#0d9488; font-weight:bold;" onclick="searchSongLyricsOnly()">Cari Lirik</button>
           </div>
         </div>
 
-        <!-- FORM 4: AREA TEXTAREA LIRIK FORMAT .LRC -->
         <div style="grid-column: span 2;">
-          <label>Teks Lirik Format .LRC (Otomatis Terisi / Edit Manual):</label>
-          <textarea id="lrcManualInput" placeholder="[00:06.78] Lirik lagu di sini..."></textarea>
+          <label>Editor Lirik Sync Format .LRC (Otomatis Terisi / Edit Manual):</label>
+          <textarea id="lrcManualInput" placeholder="[00:06.78] Lirik lagu baris pertama&#10;[00:12.45] Lirik lagu baris kedua..."></textarea>
         </div>
-
       </div>
     </div>
 
-    <!-- PANEL PENGATUR UKURAN TEKS -->
+    <!-- PANEL SLIDER UKURAN FONT -->
     <div class="control-card">
       <div class="setting-group">
-        <label>Ukuran Teks Arab: <b id="valArabic">0.8rem</b></label>
-        <input type="range" id="sizeArabic" min="0.5" max="2.8" step="0.1" value="0.8" oninput="updateTextSettings()">
+        <label>Ukuran Teks Arab: <b id="valArabic">1.6rem</b></label>
+        <input type="range" id="sizeArabic" min="0.5" max="3.0" step="0.1" value="1.6" oninput="updateTextSettings()">
       </div>
 
       <div class="setting-group">
         <label>Ukuran Terjemahan / Lirik Lagu: <b id="valTrans">0.9rem</b></label>
-        <input type="range" id="sizeTrans" min="0.5" max="2.0" step="0.05" value="0.9" oninput="updateTextSettings()">
+        <input type="range" id="sizeTrans" min="0.5" max="2.5" step="0.05" value="0.9" oninput="updateTextSettings()">
       </div>
     </div>
 
-    <!-- BACKGROUND UPLOAD & AUDIO EFFECTS -->
+    <!-- PANEL UPLOAD BACKGROUND & ACTION BUTTONS -->
     <div class="control-card">
       <div>
-        <label>Unggah Background Gambar (JPG/PNG):</label>
+        <label>Unggah Gambar Latar kustom (JPG/PNG):</label>
         <input type="file" id="uploadBgImg" accept="image/*" onchange="handleBgImgUpload(event)">
       </div>
 
       <div>
-        <label>Unggah Background Video (MP4):</label>
+        <label>Unggah Video Latar kustom (MP4):</label>
         <input type="file" id="uploadBgVid" accept="video/mp4" onchange="handleBgVidUpload(event)">
       </div>
 
       <div>
-        <label>Preset Equalizer Audio:</label>
-        <select id="eqPreset" onchange="applyEQPreset(this.value)">
-          <option value="flat">Normal / Flat</option>
-          <option value="bass">Bass Boost</option>
-          <option value="treble">Treble Boost</option>
-          <option value="vocal">Vocal / Clear</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Pitch Audio: <b id="valPitch">1.0x</b></label>
-        <input type="range" id="pitchSlider" min="0.7" max="1.3" step="0.05" value="1.0" oninput="updatePitch(this.value)">
-      </div>
-
-      <div>
-        <label>Kontrol Putar:</label>
-        <button class="btn-play" onclick="startPlay()">▶️ Putar Media</button>
+        <label>Kontrol Utama Pemutar:</label>
+        <button class="btn-play" onclick="startPlay()">▶️ Putar Media Sekarang</button>
       </div>
 
       <div>
         <label>Ekspor Video HD 720p:</label>
-        <button class="btn-download" id="recBtn" onclick="toggleRecord()">🎥 Rekam & Unduh Video 720p</button>
+        <button class="btn-download" id="recBtn" onclick="toggleRecord()">🎥 Rekam & Unduh Video MP4</button>
       </div>
     </div>
   </div>
 
+  <!-- PLAYER BAR FLOATING BOTTOM -->
   <div class="player-bar">
-    <div style="font-size:0.8rem; font-weight:600; color:#38bdf8;" id="playingTitle">Siap Memutar</div>
-    <audio id="audioElement" controls style="width:100%; max-width:600px;" crossOrigin="anonymous"></audio>
+    <div style="font-size:0.8rem; font-weight:600; color:#38bdf8;" id="playingTitle">Siap Memutar Media</div>
+    <audio id="audioElement" controls style="width:100%; max-width:600px;"></audio>
   </div>
 
   <script>
@@ -353,11 +335,8 @@
     let songLyrics = [], currentSongLyricIndex = -1;
     let isCustomAudio = false;
 
-    let mediaRecorder, recordedChunks = [], isRecording = false, exportedBlob = null;
+    let mediaRecorder, recordedChunks = [], isRecording = false;
     let canvasAnimationId;
-
-    let audioCtx, audioSource, audioAnalyser, audioDestination;
-    let lowFilter, midFilter, highFilter;
 
     const audio = document.getElementById('audioElement');
     const bgVideo = document.getElementById('bgVideo');
@@ -370,7 +349,6 @@
       initSyncEngine();
       updateChannelName();
       updateTextSettings();
-      switchContentMode('song');
     };
 
     function updateChannelName() {
@@ -401,7 +379,7 @@
         document.getElementById('songPanel').classList.add('active');
         document.getElementById('infoBadge').innerText = "Mode Lagu / Musik";
         document.getElementById('arabicDisplay').innerHTML = "";
-        document.getElementById('subDisplay').innerText = "Masukkan link YouTube atau MP3...";
+        document.getElementById('subDisplay').innerText = "Silakan unggah MP3 atau muat lagu...";
       }
     }
 
@@ -412,7 +390,7 @@
 
       if (type === 'video') {
         bgVideo.classList.add('active');
-        bgVideo.play();
+        bgVideo.play().catch(() => {});
       } else {
         bgImage.classList.add('active');
       }
@@ -436,66 +414,75 @@
       }
     }
 
-    /* FITUR 1: MEMUAT AUDIO DARI LINK YOUTUBE ATAU DIRECT MP3 */
-    function loadAudioFromYouTube() {
-      const inputUrl = document.getElementById('youtubeUrlInput').value.trim();
-      if (!inputUrl) return alert("Masukkan Link YouTube atau Direct MP3 terlebih dahulu!");
-
-      // 1. Jika pengguna memasukkan Link Direct MP3 (misal: .mp3)
-      if (inputUrl.endsWith('.mp3') || inputUrl.includes('archive.org') || inputUrl.includes('cdn')) {
-        audio.src = inputUrl;
-        document.getElementById('playingTitle').innerText = `Lagu dari URL MP3 Direct`;
-        alert("Berhasil memuat audio dari Link Direct MP3!");
-        return;
-      }
-
-      // 2. Ekstrak Video ID YouTube
-      let videoId = '';
-      const ytMatch = inputUrl.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-
-      if (ytMatch && ytMatch[1]) {
-        videoId = ytMatch[1];
-        // Stream Audio dari Server Proxy YouTube Audio
-        const proxyAudioUrl = `https://api.cobalt.tools/api/stream?url=https://www.youtube.com/watch?v=${videoId}`;
-        
-        // Alternatif Fallback Stream
-        audio.src = `https://inv.tux.pizza/latest_version?id=${videoId}&itag=140`;
-        document.getElementById('playingTitle').innerText = `Lagu dari YouTube (ID: ${videoId})`;
-        alert("Berhasil memuat audio dari YouTube! Silakan tekan 'Muat Lirik' di bawah.");
-      } else {
-        alert("Format Link YouTube tidak valid. Contoh valid: https://www.youtube.com/watch?v=xxxxxx atau https://youtu.be/xxxxxx");
+    function handleSongUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        audio.src = URL.createObjectURL(file);
+        document.getElementById('playingTitle').innerText = `Lagu: ${file.name}`;
+        alert("File MP3 berhasil dimuat! Silakan klik 'Putar Media Sekarang'.");
       }
     }
 
-    /* FITUR 2: KHUSUS MENCARI LIRIK LAGU OTOMATIS BERDASARKAN QUERY */
+    function handleAudioUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        audio.src = URL.createObjectURL(file);
+        isCustomAudio = true;
+      }
+    }
+
+    function loadAudioFromUrl() {
+      const url = document.getElementById('audioUrlInput').value.trim();
+      if (!url) return alert("Masukkan URL MP3 valid terlebih dahulu.");
+      audio.src = url;
+      document.getElementById('playingTitle').innerText = "Audio dari Link Direct";
+      alert("URL MP3 dimuat! Klik 'Putar Media Sekarang'");
+    }
+
     async function searchSongLyricsOnly() {
-      const query = document.getElementById('lyricQueryInput').value.trim();
-      if (!query) return alert("Masukkan judul lagu / nama penyanyi untuk mencari lirik.");
+      const q = document.getElementById('lyricQueryInput').value.trim();
+      if (!q) return alert("Ketik kata kunci nama penyanyi / judul lagu.");
 
-      document.getElementById('subDisplay').innerText = "🔍 Mencari lirik lagu...";
-
+      document.getElementById('subDisplay').innerText = "Mencari lirik...";
       try {
-        const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(q)}`);
         const data = await res.json();
-
         if (data.length > 0 && data[0].syncedLyrics) {
           document.getElementById('lrcManualInput').value = data[0].syncedLyrics;
           parseLrc(data[0].syncedLyrics);
-          alert(`Lirik untuk "${data[0].trackName} - ${data[0].artistName}" berhasil ditemukan!`);
-          document.getElementById('subDisplay').innerText = "Lirik dimuat! Tekan 'Putar Media'";
+          alert(`Lirik berhasil dimuat untuk: ${data[0].trackName} - ${data[0].artistName}`);
+          document.getElementById('subDisplay').innerText = "Lirik siap dimainkan!";
         } else {
-          alert("Lirik tersinkronisasi (.lrc) tidak ditemukan. Silakan isi lirik manual pada kolom textarea.");
-          document.getElementById('subDisplay').innerText = "Lirik tidak ditemukan di server.";
+          alert("Lirik tidak ditemukan di server. Silakan isi teks manual di area textarea.");
         }
-      } catch (err) {
+      } catch (e) {
         alert("Gagal terhubung ke server lirik.");
       }
+    }
+
+    /* ENGINE MEMUTAR BERSAMAAN */
+    function startPlay() {
+      if (!audio.src) {
+        return alert("Pilih file MP3 atau muat lagu terlebih dahulu!");
+      }
+
+      if (currentMode === 'song' && document.getElementById('lrcManualInput').value) {
+        parseLrc(document.getElementById('lrcManualInput').value);
+      }
+
+      audio.play().then(() => {
+        if (bgType === 'video') bgVideo.play().catch(() => {});
+        document.getElementById('playingTitle').innerText = "▶ Sedang Memutar...";
+      }).catch(err => {
+        alert("Gagal memutar audio. Pastikan file MP3 lokal Anda valid.");
+      });
     }
 
     /* ENGINE SINKRONISASI REAL-TIME */
     function initSyncEngine() {
       audio.addEventListener('timeupdate', () => {
         if (!audio.duration) return;
+
         const currentMs = audio.currentTime * 1000;
         const durationMs = audio.duration * 1000;
 
@@ -536,11 +523,27 @@
       audio.addEventListener('ended', () => {
         if (currentMode === 'quran' && !isCustomAudio && currentAyatIndex < currentVerses.length - 1) {
           currentAyatIndex++;
-          startPlay();
+          renderAyat(currentAyatIndex);
+          audio.play();
         } else if (isRecording) {
           toggleRecord();
         }
       });
+    }
+
+    function parseLrc(lrcText) {
+      songLyrics = [];
+      const lines = lrcText.split('\n');
+      const reg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
+      lines.forEach(l => {
+        const m = reg.exec(l);
+        if (m) {
+          const time = parseInt(m[1]) * 60 + parseInt(m[2]) + parseInt(m[3].padEnd(3, '0')) / 1000;
+          const text = l.replace(reg, '').trim();
+          if (text) songLyrics.push({ time, text });
+        }
+      });
+      songLyrics.sort((a, b) => a.time - b.time);
     }
 
     /* AL-QURAN ENGINE */
@@ -556,7 +559,6 @@
           opt.textContent = `${c.id}. ${c.name_simple} (${c.translated_name.name})`;
           select.appendChild(opt);
         });
-        loadSurah(1);
       } catch (e) {}
     }
 
@@ -566,8 +568,7 @@
         const res = await fetch(`${API_QURAN}/verses/by_chapter/${chapterId}?language=id&words=true&word_fields=text_uthmani&translations=33`);
         const result = await res.json();
         currentVerses = result.verses;
-        currentAyatIndex = 0;
-        if (currentMode === 'quran') renderAyat(0);
+        renderAyat(0);
       } catch (e) {}
     }
 
@@ -591,117 +592,95 @@
       }
     }
 
-    function parseLrc(lrcText) {
-      songLyrics = [];
-      const lines = lrcText.split('\n');
-      const reg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
-      lines.forEach(l => {
-        const m = reg.exec(l);
-        if (m) {
-          const time = parseInt(m[1]) * 60 + parseInt(m[2]) + parseInt(m[3].padEnd(3, '0')) / 1000;
-          const text = l.replace(reg, '').trim();
-          if (text) songLyrics.push({ time, text });
-        }
-      });
-      songLyrics.sort((a, b) => a.time - b.time);
-    }
-
-    function handleSongUpload(e) { 
-      const file = e.target.files[0]; 
-      if (file) { 
-        audio.src = URL.createObjectURL(file); 
-        document.getElementById('playingTitle').innerText = `Audio Lagu Full: ${file.name}`;
-      } 
-    }
-    function handleAudioUpload(e) { 
-      const file = e.target.files[0]; 
-      if (file) { 
-        audio.src = URL.createObjectURL(file); 
-        isCustomAudio = true; 
-      } 
-    }
-
-    function updatePitch(val) { document.getElementById('valPitch').innerText = val + 'x'; audio.playbackRate = parseFloat(val); audio.preservesPitch = false; }
-
-    function applyEQPreset(p) {
-      if (!lowFilter) return;
-      if (p === 'bass') { lowFilter.gain.value = 8; highFilter.gain.value = -3; }
-      else if (p === 'treble') { lowFilter.gain.value = -3; highFilter.gain.value = 8; }
-      else if (p === 'vocal') { lowFilter.gain.value = -2; midFilter.gain.value = 6; }
-      else { lowFilter.gain.value = 0; midFilter.gain.value = 0; highFilter.gain.value = 0; }
-    }
-
-    function startPlay() {
-      if (currentMode === 'song' && document.getElementById('lrcManualInput').value) {
-        parseLrc(document.getElementById('lrcManualInput').value);
-      }
-      audio.play();
-      if (bgType === 'video') bgVideo.play();
-    }
-
-    /* RENDER CANVAS REKAM 720P */
+    /* RENDER CANVAS & PEREKAMAN VIDEO HD 720P */
     function drawCanvasFrame() {
       if (!isRecording) return;
 
-      if (bgType === 'image') {
-        ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
-      } else {
-        ctx.drawImage(bgVideo, 0, 0, canvas.width, canvas.height);
+      try {
+        if (bgType === 'image') {
+          ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+        } else {
+          ctx.drawImage(bgVideo, 0, 0, canvas.width, canvas.height);
+        }
+      } catch(e) {
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
+      // Layer Gradien Subtitle Box
       const grad = ctx.createLinearGradient(0, canvas.height - 250, 0, canvas.height);
       grad.addColorStop(0, 'rgba(0,0,0,0)');
       grad.addColorStop(1, 'rgba(0,0,0,0.85)');
       ctx.fillStyle = grad;
       ctx.fillRect(0, canvas.height - 250, canvas.width, 250);
 
+      // Watermark Channel
       const channelName = document.getElementById('channelNameInput').value || "AUC LIRIK";
       ctx.font = 'bold 24px Inter, sans-serif';
       ctx.fillStyle = '#fbbf24';
       ctx.textAlign = 'right';
-      ctx.shadowColor = "rgba(0,0,0,0.9)"; ctx.shadowBlur = 6;
       ctx.fillText(`▶ ${channelName}`, canvas.width - 40, 50);
 
+      // Teks Lirik / Subtitle
       ctx.textAlign = 'center';
       const subText = document.getElementById('subDisplay').innerText;
-      ctx.font = '22px Inter, sans-serif';
+      ctx.font = '24px Inter, sans-serif';
       ctx.fillStyle = '#ffffff';
-      ctx.fillText(subText, 640, 640);
+      ctx.fillText(subText, 640, 630);
 
       if (currentMode === 'quran') {
         const arabText = document.getElementById('arabicDisplay').innerText;
         ctx.font = 'bold 36px Amiri, serif';
         ctx.fillStyle = '#fbbf24';
-        ctx.fillText(arabText, 640, 570);
+        ctx.fillText(arabText, 640, 560);
       }
 
-      ctx.shadowColor = "transparent";
       canvasAnimationId = requestAnimationFrame(drawCanvasFrame);
     }
 
     async function toggleRecord() {
       const recBtn = document.getElementById('recBtn');
-      if (!isRecording) {
-        const stream = canvas.captureStream(30);
-        recordedChunks = [];
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
-        mediaRecorder.onstop = () => {
-          exportedBlob = new Blob(recordedChunks, { type: 'video/webm' });
-          const url = URL.createObjectURL(exportedBlob);
-          const a = document.createElement('a'); a.href = url;
-          a.download = `Studio_Video720p_${Date.now()}.webm`; a.click();
-        };
 
-        mediaRecorder.start(1000);
-        isRecording = true;
-        recBtn.innerText = "⏹️ Hentikan & Unduh";
-        drawCanvasFrame();
-        startPlay();
+      if (!isRecording) {
+        try {
+          const stream = canvas.captureStream(30);
+          recordedChunks = [];
+          
+          let options = { mimeType: 'video/webm' };
+          if (!MediaRecorder.isTypeSupported('video/webm')) {
+            options = { mimeType: 'video/mp4' };
+          }
+
+          mediaRecorder = new MediaRecorder(stream, options);
+
+          mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) recordedChunks.push(e.data);
+          };
+
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Video_Studio_${Date.now()}.mp4`;
+            a.click();
+          };
+
+          mediaRecorder.start(1000);
+          isRecording = true;
+          recBtn.innerText = "⏹️ Hentikan & Simpan MP4";
+          recBtn.style.background = "#dc2626";
+
+          drawCanvasFrame();
+          startPlay();
+        } catch(e) {
+          alert("Perekaman gagal dimaksimalkan. Unggah file gambar/MP3 sendiri dari galeri HP agar peramban mengizinkan akses rekam penuh.");
+        }
       } else {
         mediaRecorder.stop();
         isRecording = false;
-        recBtn.innerText = "🎥 Rekam & Unduh Video 720p";
+        recBtn.innerText = "🎥 Rekam & Unduh Video MP4";
+        recBtn.style.background = "#d97706";
       }
     }
   </script>
