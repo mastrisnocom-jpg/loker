@@ -3,187 +3,223 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Al-Qur'an Karaoke Style</title>
+  <title>Qur'an Video Player Karaoke</title>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --primary: #0f766e;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --text: #0f172a;
-      
-      /* Warna Efek Karaoke */
-      --karaoke-glow: #22c55e;
-      --karaoke-bg: #dcfce7;
+      --primary: #0d9488;
+      --bg: #0f172a;
+      --karaoke-gold: #fbbf24;
+      --karaoke-glow: rgba(251, 191, 36, 0.6);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding-bottom: 120px; }
+    body { background-color: var(--bg); color: white; overflow-x: hidden; }
 
-    header {
-      background: var(--primary);
-      color: white;
-      padding: 18px 15px;
-      text-align: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    /* Container Video Player Fullscreen / Card */
+    .video-player-container {
+      position: relative;
+      width: 100%;
+      height: 75vh;
+      min-height: 480px;
+      background: #000;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
 
-    .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+    /* Video Background MP4 */
+    #bgVideo {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      min-width: 100%;
+      min-height: 100%;
+      width: auto;
+      height: auto;
+      z-index: 1;
+      transform: translate(-50%, -50%);
+      object-fit: cover;
+      filter: brightness(0.45) contrast(1.1); /* Meredupkan video agar teks terbaca jelas */
+    }
+
+    /* Overlay Teks Arab & Terjemahan di Atas Video */
+    .quran-overlay {
+      position: relative;
+      z-index: 10;
+      width: 90%;
+      max-width: 850px;
+      text-align: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(8px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .surah-badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      margin-bottom: 15px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Teks Arab Karaoke */
+    .arabic-text {
+      font-family: 'Amiri', serif;
+      font-size: 2.6rem;
+      direction: rtl;
+      line-height: 2.3;
+      margin-bottom: 15px;
+      color: #f8fafc;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    }
+
+    /* Kata yang Sedang Dibaca (Karaoke Highlight) */
+    .word {
+      display: inline-block;
+      padding: 0 6px;
+      border-radius: 8px;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .word.highlight {
+      color: var(--karaoke-gold);
+      transform: scale(1.15);
+      text-shadow: 0 0 15px var(--karaoke-glow);
+      font-weight: bold;
+    }
+
+    .translation-text {
+      font-size: 1.05rem;
+      color: #e2e8f0;
+      line-height: 1.6;
+      font-weight: 400;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+    }
+
+    /* Controls Bottom Section */
+    .controls-wrapper {
+      max-width: 850px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
 
     .control-card {
-      background: white;
-      padding: 15px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-    }
-
-    select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      outline: none;
-    }
-
-    .verse-card {
-      background: var(--card-bg);
+      background: #1e293b;
+      padding: 18px;
       border-radius: 14px;
-      padding: 20px;
-      margin-bottom: 18px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-      border: 1px solid #f1f5f9;
-      transition: all 0.3s ease;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
     }
 
-    .verse-card.active-verse {
-      border-left: 4px solid var(--primary);
-      background-color: #f0fdf4;
-    }
-
-    .verse-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-    }
-
-    .verse-num {
-      background: #e2e8f0;
-      color: var(--primary);
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.85rem;
+    select, button {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: white;
+      font-size: 0.9rem;
+      outline: none;
     }
 
     .btn-play {
       background: var(--primary);
-      color: white;
       border: none;
-      padding: 6px 14px;
-      border-radius: 8px;
-      cursor: pointer;
       font-weight: 600;
-      font-size: 0.85rem;
-    }
-
-    /* Teks Arab Karaoke Container */
-    .arabic-container {
-      font-family: 'Amiri', serif;
-      font-size: 2.2rem;
-      text-align: right;
-      direction: rtl;
-      line-height: 2.4;
-      margin-bottom: 15px;
-      color: #334155;
-    }
-
-    /* Setiap Kata Teks Arab */
-    .word {
-      display: inline-block;
-      padding: 0 4px;
-      border-radius: 6px;
-      transition: all 0.15s ease-in-out;
       cursor: pointer;
     }
 
-    /* EFEK KARAOKE (Menyala saat audio diputar) */
-    .word.highlight {
-      color: #065f46;
-      background-color: var(--karaoke-bg);
-      font-weight: bold;
-      transform: scale(1.12);
-      text-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
-    }
-
-    .translation { font-size: 0.95rem; color: #64748b; line-height: 1.6; }
-
-    /* Fixed Audio Player Bottom */
+    /* Player Controls Bar */
     .player-bar {
       position: fixed;
       bottom: 0; left: 0; right: 0;
-      background: white;
-      border-top: 2px solid var(--primary);
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid #334155;
       padding: 12px 20px;
-      box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 6px;
       z-index: 1000;
     }
-
-    .playing-title { font-size: 0.85rem; font-weight: 700; color: var(--primary); }
   </style>
 </head>
 <body>
 
-  <header>
-    <h2>📖 Al-Qur'an Karaoke Sync</h2>
-    <p style="font-size:0.8rem; opacity:0.9;">Teks Arab Menyala Otomatis Mengikuti Audio Qori</p>
-  </header>
+  <!-- VIDEO PLAYER CONTAINER FULL -->
+  <div class="video-player-container">
+    <!-- MP4 Video Background Loop -->
+    <video id="bgVideo" autoplay loop muted playsinline>
+      <source id="videoSource" src="https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4" type="video/mp4">
+    </video>
 
-  <div class="container">
-    <div class="control-card">
-      <label style="font-size: 0.8rem; color:#64748b;">Pilih Surah:</label>
-      <select id="surahSelect" onchange="loadSurahKaraoke(this.value)">
-        <option value="">Memuat surah...</option>
-      </select>
+    <!-- OVERLAY TEKS QUR'AN KARAOKE -->
+    <div class="quran-overlay">
+      <div class="surah-badge" id="surahBadge">Surah Al-Fatihah : Ayat 1</div>
+      <div class="arabic-text" id="arabicDisplay">
+        <span class="word">Memuat</span> <span class="word">teks...</span>
+      </div>
+      <div class="translation-text" id="translationDisplay">Silakan tekan tombol Play Video Player</div>
     </div>
-
-    <div id="surahInfo" style="text-align:center; margin-bottom:20px; font-weight:bold; color:var(--primary);"></div>
-    <div id="ayatContainer">Memuat data...</div>
   </div>
 
-  <!-- Audio Player Bar -->
+  <!-- KONTROL PENGATURAN -->
+  <div class="controls-wrapper">
+    <div class="control-card">
+      <div>
+        <label style="font-size:0.75rem; color:#94a3b8;">Pilih Surah:</label>
+        <select id="surahSelect" onchange="loadSurah(this.value)">
+          <option value="">Memuat surah...</option>
+        </select>
+      </div>
+
+      <div>
+        <label style="font-size:0.75rem; color:#94a3b8;">Latar Video (MP4):</label>
+        <select id="bgSelect" onchange="changeVideoBg(this.value)">
+          <option value="https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4">Awan & Langit</option>
+          <option value="https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4">Hutan & Sungai</option>
+          <option value="https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-4008-large.mp4">Malam Bintang Aesthetic</option>
+        </select>
+      </div>
+
+      <div style="display:flex; align-items:flex-end;">
+        <button class="btn-play" onclick="playCurrentAyat()">▶️ Putar Video Player</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIXED AUDIO PLAYER -->
   <div class="player-bar">
-    <div class="playing-title" id="playingTitle">Klik ▶️ Karaoke untuk memulai</div>
+    <div style="font-size:0.85rem; font-weight:600; color:#38bdf8;" id="playingTitle">Siap diputar</div>
     <audio id="audioElement" controls style="width:100%; max-width:600px;"></audio>
   </div>
 
   <script>
     const API_QURAN_COM = 'https://api.quran.com/api/v4';
     let currentVerses = [];
-    let currentAyatIndex = -1;
-    let audioSegments = []; // Menyimpan timestamp detik per kata
-    
+    let currentAyatIndex = 0;
+    let audioSegments = [];
+
     const audio = document.getElementById('audioElement');
+    const bgVideo = document.getElementById('bgVideo');
 
     window.onload = () => {
       getSurahList();
-      initAudioKaraokeEngine();
+      initKaraokeEngine();
     };
 
     // 1. Ambil Daftar Surah
@@ -201,121 +237,101 @@
           select.appendChild(opt);
         });
 
-        loadSurahKaraoke(1); // Default Al-Fatihah
+        loadSurah(1); // Default Al-Fatihah
       } catch (e) {
-        alert("Gagal mengambil data surah.");
+        alert("Gagal memuat surah.");
       }
     }
 
-    // 2. Load Surah + Data Segmen Waktu Per-Kata (Word Timestamps)
-    async function loadSurahKaraoke(chapterId) {
-      if (!chapterId) return;
-      const container = document.getElementById('ayatContainer');
-      container.innerHTML = '<p style="text-align:center;">Memuat data teks & timestamp karaoke...</p>';
-
+    // 2. Load Teks Ayat & Timestamp Kata
+    async function loadSurah(chapterId) {
       try {
-        // Ambil Teks Per Kata + Audio Timestamps (Misyari Rasyid Al-Afasy / Reciter 7)
         const res = await fetch(`${API_QURAN_COM}/verses/by_chapter/${chapterId}?language=id&words=true&word_fields=text_uthmani&audio=7&translations=33`);
         const result = await res.json();
         currentVerses = result.verses;
+        currentAyatIndex = 0;
 
-        document.getElementById('surahInfo').innerText = `Surah Ke-${chapterId} • ${currentVerses.length} Ayat`;
-
-        let html = '';
-        currentVerses.forEach((verse, vIndex) => {
-          // Bungkus setiap KATA dalam tag <span class="word">
-          let wordsHtml = '';
-          verse.words.forEach((w, wIndex) => {
-            if (w.char_type_name === "word") {
-              wordsHtml += `<span class="word" id="w-${vIndex}-${w.position}">${w.text_uthmani}</span> `;
-            }
-          });
-
-          const translationText = verse.translations[0] ? verse.translations[0].text : '';
-
-          html += `
-            <div class="verse-card" id="verse-${vIndex}">
-              <div class="verse-header">
-                <div class="verse-num">${verse.verse_number}</div>
-                <button class="btn-play" onclick="playKaraoke(${vIndex})">▶️ Karaoke</button>
-              </div>
-              <div class="arabic-container">${wordsHtml}</div>
-              <div class="translation">${translationText}</div>
-            </div>
-          `;
-        });
-
-        container.innerHTML = html;
-        currentAyatIndex = -1;
+        renderAyatToVideo(0);
       } catch (e) {
-        container.innerHTML = '<p style="text-align:center; color:red;">Gagal memuat data karaoke.</p>';
+        alert("Gagal memuat ayat.");
       }
     }
 
-    // 3. Putar Audio & Set Segmen Kata
-    function playKaraoke(vIndex) {
-      currentAyatIndex = vIndex;
-      const verse = currentVerses[vIndex];
+    // 3. Tampilkan Teks ke Layar Video
+    function renderAyatToVideo(index) {
+      if (!currentVerses.length) return;
+      const verse = currentVerses[index];
 
-      if (!verse.audio || !verse.audio.url) {
-        alert("Audio untuk ayat ini tidak tersedia.");
-        return;
+      // Update Badge
+      document.getElementById('surahBadge').innerText = `Ayat ${verse.verse_number} dari ${currentVerses.length}`;
+
+      // Render Teks Arab Per Kata
+      let wordsHtml = '';
+      verse.words.forEach(w => {
+        if (w.char_type_name === "word") {
+          wordsHtml += `<span class="word" id="w-${w.position}">${w.text_uthmani}</span> `;
+        }
+      });
+      document.getElementById('arabicDisplay').innerHTML = wordsHtml;
+
+      // Render Terjemahan
+      const translation = verse.translations[0] ? verse.translations[0].text : '';
+      document.getElementById('translationDisplay').innerHTML = `"${translation}"`;
+
+      // Set Audio Source & Segmen Timestamps
+      if (verse.audio && verse.audio.url) {
+        audio.src = verse.audio.url.startsWith('http') ? verse.audio.url : `https://audio.quran.com/${verse.audio.url}`;
+        audioSegments = verse.audio.segments || [];
       }
+    }
 
-      // Audio URL dari Quran.com
-      const audioUrl = verse.audio.url.startsWith('http') ? verse.audio.url : `https://audio.quran.com/${verse.audio.url}`;
+    // 4. Putar Audio & Video
+    function playCurrentAyat() {
+      if (!currentVerses.length) return;
       
-      // Ambil timestamp segmen per-kata dalam milidetik [position, start_time, end_time]
-      audioSegments = verse.audio.segments || [];
-
-      audio.src = audioUrl;
+      renderAyatToVideo(currentAyatIndex);
       audio.play();
+      bgVideo.play();
 
-      // Highlight ayat aktif
-      document.querySelectorAll('.verse-card').forEach(e => e.classList.remove('active-verse'));
-      const activeCard = document.getElementById(`verse-${vIndex}`);
-      if (activeCard) {
-        activeCard.classList.add('active-verse');
-        activeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-
-      document.getElementById('playingTitle').innerText = `Memutar Ayat ${verse.verse_number}`;
+      document.getElementById('playingTitle').innerText = `Memutar Ayat ${currentVerses[currentAyatIndex].verse_number}`;
     }
 
-    // 4. ENGINE EFEK KARAOKE (Real-time TimeUpdate Listener)
-    function initAudioKaraokeEngine() {
+    // 5. Engine Synchronize Karaoke
+    function initKaraokeEngine() {
       audio.addEventListener('timeupdate', () => {
-        if (currentAyatIndex === -1 || !audioSegments.length) return;
+        if (!audioSegments.length) return;
 
-        // Konversi detik playback audio ke milidetik
         const currentTimeMs = audio.currentTime * 1000;
 
-        // Cari kata yang sedang dibaca berdasarkan interval waktu
         audioSegments.forEach(segment => {
           const [wordPosition, startTime, endTime] = segment;
-          const wordEl = document.getElementById(`w-${currentAyatIndex}-${wordPosition}`);
+          const wordEl = document.getElementById(`w-${wordPosition}`);
 
           if (wordEl) {
             if (currentTimeMs >= startTime && currentTimeMs <= endTime) {
-              // Tambahkan efek karaoke menyala
               wordEl.classList.add('highlight');
             } else {
-              // Hapus efek jika audio sudah melewati kata tersebut
               wordEl.classList.remove('highlight');
             }
           }
         });
       });
 
-      // Otomatis lanjut ke ayat berikutnya saat audio selesai
+      // Pindah Otomatis ke Ayat Berikutnya
       audio.addEventListener('ended', () => {
-        // Clear sisa highlight
-        document.querySelectorAll('.word').forEach(e => e.classList.remove('highlight'));
-
         if (currentAyatIndex < currentVerses.length - 1) {
-          playKaraoke(currentAyatIndex + 1);
+          currentAyatIndex++;
+          playCurrentAyat();
         }
       });
+    }
+
+    // 6. Ganti Video Latar
+    function changeVideoBg(url) {
+      const source = document.getElementById('videoSource');
+      source.src = url;
+      bgVideo.load();
+      bgVideo.play();
     }
   </script>
 </body>
