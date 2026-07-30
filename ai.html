@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Islami & Song Video Studio HD 720p - Complete Fixed</title>
+  <title>Islami & Song Video Studio HD 720p - Fixed Search</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,7 +29,6 @@
       padding: 0 15px;
     }
 
-    /* CONTAINER VIDEO HD 16:9 */
     .video-player-container {
       position: relative;
       width: 100%;
@@ -85,7 +84,6 @@
       color: #cbd5e1;
     }
 
-    /* OVERLAY SUBTITLE TEKS */
     .subtitle-overlay {
       position: relative;
       z-index: 10;
@@ -161,7 +159,7 @@
       outline: none;
     }
 
-    textarea { height: 60px; font-family: monospace; }
+    textarea { height: 70px; font-family: monospace; }
 
     .btn-play { background: var(--primary); border: none; font-weight: bold; cursor: pointer; }
     .btn-download { background: #d97706; border: none; font-weight: bold; cursor: pointer; }
@@ -170,7 +168,7 @@
     .mode-panel.active { display: block; }
 
     .song-results {
-      max-height: 140px;
+      max-height: 160px;
       overflow-y: auto;
       background: #0f172a;
       border: 1px solid #38bdf8;
@@ -185,6 +183,7 @@
       border-bottom: 1px solid #1e293b;
       display: flex;
       justify-content: space-between;
+      align-items: center;
     }
     .song-item:hover { background: #0284c7; }
 
@@ -208,12 +207,12 @@
   <div class="player-wrapper">
     <div class="video-player-container" id="playerContainer">
       <div class="info-badge" id="infoBadge">Mode Al-Qur'an</div>
-      <div class="channel-watermark" id="channelDisplay">▶ Mukjizat doa</div>
+      <div class="channel-watermark" id="channelDisplay">▶ AUC LIRIK</div>
 
       <!-- BACKGROUND MEDIA -->
-      <img id="bgImage" class="bg-media" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1280&q=80" alt="Background Gambar">
+      <img id="bgImage" class="bg-media active" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1280&q=80" alt="Background Gambar">
       
-      <video id="bgVideo" class="bg-media active" autoplay loop muted playsinline crossOrigin="anonymous">
+      <video id="bgVideo" class="bg-media" autoplay loop muted playsinline crossOrigin="anonymous">
         <source src="https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4" type="video/mp4">
       </video>
 
@@ -222,7 +221,7 @@
         <div class="arabic-text" id="arabicDisplay">
           <span class="word">Klik</span> <span class="word">Putar</span>
         </div>
-        <div class="sub-text" id="subDisplay">Pilih konten lalu tekan 'Putar'</div>
+        <div class="sub-text" id="subDisplay">Pilih lagu lalu tekan 'Putar'</div>
       </div>
     </div>
   </div>
@@ -235,27 +234,27 @@
       <div>
         <label>Pilih Mode Konten:</label>
         <select id="modeSelect" onchange="switchContentMode(this.value)">
+          <option value="song" selected>🎵 Mode Lagu / Music Video</option>
           <option value="quran">📖 Mode Al-Qur'an Karaoke</option>
-          <option value="song">🎵 Mode Lagu / Music Video</option>
         </select>
       </div>
 
       <div>
         <label>Pilih Tipe Background:</label>
         <select id="bgTypeSelect" onchange="switchBgType(this.value)">
+          <option value="image" selected>🖼️ Gambar Latar</option>
           <option value="video">🎥 Video Latar</option>
-          <option value="image">🖼️ Gambar Latar</option>
         </select>
       </div>
 
       <div>
         <label>Nama Channel Youtube:</label>
-        <input type="text" id="channelNameInput" value="Mukjizat doa" oninput="updateChannelName()">
+        <input type="text" id="channelNameInput" value="AUC LIRIK" oninput="updateChannelName()">
       </div>
     </div>
 
     <!-- PANEL 1: KONTEN AL-QURAN -->
-    <div id="quranPanel" class="mode-panel active">
+    <div id="quranPanel" class="mode-panel">
       <div class="control-card">
         <div>
           <label>Pilih Surah:</label>
@@ -271,40 +270,40 @@
       </div>
     </div>
 
-    <!-- PANEL 2: KONTEN LAGU DENGAN PENCARIAN MP3 OTOMATIS -->
-    <div id="songPanel" class="mode-panel">
+    <!-- PANEL 2: KONTEN LAGU DENGAN PENCARIAN APPLE ITUNES REAL -->
+    <div id="songPanel" class="mode-panel active">
       <div class="control-card">
         <div style="grid-column: span 2;">
-          <label>Cari Lagu & Audio MP3 Otomatis (Internet):</label>
+          <label>Cari Lagu Apapun (Denny Caknan, Sheila on 7, Pop, Dangdut, dll):</label>
           <div style="display:flex; gap:5px;">
-            <input type="text" id="songQuery" placeholder="Ketik kata kunci ex: Relaxing, Piano, Acoustic, Instrumental...">
+            <input type="text" id="songQuery" value="Denny Caknan" placeholder="Ketik nama penyanyi / judul lagu...">
             <button style="width:100px; background:#0284c7; font-weight:bold;" onclick="searchSongAndLyrics()">Cari Lagu</button>
           </div>
           <div class="song-results" id="songResults" style="display:none;"></div>
         </div>
 
         <div>
-          <label>Atau Unggah File MP3 Sendiri:</label>
+          <label>Atau Unggah Lagu MP3 Sendiri (Full Version):</label>
           <input type="file" id="uploadSong" accept="audio/*" onchange="handleSongUpload(event)">
         </div>
 
         <div style="grid-column: span 2;">
-          <label>Lirik Format .LRC (Otomatis / Manual):</label>
-          <textarea id="lrcManualInput" placeholder="[00:12.30] Lirik lagu di sini..."></textarea>
+          <label>Lirik Format .LRC (Otomatis Terisi / Edit Manual):</label>
+          <textarea id="lrcManualInput" placeholder="[00:06.78] Lirik lagu di sini..."></textarea>
         </div>
       </div>
     </div>
 
-    <!-- PANEL KHUSUS: PENGATUR UKURAN TEKS -->
+    <!-- PANEL PENGATUR UKURAN TEKS -->
     <div class="control-card">
       <div class="setting-group">
-        <label>Ukuran Teks Arab: <b id="valArabic">1.6rem</b></label>
-        <input type="range" id="sizeArabic" min="0.8" max="2.8" step="0.1" value="1.6" oninput="updateTextSettings()">
+        <label>Ukuran Teks Arab: <b id="valArabic">0.8rem</b></label>
+        <input type="range" id="sizeArabic" min="0.5" max="2.8" step="0.1" value="0.8" oninput="updateTextSettings()">
       </div>
 
       <div class="setting-group">
-        <label>Ukuran Terjemahan/Lirik: <b id="valTrans">0.9rem</b></label>
-        <input type="range" id="sizeTrans" min="0.5" max="1.6" step="0.05" value="0.9" oninput="updateTextSettings()">
+        <label>Ukuran Terjemahan / Lirik Lagu: <b id="valTrans">0.9rem</b></label>
+        <input type="range" id="sizeTrans" min="0.5" max="2.0" step="0.05" value="0.9" oninput="updateTextSettings()">
       </div>
     </div>
 
@@ -354,8 +353,8 @@
 
   <script>
     const API_QURAN = 'https://api.quran.com/api/v4';
-    let currentMode = 'quran';
-    let bgType = 'video';
+    let currentMode = 'song';
+    let bgType = 'image';
 
     let currentVerses = [], currentAyatIndex = 0, currentSurahNum = 1;
     let songLyrics = [], currentSongLyricIndex = -1;
@@ -378,14 +377,14 @@
       initSyncEngine();
       updateChannelName();
       updateTextSettings();
+      switchContentMode('song');
     };
 
     function updateChannelName() {
-      const name = document.getElementById('channelNameInput').value || "Mukjizat doa";
+      const name = document.getElementById('channelNameInput').value || "AUC LIRIK";
       document.getElementById('channelDisplay').innerHTML = `▶ ${name}`;
     }
 
-    /* PENGATUR UKURAN TEKS TERHUBUNG REAL-TIME */
     function updateTextSettings() {
       const arabicSize = document.getElementById('sizeArabic').value + 'rem';
       const transSize = document.getElementById('sizeTrans').value + 'rem';
@@ -444,53 +443,50 @@
       }
     }
 
-    /* PENCARIAN AUDIO MP3 OTOMATIS DARI SERVER PUBLIK AMEIN */
+    /* PENCARIAN LAGU VIA ITUNES SEARCH API (BEBAS CORS & RESMI) */
     async function searchSongAndLyrics() {
       const q = document.getElementById('songQuery').value;
-      if (!q) return alert("Masukkan kata kunci lagu terlebih dahulu.");
+      if (!q) return alert("Masukkan nama penyanyi/lagu terlebih dahulu.");
 
       const resultsContainer = document.getElementById('songResults');
       resultsContainer.style.display = 'block';
-      resultsContainer.innerHTML = '<div style="padding:8px; font-size:0.75rem;">Mencari file lagu MP3...</div>';
+      resultsContainer.innerHTML = '<div style="padding:10px; font-size:0.8rem; text-align:center;">🔍 Mencari lagu dari server Apple iTunes...</div>';
 
       try {
-        // Menggunakan API Jamendo Client Publik
-        const resAudio = await fetch(`https://api.jamendo.com/v3.0/tracks/?client_id=56d30270&format=json&limit=5&search=${encodeURIComponent(q)}`);
+        // iTunes API Publik
+        const resAudio = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=6`);
         const dataAudio = await resAudio.json();
 
         let html = '';
         if (dataAudio.results && dataAudio.results.length > 0) {
           dataAudio.results.forEach(track => {
+            const trackName = track.trackName.replace(/'/g, "\\'");
+            const artistName = track.artistName.replace(/'/g, "\\'");
+            
             html += `
-              <div class="song-item" onclick="selectOnlineAudio('${track.audio}', '${track.name}')">
-                <span>🎵 <b>${track.name}</b></span>
-                <span style="color:#38bdf8;">▶ Putar</span>
+              <div class="song-item" onclick="selectOnlineAudio('${track.previewUrl}', '${trackName} - ${artistName}', '${trackName}')">
+                <span>🎵 <b>${track.trackName}</b> - <small>${track.artistName}</small></span>
+                <span style="color:#38bdf8; font-weight:bold;">▶ Pilih</span>
               </div>
             `;
           });
         } else {
-          // Fallback Lagu
-          html = `
-            <div class="song-item" onclick="selectOnlineAudio('https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3', 'Acoustic Guitar Soft')">🎵 Acoustic Guitar Soft</div>
-            <div class="song-item" onclick="selectOnlineAudio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3', 'Relaxing Piano Ambient')">🎵 Relaxing Piano Ambient</div>
-          `;
+          html = '<div style="padding:10px; font-size:0.8rem; color:#ef4444;">Lagu tidak ditemukan. Silakan periksa ejaan.</div>';
         }
 
         resultsContainer.innerHTML = html;
-        searchLyricsOnly(q);
       } catch (err) {
-        resultsContainer.innerHTML = `
-          <div class="song-item" onclick="selectOnlineAudio('https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3', 'Acoustic Guitar Soft')">🎵 Acoustic Guitar Soft (Contoh)</div>
-          <div class="song-item" onclick="selectOnlineAudio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3', 'Relaxing Piano Ambient')">🎵 Relaxing Piano Ambient (Contoh)</div>
-        `;
+        resultsContainer.innerHTML = '<div style="padding:10px; font-size:0.8rem; color:#ef4444;">Gagal terhubung ke server lagu.</div>';
       }
     }
 
-    function selectOnlineAudio(url, title) {
+    function selectOnlineAudio(url, title, trackOnly) {
       audio.src = url;
       document.getElementById('playingTitle').innerText = `Lagu Dipilih: ${title}`;
       document.getElementById('songResults').style.display = 'none';
-      alert(`Berhasil memuat audio: ${title}`);
+      
+      // Otomatis cari lirik berdasarkan nama lagu yang dipilih
+      searchLyricsOnly(trackOnly || title);
     }
 
     async function searchLyricsOnly(query) {
@@ -618,8 +614,20 @@
       songLyrics.sort((a, b) => a.time - b.time);
     }
 
-    function handleSongUpload(e) { me = e.target.files[0]; if (me) { audio.src = URL.createObjectURL(me); } }
-    function handleAudioUpload(e) { me = e.target.files[0]; if (me) { audio.src = URL.createObjectURL(me); isCustomAudio = true; } }
+    function handleSongUpload(e) { 
+      const file = e.target.files[0]; 
+      if (file) { 
+        audio.src = URL.createObjectURL(file); 
+        document.getElementById('playingTitle').innerText = `Audio Sendiri: ${file.name}`;
+      } 
+    }
+    function handleAudioUpload(e) { 
+      const file = e.target.files[0]; 
+      if (file) { 
+        audio.src = URL.createObjectURL(file); 
+        isCustomAudio = true; 
+      } 
+    }
 
     function updatePitch(val) { document.getElementById('valPitch').innerText = val + 'x'; audio.playbackRate = parseFloat(val); audio.preservesPitch = false; }
 
@@ -655,7 +663,7 @@
       ctx.fillStyle = grad;
       ctx.fillRect(0, canvas.height - 250, canvas.width, 250);
 
-      const channelName = document.getElementById('channelNameInput').value || "Mukjizat doa";
+      const channelName = document.getElementById('channelNameInput').value || "AUC LIRIK";
       ctx.font = 'bold 24px Inter, sans-serif';
       ctx.fillStyle = '#fbbf24';
       ctx.textAlign = 'right';
