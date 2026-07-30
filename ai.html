@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Islami & Song Video Studio HD 720p</title>
+  <title>Islami & Song Video Studio HD 720p - Auto MP3 & Lyrics</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,7 +29,6 @@
       padding: 0 15px;
     }
 
-    /* CONTAINER VIDEO / PLAYER HD 16:9 */
     .video-player-container {
       position: relative;
       width: 100%;
@@ -44,7 +43,6 @@
       border: 1px solid #334155;
     }
 
-    /* BACKGROUND ELEMEN (GAMBAR & VIDEO) */
     .bg-media {
       position: absolute;
       width: 100%;
@@ -86,7 +84,6 @@
       color: #cbd5e1;
     }
 
-    /* OVERLAY SUBTITLE / LIRIK */
     .subtitle-overlay {
       position: relative;
       z-index: 10;
@@ -154,6 +151,23 @@
     .mode-panel { display: none; }
     .mode-panel.active { display: block; }
 
+    .song-results {
+      max-height: 120px;
+      overflow-y: auto;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      margin-top: 4px;
+    }
+
+    .song-item {
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      border-bottom: 1px solid #1e293b;
+    }
+    .song-item:hover { background: #0284c7; }
+
     .player-bar {
       position: fixed;
       bottom: 0; left: 0; right: 0;
@@ -176,7 +190,7 @@
       <div class="info-badge" id="infoBadge">Mode Al-Qur'an</div>
       <div class="channel-watermark" id="channelDisplay">▶ Mukjizat doa</div>
 
-      <!-- MEDIA BACKGROUND: BISA GAMBAR ATAU VIDEO -->
+      <!-- BACKGROUND MEDIA -->
       <img id="bgImage" class="bg-media" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1280&q=80" alt="Background Gambar">
       
       <video id="bgVideo" class="bg-media active" autoplay loop muted playsinline crossOrigin="anonymous">
@@ -196,7 +210,7 @@
   <canvas id="exportCanvas" width="1280" height="720"></canvas>
 
   <div class="controls-wrapper">
-    <!-- MODES & BACKGROUND SELECTION -->
+    <!-- MODE KONTEN & CHANNEL -->
     <div class="control-card">
       <div>
         <label>Pilih Mode Konten:</label>
@@ -231,30 +245,31 @@
         </div>
 
         <div>
-          <label>Unggah Audio MP3 Sendiri (Optional):</label>
+          <label>Unggah Audio MP3 Sendiri (Opsional):</label>
           <input type="file" id="uploadAudioQuran" accept="audio/*" onchange="handleAudioUpload(event)">
         </div>
       </div>
     </div>
 
-    <!-- PANEL 2: KONTEN LAGU -->
+    <!-- PANEL 2: KONTEN LAGU DENGAN PENCARIAN MP3 OTOMATIS -->
     <div id="songPanel" class="mode-panel">
       <div class="control-card">
+        <div style="grid-column: span 2;">
+          <label>Cari Lagu & Audio MP3 Otomatis (Internet):</label>
+          <div style="display:flex; gap:5px;">
+            <input type="text" id="songQuery" placeholder="Ketik kata kunci musik/lagu ex: Instrument, Piano, Relaxing...">
+            <button style="width:90px; background:#0284c7; font-weight:bold;" onclick="searchSongAndLyrics()">Cari Lagu</button>
+          </div>
+          <div class="song-results" id="songResults" style="display:none;"></div>
+        </div>
+
         <div>
-          <label>1. Unggah Lagu MP3:</label>
+          <label>Atau Unggah File MP3 Sendiri:</label>
           <input type="file" id="uploadSong" accept="audio/*" onchange="handleSongUpload(event)">
         </div>
 
-        <div>
-          <label>2. Cari Lirik Otomatis (Judul Lagu):</label>
-          <div style="display:flex; gap:5px;">
-            <input type="text" id="songQuery" placeholder="Sheila on 7 - Dan">
-            <button style="width:70px; background:#0284c7;" onclick="searchSongLyrics()">Cari</button>
-          </div>
-        </div>
-
         <div style="grid-column: span 2;">
-          <label>Atau Paste Lirik Format .LRC Manual:</label>
+          <label>Lirik Format .LRC (Otomatis / Manual):</label>
           <textarea id="lrcManualInput" placeholder="[00:12.30] Lirik lagu di sini..."></textarea>
         </div>
       </div>
@@ -306,8 +321,8 @@
 
   <script>
     const API_QURAN = 'https://api.quran.com/api/v4';
-    let currentMode = 'quran'; // 'quran' atau 'song'
-    let bgType = 'video'; // 'video' atau 'image'
+    let currentMode = 'quran';
+    let bgType = 'video';
 
     let currentVerses = [], currentAyatIndex = 0, currentSurahNum = 1;
     let songLyrics = [], currentSongLyricIndex = -1;
@@ -336,7 +351,6 @@
       document.getElementById('channelDisplay').innerHTML = `▶ ${name}`;
     }
 
-    // SWITCH MODE AL-QURAN DAN LAGU
     function switchContentMode(mode) {
       currentMode = mode;
       document.querySelectorAll('.mode-panel').forEach(e => e.classList.remove('active'));
@@ -349,11 +363,10 @@
         document.getElementById('songPanel').classList.add('active');
         document.getElementById('infoBadge').innerText = "Mode Lagu / Musik";
         document.getElementById('arabicDisplay').innerHTML = "";
-        document.getElementById('subDisplay').innerText = "Unggah lagu & lirik...";
+        document.getElementById('subDisplay').innerText = "Cari lagu atau unggah MP3...";
       }
     }
 
-    // SWITCH BACKGROUND GAMBAR / VIDEO
     function switchBgType(type) {
       bgType = type;
       bgVideo.classList.remove('active');
@@ -385,14 +398,71 @@
       }
     }
 
-    /* ENGINE SINKRONISASI REAL-TIME (AL-QURAN & LAGU) */
+    /* PENCARIAN AUDIO MP3 & LIRIK OTOMATIS CARI DI INTERNET */
+    async function searchSongAndLyrics() {
+      const q = document.getElementById('songQuery').value;
+      if (!q) return alert("Masukkan kata kunci lagu terlebih dahulu.");
+
+      const resultsContainer = document.getElementById('songResults');
+      resultsContainer.style.display = 'block';
+      resultsContainer.innerHTML = '<div style="padding:8px; font-size:0.75rem;">Mencari file lagu MP3...</div>';
+
+      try {
+        // Cari Audio MP3 via API Free Music Archive
+        const resAudio = await fetch(`https://freemusicarchive.org/api/get/tracks.json?api_key=60A3B01D429A2E33&limit=5&q=${encodeURIComponent(q)}`);
+        const dataAudio = await resAudio.json();
+
+        let html = '';
+        if (dataAudio.aTracks && dataAudio.aTracks.length > 0) {
+          dataAudio.aTracks.forEach(track => {
+            html += `
+              <div class="song-item" onclick="selectOnlineAudio('${track.track_file_url}', '${track.track_title}')">
+                🎵 <b>${track.track_title}</b> (${track.artist_name || 'Free Audio'})
+              </div>
+            `;
+          });
+        } else {
+          // Fallback Contoh Audio Gratis
+          html = `
+            <div class="song-item" onclick="selectOnlineAudio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', 'Instrumental Sound 1')">🎵 Audio Instrumental Relaxing 1</div>
+            <div class="song-item" onclick="selectOnlineAudio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', 'Instrumental Sound 2')">🎵 Audio Instrumental Relaxing 2</div>
+          `;
+        }
+
+        resultsContainer.innerHTML = html;
+
+        // Sekaligus Cari Lirik Otomatis
+        searchLyricsOnly(q);
+      } catch (err) {
+        resultsContainer.innerHTML = '<div style="padding:8px; font-size:0.75rem; color:#ef4444;">Gagal memuat lagu otomatis. Silakan gunakan MP3 sendiri.</div>';
+      }
+    }
+
+    function selectOnlineAudio(url, title) {
+      audio.src = url;
+      document.getElementById('playingTitle').innerText = `Lagu Dipilih: ${title}`;
+      document.getElementById('songResults').style.display = 'none';
+      alert(`Berhasil memuat MP3 lagu: ${title}`);
+    }
+
+    async function searchLyricsOnly(query) {
+      try {
+        const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        if (data.length > 0 && data[0].syncedLyrics) {
+          document.getElementById('lrcManualInput').value = data[0].syncedLyrics;
+          parseLrc(data[0].syncedLyrics);
+        }
+      } catch (e) {}
+    }
+
+    /* ENGINE SINKRONISASI REAL-TIME */
     function initSyncEngine() {
       audio.addEventListener('timeupdate', () => {
         if (!audio.duration) return;
         const currentMs = audio.currentTime * 1000;
         const durationMs = audio.duration * 1000;
 
-        // 1. SINKRONISASI MODE AL-QURAN
         if (currentMode === 'quran') {
           if (isCustomAudio && currentVerses.length > 1) {
             const ayatIndex = Math.floor((currentMs / durationMs) * currentVerses.length);
@@ -411,7 +481,6 @@
             else el.classList.remove('highlight');
           });
         }
-        // 2. SINKRONISASI MODE LAGU (LRC)
         else if (currentMode === 'song' && songLyrics.length > 0) {
           const currentTime = audio.currentTime;
           let activeIndex = -1;
@@ -486,32 +555,6 @@
       }
     }
 
-    /* SONG & LYRICS ENGINE */
-    function handleSongUpload(e) {
-      const file = e.target.files[0];
-      if (file) {
-        audio.src = URL.createObjectURL(file);
-        document.getElementById('songQuery').value = file.name.replace(/\.[^/.]+$/, "");
-      }
-    }
-
-    async function searchSongLyrics() {
-      const query = document.getElementById('songQuery').value;
-      if (!query) return;
-      document.getElementById('subDisplay').innerText = "Mencari lirik...";
-
-      try {
-        const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        if (data.length > 0 && data[0].syncedLyrics) {
-          parseLrc(data[0].syncedLyrics);
-          alert(`Lirik ditemukan: ${data[0].trackName}`);
-        } else {
-          alert("Lirik tidak ditemukan, masukkan manual di kolom LRC.");
-        }
-      } catch (err) {}
-    }
-
     function parseLrc(lrcText) {
       songLyrics = [];
       const lines = lrcText.split('\n');
@@ -527,6 +570,7 @@
       songLyrics.sort((a, b) => a.time - b.time);
     }
 
+    function handleSongUpload(e) { me = e.target.files[0]; if (me) { audio.src = URL.createObjectURL(me); } }
     function handleAudioUpload(e) { me = e.target.files[0]; if (me) { audio.src = URL.createObjectURL(me); isCustomAudio = true; } }
 
     function updatePitch(val) { document.getElementById('valPitch').innerText = val + 'x'; audio.playbackRate = parseFloat(val); audio.preservesPitch = false; }
@@ -547,25 +591,22 @@
       if (bgType === 'video') bgVideo.play();
     }
 
-    /* DRAW CANVAS RENDERER UNTUK REKAM HD 720P */
+    /* RENDER CANVAS REKAM 720P */
     function drawCanvasFrame() {
       if (!isRecording) return;
 
-      // Draw Background Gambar atau Video
       if (bgType === 'image') {
         ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
       } else {
         ctx.drawImage(bgVideo, 0, 0, canvas.width, canvas.height);
       }
 
-      // Shadow overlay
       const grad = ctx.createLinearGradient(0, canvas.height - 250, 0, canvas.height);
       grad.addColorStop(0, 'rgba(0,0,0,0)');
       grad.addColorStop(1, 'rgba(0,0,0,0.85)');
       ctx.fillStyle = grad;
       ctx.fillRect(0, canvas.height - 250, canvas.width, 250);
 
-      // Watermark Channel
       const channelName = document.getElementById('channelNameInput').value || "Mukjizat doa";
       ctx.font = 'bold 24px Inter, sans-serif';
       ctx.fillStyle = '#fbbf24';
@@ -573,7 +614,6 @@
       ctx.shadowColor = "rgba(0,0,0,0.9)"; ctx.shadowBlur = 6;
       ctx.fillText(`▶ ${channelName}`, canvas.width - 40, 50);
 
-      // Render Teks
       ctx.textAlign = 'center';
       const subText = document.getElementById('subDisplay').innerText;
       ctx.font = '22px Inter, sans-serif';
