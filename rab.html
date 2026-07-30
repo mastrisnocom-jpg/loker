@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator RAB Proyek Konstruksi</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF & AutoTable CDN untuk Cetak PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.autotable.min.js"></script>
+</head>
+<body class="bg-slate-100 font-sans p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-lg">
+        <!-- Header Aplikasi -->
+        <div class="border-b pb-4 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">Aplikasi Penghitungan RAB</h1>
+                <p class="text-sm text-slate-500">Rencana Anggaran Biaya Proyek & Ekspor PDF/CSV</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition shadow">
+                    📥 Ekspor CSV
+                </button>
+                <button onclick="exportPDF()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition shadow">
+                    📄 Ekspor PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Informasi Proyek -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Proyek</label>
+                <input type="text" id="projectName" value="Pembangunan Rumah Type 70" class="w-full p-2 text-sm border rounded focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Pemilik / Klien</label>
+                <input type="text" id="clientName" value="Budi Santoso" class="w-full p-2 text-sm border rounded focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+        </div>
+
+        <!-- Tabel RAB -->
+        <div class="overflow-x-auto mb-6">
+            <table class="w-full text-left border-collapse text-sm" id="rabTable">
+                <thead>
+                    <tr class="bg-slate-800 text-white">
+                        <th class="p-3 border border-slate-700 w-12 text-center">No</th>
+                        <th class="p-3 border border-slate-700">Uraian Pekerjaan</th>
+                        <th class="p-3 border border-slate-700 w-24 text-center">Volume</th>
+                        <th class="p-3 border border-slate-700 w-20 text-center">Satuan</th>
+                        <th class="p-3 border border-slate-700 w-36 text-right">Harga Satuan (Rp)</th>
+                        <th class="p-3 border border-slate-700 w-36 text-right">Total (Rp)</th>
+                        <th class="p-3 border border-slate-700 w-12 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="rabBody">
+                    <!-- Dynamic Rows -->
+                </tbody>
+            </table>
+        </div>
+
+        <button onclick="addRow()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium mb-6">
+            + Tambah Baris Pekerjaan
+        </button>
+
+        <!-- Ringkasan Biaya -->
+        <div class="flex flex-col md:flex-row justify-end">
+            <div class="w-full md:w-1/2 bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
+                <div class="flex justify-between text-sm">
+                    <span class="text-slate-600">Subtotal Real Cost:</span>
+                    <span id="subtotalText" class="font-semibold">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-sm items-center">
+                    <span class="text-slate-600">Overhead / Margin (%):</span>
+                    <input type="number" id="marginPercent" value="10" min="0" oninput="calculateTotal()" class="w-20 p-1 text-right border rounded text-sm">
+                </div>
+                <div class="flex justify-between text-base font-bold text-blue-700 pt-2 border-t border-slate-300">
+                    <span>GRAND TOTAL (RAB):</span>
+                    <span id="grandTotalText">Rp 0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Logika -->
+    <script>
+        let items = [
+            { desc: "Pembersihan Lapangan & Pengukuran", vol: 120, unit: "m2", price: 25000 },
+            { desc: "Galian Tanah Pondasi", vol: 35, unit: "m3", price: 75000 },
+            { desc: "Pondasi Batu Kali (1:4)", vol: 18.5, unit: "m3", price: 850000 },
+            { desc: "Pasangan Dinding Bata Merah", vol: 140, unit: "m2", price: 135000 }
+        ];
+
+        function renderTable() {
+            const tbody = document.getElementById("rabBody");
+            tbody.innerHTML = "";
+
+            items.forEach((item, index) => {
+                const rowTotal = item.vol * item.price;
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50";
+                tr.innerHTML = `
+                    <td class="p-2 border text-center">${index + 1}</td>
+                    <td class="p-2 border"><input type="text" value="${item.desc}" onchange="updateItem(${index}, 'desc', this.value)" class="w-full p-1 bg-transparent"></td>
+                    <td class="p-2 border text-center"><input type="number" value="${item.vol}" onchange="updateItem(${index}, 'vol', this.value)" class="w-full p-1 text-center bg-transparent"></td>
+                    <td class="p-2 border text-center"><input type="text" value="${item.unit}" onchange="updateItem(${index}, 'unit', this.value)" class="w-full p-1 text-center bg-transparent"></td>
+                    <td class="p-2 border text-right"><input type="number" value="${item.price}" onchange="updateItem(${index}, 'price', this.value)" class="w-full p-1 text-right bg-transparent"></td>
+                    <td class="p-2 border text-right font-medium">Rp ${rowTotal.toLocaleString('id-ID')}</td>
+                    <td class="p-2 border text-center">
+                        <button onclick="removeRow(${index})" class="text-red-500 hover:text-red-700 font-bold">✕</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            calculateTotal();
+        }
+
+        function updateItem(index, field, value) {
+            if (field === 'vol' || field === 'price') {
+                items[index][field] = parseFloat(value) || 0;
+            } else {
+                items[index][field] = value;
+            }
+            renderTable();
+        }
+
+        function addRow() {
+            items.push({ desc: "Pekerjaan Baru", vol: 1, unit: "ls", price: 0 });
+            renderTable();
+        }
+
+        function removeRow(index) {
+            items.splice(index, 1);
+            renderTable();
+        }
+
+        function calculateTotal() {
+            const subtotal = items.reduce((sum, item) => sum + (item.vol * item.price), 0);
+            const margin = parseFloat(document.getElementById("marginPercent").value) || 0;
+            const grandTotal = subtotal + (subtotal * (margin / 100));
+
+            document.getElementById("subtotalText").innerText = "Rp " + subtotal.toLocaleString('id-ID');
+            document.getElementById("grandTotalText").innerText = "Rp " + grandTotal.toLocaleString('id-ID');
+        }
+
+        // Ekspor ke CSV
+        function exportCSV() {
+            const projectName = document.getElementById("projectName").value;
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += `Rencana Anggaran Biaya (RAB) - ${projectName}\n\n`;
+            csvContent += "No,Uraian Pekerjaan,Volume,Satuan,Harga Satuan (Rp),Total (Rp)\n";
+
+            items.forEach((item, index) => {
+                const total = item.vol * item.price;
+                csvContent += `"${index + 1}","${item.desc}",${item.vol},"${item.unit}",${item.price},${total}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `RAB_${projectName.replace(/\s+/g, '_')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Ekspor ke PDF
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const projectName = document.getElementById("projectName").value;
+            const clientName = document.getElementById("clientName").value;
+
+            doc.setFontSize(16);
+            doc.text("RENCANA ANGGARAN BIAYA (RAB)", 14, 20);
+
+            doc.setFontSize(10);
+            doc.text(`Proyek: ${projectName}`, 14, 28);
+            doc.text(`Klien: ${clientName}`, 14, 34);
+            doc.text(`Tanggal: ${new Date().toLocaleDateString('id-ID')}`, 14, 40);
+
+            const tableData = items.map((item, index) => [
+                index + 1,
+                item.desc,
+                item.vol,
+                item.unit,
+                "Rp " + item.price.toLocaleString('id-ID'),
+                "Rp " + (item.vol * item.price).toLocaleString('id-ID')
+            ]);
+
+            doc.autoTable({
+                startY: 46,
+                head: [['No', 'Uraian Pekerjaan', 'Vol', 'Sat', 'Harga Satuan', 'Total']],
+                body: tableData,
+                theme: 'grid',
+                headStyles: { fillColor: [30, 41, 59] }
+            });
+
+            const finalY = doc.lastAutoTable.finalY + 10;
+            const subtotal = items.reduce((sum, item) => sum + (item.vol * item.price), 0);
+            const margin = parseFloat(document.getElementById("marginPercent").value) || 0;
+            const grandTotal = subtotal + (subtotal * (margin / 100));
+
+            doc.text(`Subtotal: Rp ${subtotal.toLocaleString('id-ID')}`, 14, finalY);
+            doc.text(`Overhead/Margin (${margin}%): Rp ${(subtotal * (margin / 100)).toLocaleString('id-ID')}`, 14, finalY + 6);
+            doc.setFontSize(12);
+            doc.text(`GRAND TOTAL: Rp ${grandTotal.toLocaleString('id-ID')}`, 14, finalY + 14);
+
+            doc.save(`RAB_${projectName.replace(/\s+/g, '_')}.pdf`);
+        }
+
+        renderTable();
+    </script>
+</body>
+</html>
