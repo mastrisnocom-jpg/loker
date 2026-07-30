@@ -55,6 +55,17 @@
     }
     .bg-media.active { display: block; }
 
+    /* Canvas Overlay untuk Animasi Partikel & Visualizer Spektrum */
+    #fxCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+      pointer-events: none;
+    }
+
     #exportCanvas { display: none; }
 
     .channel-watermark {
@@ -230,17 +241,23 @@
 </head>
 <body>
 
+  <!-- PREVIEW PLAYER UTAMA -->
   <div class="player-wrapper">
     <div class="video-player-container" id="playerContainer">
       <div class="info-badge" id="infoBadge">Mode Lagu / Musik</div>
       <div class="channel-watermark" id="channelDisplay">▶ AUC LIRIK</div>
 
+      <!-- BACKGROUND MEDIA -->
       <img id="bgImage" class="bg-media active" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1280&q=80" crossOrigin="anonymous">
 
       <video id="bgVideo" class="bg-media" loop muted playsinline crossOrigin="anonymous">
         <source id="videoSource" src="https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4" type="video/mp4">
       </video>
 
+      <!-- CANVAS UTAMA UNTUK EFEK ANIMASI & AUDIO SPECTRUM -->
+      <canvas id="fxCanvas" width="1280" height="720"></canvas>
+
+      <!-- OVERLAY SUBTITLE DINAMIS -->
       <div class="subtitle-overlay">
         <div class="arabic-text" id="arabicDisplay"></div>
         <div class="sub-text" id="subDisplay">Siap memutar media...</div>
@@ -251,6 +268,7 @@
   <canvas id="exportCanvas" width="1280" height="720"></canvas>
 
   <div class="controls-wrapper">
+    <!-- REGISTRASI MODE, WATERMARK, ANIMASI EFEK & SPEKTRUM -->
     <div class="control-card">
       <div>
         <label>Pilih Mode Konten:</label>
@@ -269,11 +287,33 @@
       </div>
 
       <div>
+        <label>✨ Animasi Latar (FX Particles):</label>
+        <select id="fxAnimationSelect" onchange="changeFxAnimation(this.value)">
+          <option value="none">Tanpa Animasi</option>
+          <option value="bokeh" selected>✨ Cahaya & Gold Bokeh</option>
+          <option value="snow">❄️ Salju Jatuh (Snowfall)</option>
+          <option value="dust">⭐ Partikel Bintang (Cosmic Dust)</option>
+          <option value="rain">🌧️ Rintik Hujan (Raindrops)</option>
+        </select>
+      </div>
+
+      <div>
+        <label>📊 Audio Spectrum Visualizer:</label>
+        <select id="spectrumTypeSelect" onchange="changeSpectrumType(this.value)">
+          <option value="bars" selected>📶 Neon Glow Bars (Baris Modern)</option>
+          <option value="wave">🌊 Smooth Waveform (Gelombang)</option>
+          <option value="circle">⭕ Radial Circular Pulse (Melingkar)</option>
+          <option value="none">Nonaktifkan Spektrum</option>
+        </select>
+      </div>
+
+      <div style="grid-column: span 2;">
         <label>Nama Channel Youtube / Watermark:</label>
         <input type="text" id="channelNameInput" value="AUC LIRIK" oninput="updateChannelName()">
       </div>
     </div>
 
+    <!-- PANEL PENGATURAN GOOGLE AI STUDIO API KEY -->
     <div class="control-card" style="border: 1px solid #4f46e5; background: #0f172a;">
       <div style="grid-column: span 2;">
         <label style="color: #818cf8; font-weight: bold; font-size: 0.8rem;">🔑 Google AI Studio API Key (Gemini API TTS Studio):</label>
@@ -289,6 +329,7 @@
       </div>
     </div>
 
+    <!-- FITUR UTAMA: GOOGLE GEMINI VOICE OVER 30 VOICES -->
     <div class="control-card" style="border: 1px solid #6366f1; background: #131722;">
       <div style="grid-column: span 2;">
         <label style="color: #a5b4fc; font-weight: bold; font-size: 0.8rem;">🎙️ Gemini Voice Over Generator (30 Suara Manusia Realistis):</label>
@@ -344,6 +385,7 @@
       </div>
     </div>
 
+    <!-- TOOL AI MULTI-ENGINE TEXT-TO-VIDEO GENERATOR -->
     <div class="control-card" style="border: 1px solid #e11d48; background: #131722;">
       <div style="grid-column: span 2;">
         <label style="color: #fb7185; font-weight: bold; font-size: 0.8rem;">🎬 AI Text-to-Video Generator:</label>
@@ -354,6 +396,7 @@
       </div>
     </div>
 
+    <!-- TOOL AI IMAGE GENERATOR -->
     <div class="control-card" style="border: 1px solid #9333ea; background: #131722;">
       <div style="grid-column: span 2;">
         <label style="color: #c084fc; font-weight: bold; font-size: 0.8rem;">🎨 Tool AI Gambar (Text-to-Image):</label>
@@ -364,6 +407,7 @@
       </div>
     </div>
 
+    <!-- PANEL 1: AL-QURAN -->
     <div id="quranPanel" class="mode-panel">
       <div class="control-card">
         <div>
@@ -380,6 +424,7 @@
       </div>
     </div>
 
+    <!-- PANEL 2: LAGU & LIRIK -->
     <div id="songPanel" class="mode-panel active">
       <div class="control-card">
         <div>
@@ -423,6 +468,7 @@
       </div>
     </div>
 
+    <!-- PANEL SLIDER UKURAN FONT -->
     <div class="control-card">
       <div class="setting-group">
         <label>Ukuran Teks Arab: <b id="valArabic">1.6rem</b></label>
@@ -435,6 +481,7 @@
       </div>
     </div>
 
+    <!-- KONTROL PUTAR, PAUSE, DAN REKAM -->
     <div class="control-card">
       <div>
         <label>Unggah Gambar Latar (JPG/PNG):</label>
@@ -470,16 +517,25 @@
     let isCustomAudio = false;
 
     let mediaRecorder, recordedChunks = [], isRecording = false;
-    let canvasAnimationId;
+    let exportAnimationId, fxAnimationLoopId;
 
-    let audioCtx = null, audioSource = null, audioDestination = null;
+    let audioCtx = null, audioSource = null, audioDestination = null, analyser = null;
+    let dataArray = null, bufferLength = 0;
     let recognition = null, isListening = false;
+
+    let currentFxType = 'bokeh';
+    let currentSpectrumType = 'bars';
+    let particles = [];
 
     const audio = document.getElementById('audioElement');
     const bgVideo = document.getElementById('bgVideo');
     const bgImage = document.getElementById('bgImage');
-    const canvas = document.getElementById('exportCanvas');
-    const ctx = canvas.getContext('2d');
+    
+    const fxCanvas = document.getElementById('fxCanvas');
+    const fxCtx = fxCanvas.getContext('2d');
+
+    const exportCanvas = document.getElementById('exportCanvas');
+    const exportCtx = exportCanvas.getContext('2d');
 
     window.onload = () => {
       getSurahList();
@@ -487,6 +543,8 @@
       updateChannelName();
       updateTextSettings();
       initSpeechRecognition();
+      initFxParticles(currentFxType);
+      startFxLoop();
 
       const savedKey = localStorage.getItem('user_ai_api_key');
       if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
@@ -503,7 +561,164 @@
       }
     }
 
-    /* GENERASI VOICE OVER GEMINI 30 VOICES REVISED FULL */
+    /* WEBAUDIO ANALYSER ENGINE FOR SPECTRUM VISUALIZER */
+    function initAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        audioSource = audioCtx.createMediaElementSource(audio);
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 128;
+        bufferLength = analyser.frequencyBinCount;
+        dataArray = new Uint8Array(bufferLength);
+
+        audioDestination = audioCtx.createMediaStreamDestination();
+        audioSource.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        analyser.connect(audioDestination);
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    /* PARTICLE FX & SPECTRUM ENGINE */
+    function changeFxAnimation(type) {
+      currentFxType = type;
+      initFxParticles(type);
+    }
+
+    function changeSpectrumType(type) {
+      currentSpectrumType = type;
+    }
+
+    function initFxParticles(type) {
+      particles = [];
+      const count = type === 'rain' ? 80 : (type === 'snow' ? 60 : 40);
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * fxCanvas.width,
+          y: Math.random() * fxCanvas.height,
+          radius: Math.random() * (type === 'bokeh' ? 12 : 3) + 1,
+          speedX: (Math.random() - 0.5) * (type === 'snow' ? 1 : 0.5),
+          speedY: type === 'rain' ? Math.random() * 8 + 4 : (type === 'snow' ? Math.random() * 1.5 + 0.5 : (Math.random() - 0.5) * 0.8),
+          alpha: Math.random() * 0.7 + 0.3,
+          pulse: Math.random() * 0.05
+        });
+      }
+    }
+
+    function drawFxAndSpectrum(context, width, height) {
+      context.clearRect(0, 0, width, height);
+
+      // 1. Draw FX Particles (Salju, Bokeh, Bintang, Hujan)
+      if (currentFxType !== 'none') {
+        particles.forEach(p => {
+          context.beginPath();
+          if (currentFxType === 'rain') {
+            context.strokeStyle = `rgba(186, 230, 253, ${p.alpha})`;
+            context.lineWidth = 1.5;
+            context.moveTo(p.x, p.y);
+            context.lineTo(p.x - p.speedX * 2, p.y + p.speedY * 2);
+            context.stroke();
+          } else {
+            context.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            if (currentFxType === 'bokeh') {
+              let grad = context.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
+              grad.addColorStop(0, `rgba(251, 191, 36, ${p.alpha})`);
+              grad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+              context.fillStyle = grad;
+            } else if (currentFxType === 'snow') {
+              context.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+            } else if (currentFxType === 'dust') {
+              context.fillStyle = `rgba(56, 189, 248, ${p.alpha})`;
+            }
+            context.fill();
+          }
+
+          // Move Particles
+          p.x += p.speedX;
+          p.y += p.speedY;
+
+          if (currentFxType === 'rain' || currentFxType === 'snow') {
+            if (p.y > height) { p.y = -10; p.x = Math.random() * width; }
+          } else {
+            if (p.x < 0 || p.x > width) p.speedX *= -1;
+            if (p.y < 0 || p.y > height) p.speedY *= -1;
+          }
+        });
+      }
+
+      // 2. Draw Audio Spectrum Visualizer
+      if (currentSpectrumType !== 'none' && analyser && dataArray) {
+        analyser.getByteFrequencyData(dataArray);
+
+        if (currentSpectrumType === 'bars') {
+          const barWidth = (width / bufferLength) * 1.5;
+          let x = (width - (bufferLength * barWidth)) / 2;
+
+          for (let i = 0; i < bufferLength; i++) {
+            const barHeight = (dataArray[i] / 255) * 120;
+
+            let gradient = context.createLinearGradient(0, height - 120 - barHeight, 0, height - 100);
+            gradient.addColorStop(0, '#38bdf8');
+            gradient.addColorStop(0.5, '#fbbf24');
+            gradient.addColorStop(1, 'rgba(15, 23, 42, 0.1)');
+
+            context.fillStyle = gradient;
+            context.fillRect(x, height - 100 - barHeight, barWidth - 3, barHeight);
+            
+            // Mirror reflection
+            context.fillStyle = 'rgba(56, 189, 248, 0.15)';
+            context.fillRect(x, height - 100, barWidth - 3, barHeight * 0.3);
+
+            x += barWidth;
+          }
+        } 
+        else if (currentSpectrumType === 'wave') {
+          context.beginPath();
+          context.lineWidth = 4;
+          context.strokeStyle = '#38bdf8';
+          const sliceWidth = width / bufferLength;
+          let x = 0;
+
+          for (let i = 0; i < bufferLength; i++) {
+            const v = dataArray[i] / 128.0;
+            const y = (v * 40) + (height - 120);
+
+            if (i === 0) context.moveTo(x, y);
+            else context.lineTo(x, y);
+
+            x += sliceWidth;
+          }
+          context.stroke();
+        } 
+        else if (currentSpectrumType === 'circle') {
+          const centerX = width / 2;
+          const centerY = height / 2 - 30;
+          let average = 0;
+          for (let i = 0; i < bufferLength; i++) average += dataArray[i];
+          average /= bufferLength;
+
+          const baseRadius = 80 + (average / 255) * 40;
+
+          context.beginPath();
+          context.arc(centerX, centerY, baseRadius, 0, Math.PI * 2);
+          context.lineWidth = 4;
+          context.strokeStyle = 'rgba(251, 191, 36, 0.8)';
+          context.shadowBlur = 15;
+          context.shadowColor = '#fbbf24';
+          context.stroke();
+          context.shadowBlur = 0;
+        }
+      }
+    }
+
+    function startFxLoop() {
+      drawFxAndSpectrum(fxCtx, fxCanvas.width, fxCanvas.height);
+      fxAnimationLoopId = requestAnimationFrame(startFxLoop);
+    }
+
+    /* GENERASI VOICE OVER GEMINI 30 VOICES */
     async function generateGeminiTTS() {
       const apiKey = localStorage.getItem('user_ai_api_key') || document.getElementById('apiKeyInput').value.trim();
       const text = document.getElementById('geminiTtsInput').value.trim();
@@ -529,7 +744,6 @@
           return;
         }
 
-        // Panggilan REST API Gemini Voice Over
         const fullPrompt = `${stylePrompt}: "${text}"`;
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
           method: 'POST',
@@ -630,12 +844,13 @@
     }
 
     function startPlay() {
+      initAudioContext();
+
       if ('speechSynthesis' in window && window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
       }
 
       if (audio.src) {
-        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
         audio.play().then(() => {
           if (bgType === 'video') bgVideo.play().catch(() => {});
           document.getElementById('playingTitle').innerText = "▶ Sedang Memutar...";
@@ -892,9 +1107,6 @@
       audio.addEventListener('timeupdate', () => {
         if (!audio.duration) return;
 
-        const currentMs = audio.currentTime * 1000;
-        const durationMs = audio.duration * 1000;
-
         if (currentMode === 'song' && songLyrics.length > 0) {
           const currentTime = audio.currentTime;
           let activeIndex = -1;
@@ -995,43 +1207,46 @@
       }
     }
 
-    /* RENDER CANVAS DISIMPAN KE VIDEO */
-    function renderFrameAtTime() {
+    /* RENDER EXPORT CANVAS + FX ANIMATION FOR MP4 RECORDING */
+    function renderFrameForExport() {
       try {
         if (bgType === 'image') {
-          ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+          exportCtx.drawImage(bgImage, 0, 0, exportCanvas.width, exportCanvas.height);
         } else {
-          ctx.drawImage(bgVideo, 0, 0, canvas.width, canvas.height);
+          exportCtx.drawImage(bgVideo, 0, 0, exportCanvas.width, exportCanvas.height);
         }
       } catch(e) {
-        ctx.fillStyle = "#0f172a";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        exportCtx.fillStyle = "#0f172a";
+        exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
       }
 
-      const grad = ctx.createLinearGradient(0, canvas.height - 250, 0, canvas.height);
+      // Render Animasi FX & Spectrum langsung ke canvas ekspor
+      drawFxAndSpectrum(exportCtx, exportCanvas.width, exportCanvas.height);
+
+      const grad = exportCtx.createLinearGradient(0, exportCanvas.height - 250, 0, exportCanvas.height);
       grad.addColorStop(0, 'rgba(0,0,0,0)');
       grad.addColorStop(1, 'rgba(0,0,0,0.85)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, canvas.height - 250, canvas.width, 250);
+      exportCtx.fillStyle = grad;
+      exportCtx.fillRect(0, exportCanvas.height - 250, exportCanvas.width, 250);
 
       const channelName = document.getElementById('channelNameInput').value || "AUC LIRIK";
-      ctx.font = 'bold 24px Inter, sans-serif';
-      ctx.fillStyle = '#fbbf24';
-      ctx.textAlign = 'right';
-      ctx.fillText(`▶ ${channelName}`, canvas.width - 40, 50);
+      exportCtx.font = 'bold 24px Inter, sans-serif';
+      exportCtx.fillStyle = '#fbbf24';
+      exportCtx.textAlign = 'right';
+      exportCtx.fillText(`▶ ${channelName}`, exportCanvas.width - 40, 50);
 
-      ctx.textAlign = 'center';
-      ctx.font = 'bold 26px Inter, sans-serif';
+      exportCtx.textAlign = 'center';
+      exportCtx.font = 'bold 26px Inter, sans-serif';
 
       const plainText = document.getElementById('subDisplay').innerText;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(plainText, 640, 630);
+      exportCtx.fillStyle = '#ffffff';
+      exportCtx.fillText(plainText, 640, 630);
 
       if (currentMode === 'quran') {
         const arabText = document.getElementById('arabicDisplay').innerText;
-        ctx.font = 'bold 36px Amiri, serif';
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillText(arabText, 640, 560);
+        exportCtx.font = 'bold 36px Amiri, serif';
+        exportCtx.fillStyle = '#fbbf24';
+        exportCtx.fillText(arabText, 640, 560);
       }
     }
 
@@ -1040,15 +1255,8 @@
 
       if (!isRecording) {
         try {
-          const canvasStream = canvas.captureStream(30);
-
-          if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            audioSource = audioCtx.createMediaElementSource(audio);
-            audioDestination = audioCtx.createMediaStreamDestination();
-            audioSource.connect(audioDestination);
-            audioSource.connect(audioCtx.destination);
-          }
+          initAudioContext();
+          const canvasStream = exportCanvas.captureStream(30);
 
           const audioTrack = audioDestination.stream.getAudioTracks()[0];
           if (audioTrack) canvasStream.addTrack(audioTrack);
@@ -1061,7 +1269,7 @@
           };
 
           mediaRecorder.onstop = () => {
-            cancelAnimationFrame(canvasAnimationId);
+            cancelAnimationFrame(exportAnimationId);
             const blob = new Blob(recordedChunks, { type: 'video/mp4' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1076,13 +1284,13 @@
           recBtn.innerText = "⏹️ Hentikan & Simpan";
           recBtn.style.background = "#dc2626";
 
-          function renderLoop() {
+          function exportRenderLoop() {
             if (isRecording) {
-              renderFrameAtTime();
-              canvasAnimationId = requestAnimationFrame(renderLoop);
+              renderFrameForExport();
+              exportAnimationId = requestAnimationFrame(exportRenderLoop);
             }
           }
-          renderLoop();
+          exportRenderLoop();
           startPlay();
         } catch(e) {
           alert("Gagal merekam: " + e.message);
