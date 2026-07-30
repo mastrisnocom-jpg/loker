@@ -3,87 +3,169 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Al-Qur'an Digital</title>
+  <title>Al-Qur'an Pro Web App</title>
+  
+  <!-- Font Tajwid & Arab -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
     :root {
-      --primary: #0d9488;
+      --primary: #0f766e;
+      --primary-dark: #0f514c;
+      --accent: #f59e0b;
       --bg: #f8fafc;
       --card-bg: #ffffff;
       --text: #1e293b;
+      --active-verse: #e0f2fe;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
     body {
       background-color: var(--bg);
       color: var(--text);
-      padding: 20px;
+      padding-bottom: 90px; /* Space for audio player */
     }
 
+    /* Header & Navigation */
     header {
-      text-align: center;
-      margin-bottom: 25px;
+      background: var(--primary);
+      color: white;
+      padding: 15px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
-    header h1 {
-      color: var(--primary);
-      margin-bottom: 5px;
-    }
-
-    .container {
-      max-width: 800px;
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 900px;
       margin: 0 auto;
     }
 
-    .select-group {
-      margin-bottom: 20px;
+    .app-title {
+      font-size: 1.4rem;
+      font-weight: bold;
     }
 
-    select {
+    nav {
+      display: flex;
+      gap: 10px;
+      max-width: 900px;
+      margin: 15px auto 0;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
+
+    nav button {
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: 0.2s;
+    }
+
+    nav button.active, nav button:hover {
+      background: white;
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    /* Container Main */
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+
+    /* Controls Panel */
+    .control-panel {
+      background: var(--card-bg);
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    select, input {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       border: 1px solid #cbd5e1;
       border-radius: 8px;
-      font-size: 1rem;
-      background-color: white;
-      cursor: pointer;
+      font-size: 0.95rem;
+      outline: none;
     }
 
-    .surah-header {
-      background: var(--primary);
-      color: white;
-      padding: 15px;
-      border-radius: 8px;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    audio {
-      width: 100%;
-      margin-top: 10px;
-    }
-
+    /* Card Ayat */
     .verse-card {
       background: var(--card-bg);
-      border-radius: 8px;
-      padding: 18px;
+      border-radius: 12px;
+      padding: 20px;
       margin-bottom: 15px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+    }
+
+    .verse-card.playing {
+      background-color: #f0fdf4;
+      border-left-color: var(--primary);
+      transform: scale(1.01);
+    }
+
+    .verse-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .verse-num {
+      background: #f1f5f9;
+      color: var(--primary);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.85rem;
+    }
+
+    .verse-actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      margin-left: 8px;
+      color: #64748b;
     }
 
     .arabic {
-      font-size: 1.8rem;
+      font-family: 'Amiri', 'Scheherazade New', serif;
+      font-size: 2.1rem;
       text-align: right;
       direction: rtl;
-      line-height: 2.2;
-      margin-bottom: 12px;
+      line-height: 2.3;
+      margin-bottom: 15px;
       color: #0f172a;
-      font-family: 'Amiri', 'Traditional Arabic', serif;
     }
 
     .translation {
@@ -92,105 +174,410 @@
       line-height: 1.6;
     }
 
-    .verse-num {
-      display: inline-block;
-      background: #e2e8f0;
-      color: #334155;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      text-align: center;
-      line-height: 28px;
-      font-size: 0.85rem;
-      font-weight: bold;
-      margin-bottom: 10px;
+    /* Fixed Bottom Player Bar */
+    .fixed-player {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border-top: 1px solid #e2e8f0;
+      padding: 12px 20px;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 1000;
     }
+
+    .player-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+      font-size: 0.9rem;
+    }
+
+    audio {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      height: 35px;
+    }
+
+    /* Tab Jadwal Sholat */
+    .sholat-card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      font-weight: 500;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <header>
-      <h1>Al-Qur'an Digital</h1>
-      <p>Baca dan Dengarkan Murattal</p>
-    </header>
+  <!-- Header & Menu Navigasi -->
+  <header>
+    <div class="header-top">
+      <div class="app-title">📖 Al-Qur'an Digital</div>
+      <button onclick="requestNotificationPermission()" style="background:var(--accent); border:none; padding:6px 12px; border-radius:6px; color:white; font-size:0.8rem; cursor:pointer;">
+        🔔 Aktifkan Adzan
+      </button>
+    </div>
+    <nav>
+      <button class="nav-btn active" onclick="switchTab('quranTab')">Baca Qur'an</button>
+      <button class="nav-btn" onclick="switchTab('sholatTab')">Jadwal Sholat</button>
+      <button class="nav-btn" onclick="switchTab('bookmarkTab')">Terakhir Dibaca</button>
+    </nav>
+  </header>
 
-    <div class="select-group">
-      <select id="surahSelect" onchange="loadSurah(this.value)">
-        <option value="">-- Pilih Surah --</option>
-      </select>
+  <div class="container">
+    <!-- TAB 1: BACA AL-QUR'AN -->
+    <div id="quranTab" class="tab-content active">
+      <div class="control-panel">
+        <div>
+          <label style="font-size: 0.8rem; color:#64748b;">Pilih Surah:</label>
+          <select id="surahSelect" onchange="loadSurah(this.value)">
+            <option value="">Memuat Surah...</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size: 0.8rem; color:#64748b;">Pilihan Qari (Pembaca):</label>
+          <select id="qariSelect" onchange="changeQari(this.value)">
+            <option value="05">Misyari Rasyid Al-Afasy</option>
+            <option value="01">Abdullah Al-Juhany</option>
+            <option value="02">Abdul Muhsin Al-Qasim</option>
+            <option value="03">Abdurrahman As-Sudais</option>
+            <option value="04">Ibrahim Al-Dossari</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size: 0.8rem; color:#64748b;">Cari Ayat / Kata:</label>
+          <input type="text" id="searchInput" placeholder="Ketik kata terjemahan..." onkeyup="filterAyat()">
+        </div>
+      </div>
+
+      <div id="surahTitle" style="text-align: center; margin-bottom: 20px;"></div>
+      <div id="ayatContainer"></div>
     </div>
 
-    <div id="surahContent"></div>
+    <!-- TAB 2: JADWAL SHOLAT & ADZAN -->
+    <div id="sholatTab" class="tab-content">
+      <h2 style="margin-bottom: 15px; color: var(--primary);">Jadwal Sholat Hari Ini</h2>
+      <p style="font-size: 0.9rem; color:#64748b; margin-bottom:15px;" id="locationText">Lokasi: Mengambil lokasi...</p>
+      <div id="jadwalContainer"></div>
+    </div>
+
+    <!-- TAB 3: BOOKMARK -->
+    <div id="bookmarkTab" class="tab-content">
+      <h2 style="margin-bottom: 15px; color: var(--primary);">Terakhir Dibaca / Penanda</h2>
+      <div id="bookmarkContainer">Belum ada penanda ayat.</div>
+    </div>
+  </div>
+
+  <!-- Audio Player Bar (Diputar di belakang layar / Background Play support) -->
+  <div class="fixed-player">
+    <div class="player-info">
+      <span id="playingInfo" style="font-weight: bold; color: var(--primary);">Pilih ayat untuk memutar audio</span>
+      <span id="qariInfo" style="font-size: 0.8rem; color:#64748b;">Qari: Misyari Rasyid</span>
+    </div>
+    <audio id="audioPlayer" controls onended="playNextAyat()"></audio>
   </div>
 
   <script>
     const API_BASE = 'https://equran.id/api/v2';
+    let currentSurahData = null;
+    let currentAyatIndex = -1;
+    let selectedQari = '05'; // Default Misyari Rasyid
 
-    // 1. Ambil daftar surah saat halaman dimuat
+    // Audio Element & background Session API Setup
+    const audioPlayer = document.getElementById('audioPlayer');
+
+    // 1. Inisialisasi
+    window.onload = () => {
+      getSurahList();
+      initLocationAndJadwal();
+      loadBookmark();
+      checkAdzanTask();
+    };
+
+    // Tab Switcher
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // 2. Mengambil Daftar Surah
     async function getSurahList() {
       try {
         const res = await fetch(`${API_BASE}/surat`);
         const result = await res.json();
         const select = document.getElementById('surahSelect');
+        select.innerHTML = '';
 
         result.data.forEach(surah => {
-          const option = document.createElement('option');
-          option.value = surah.nomor;
-          option.textContent = `${surah.nomor}. ${surah.namaLatin} (${surah.arti})`;
-          select.appendChild(option);
+          const opt = document.createElement('option');
+          opt.value = surah.nomor;
+          opt.textContent = `${surah.nomor}. ${surah.namaLatin} (${surah.arti})`;
+          select.appendChild(opt);
         });
 
-        // Muat Surah Al-Fatihah secara default
-        select.value = "1";
+        // Load Surah 1 Default
         loadSurah(1);
       } catch (err) {
-        console.error('Gagal mengambil daftar surah:', err);
+        alert('Gagal memuat daftar surah.');
       }
     }
 
-    // 2. Ambil detail ayat & audio dari surah yang dipilih
+    // 3. Load Detail Surah & Ayat
     async function loadSurah(nomor) {
       if (!nomor) return;
-
-      const container = document.getElementById('surahContent');
+      const container = document.getElementById('ayatContainer');
       container.innerHTML = '<p style="text-align:center;">Memuat ayat...</p>';
 
       try {
         const res = await fetch(`${API_BASE}/surat/${nomor}`);
         const result = await res.json();
-        const surah = result.data;
+        currentSurahData = result.data;
 
-        // Pilih audio (contoh: Sheikh Misyari Rasyid)
-        const audioUrl = surah.audioFull['05'] || Object.values(surah.audioFull)[0];
-
-        let html = `
-          <div class="surah-header">
-            <h2>${surah.namaLatin} (${surah.nama})</h2>
-            <p>${surah.tempatTurun} • ${surah.jumlahAyat} Ayat</p>
-            <audio controls src="${audioUrl}"></audio>
-          </div>
+        document.getElementById('surahTitle').innerHTML = `
+          <h2 style="color:var(--primary);">${currentSurahData.namaLatin} (${currentSurahData.nama})</h2>
+          <p style="color:#64748b;">${currentSurahData.tempatTurun} • ${currentSurahData.jumlahAyat} Ayat</p>
         `;
 
-        surah.ayat.forEach(item => {
-          html += `
-            <div class="verse-card">
+        renderAyat(currentSurahData.ayat);
+      } catch (err) {
+        container.innerHTML = '<p style="text-align:center; color:red;">Gagal memuat data.</p>';
+      }
+    }
+
+    // Render Teks Ayat
+    function renderAyat(ayatList) {
+      const container = document.getElementById('ayatContainer');
+      let html = '';
+
+      ayatList.forEach((item, index) => {
+        html += `
+          <div class="verse-card" id="verse-${index}">
+            <div class="verse-header">
               <div class="verse-num">${item.nomorAyat}</div>
-              <div class="arabic">${item.teksArab}</div>
-              <div class="translation">${item.teksIndonesia}</div>
+              <div class="verse-actions">
+                <button onclick="playAudio(${index})" title="Putar Audio">▶️</button>
+                <button onclick="saveBookmark(${currentSurahData.nomor}, ${item.nomorAyat}, '${currentSurahData.namaLatin}')" title="Simpan Bookmark">🔖</button>
+              </div>
+            </div>
+            <div class="arabic">${item.teksArab}</div>
+            <div class="translation">${item.teksIndonesia}</div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // 4. Fitur Pemutar Audio & Auto Tracking (Focus View Text)
+    function playAudio(index) {
+      if (!currentSurahData) return;
+      currentAyatIndex = index;
+      const item = currentSurahData.ayat[index];
+      
+      // Ambil audio sesuai qari terpilih
+      const audioUrl = item.audio[selectedQari];
+
+      audioPlayer.src = audioUrl;
+      audioPlayer.play();
+
+      // Highlight tampilan & scroll otomatis ke ayat yang sedang diputar
+      highlightVerse(index);
+
+      // Media Session API agar kontrol di Background/Layarsirkulasi HP berfungsi
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: `Surah ${currentSurahData.namaLatin} : Ayat ${item.nomorAyat}`,
+          artist: getQariName(selectedQari),
+          album: 'Al-Qur'an Digital'
+        });
+
+        navigator.mediaSession.setActionHandler('nexttrack', () => playNextAyat());
+        navigator.mediaSession.setActionHandler('previoustrack', () => playPrevAyat());
+      }
+    }
+
+    function highlightVerse(index) {
+      document.querySelectorAll('.verse-card').forEach(el => el.classList.remove('playing'));
+      
+      const activeCard = document.getElementById(`verse-${index}`);
+      if (activeCard) {
+        activeCard.classList.add('playing');
+        activeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      document.getElementById('playingInfo').textContent = `${currentSurahData.namaLatin} - Ayat ${currentSurahData.ayat[index].nomorAyat}`;
+    }
+
+    function playNextAyat() {
+      if (currentSurahData && currentAyatIndex < currentSurahData.ayat.length - 1) {
+        playAudio(currentAyatIndex + 1);
+      }
+    }
+
+    function playPrevAyat() {
+      if (currentSurahData && currentAyatIndex > 0) {
+        playAudio(currentAyatIndex - 1);
+      }
+    }
+
+    function changeQari(val) {
+      selectedQari = val;
+      document.getElementById('qariInfo').textContent = `Qari: ${getQariName(val)}`;
+      if (currentAyatIndex !== -1) playAudio(currentAyatIndex);
+    }
+
+    function getQariName(code) {
+      const names = {
+        '01': 'Abdullah Al-Juhany',
+        '02': 'Abdul Muhsin Al-Qasim',
+        '03': 'Abdurrahman As-Sudais',
+        '04': 'Ibrahim Al-Dossari',
+        '05': 'Misyari Rasyid Al-Afasy'
+      };
+      return names[code] || 'Qari';
+    }
+
+    // 5. Fitur Pencarian Ayat
+    function filterAyat() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      if (!currentSurahData) return;
+
+      const filtered = currentSurahData.ayat.filter(item => 
+        item.teksIndonesia.toLowerCase().includes(q) || item.nomorAyat.toString().includes(q)
+      );
+
+      renderAyat(filtered);
+    }
+
+    // 6. Fitur Bookmark
+    function saveBookmark(surahNum, ayatNum, surahName) {
+      const bookmark = { surahNum, ayatNum, surahName, time: new Date().toLocaleDateString() };
+      localStorage.setItem('quran_bookmark', JSON.stringify(bookmark));
+      alert(`Berhasil menyimpan Surah ${surahName} ayat ${ayatNum}`);
+      loadBookmark();
+    }
+
+    function loadBookmark() {
+      const data = localStorage.getItem('quran_bookmark');
+      const container = document.getElementById('bookmarkContainer');
+
+      if (!data) {
+        container.innerHTML = '<p style="color:#64748b;">Belum ada penanda ayat disimpannya.</p>';
+        return;
+      }
+
+      const bm = JSON.parse(data);
+      container.innerHTML = `
+        <div class="verse-card">
+          <h3>📌 ${bm.surahName} : Ayat ${bm.ayatNum}</h3>
+          <p style="font-size:0.8rem; color:#64748b; margin-top:5px;">Disimpan pada: ${bm.time}</p>
+          <button onclick="goBookmark(${bm.surahNum})" style="margin-top:10px; background:var(--primary); color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer;">Buka Surah Ini</button>
+        </div>
+      `;
+    }
+
+    function goBookmark(surahNum) {
+      document.getElementById('surahSelect').value = surahNum;
+      switchTab('quranTab');
+      loadSurah(surahNum);
+    }
+
+    // 7. Fitur Jadwal Sholat & Adzan Automatic
+    let jadwalSholat = {};
+
+    function initLocationAndJadwal() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          fetchJadwalSholat(pos.coords.latitude, pos.coords.longitude);
+        }, () => {
+          // Default Jakarta jika lokasi ditolak
+          fetchJadwalSholat(-6.2088, 106.8456);
+        });
+      }
+    }
+
+    async function fetchJadwalSholat(lat, lng) {
+      const date = new Date();
+      const formatDigit = n => String(n).padStart(2, '0');
+      const today = `${date.getFullYear()}-${formatDigit(date.getMonth() + 1)}-${formatDigit(date.getDate())}`;
+
+      try {
+        const res = await fetch(`https://api.aladhan.com/v1/timings/${today}?latitude=${lat}&longitude=${lng}&method=2`);
+        const result = await res.json();
+        jadwalSholat = result.data.timings;
+
+        document.getElementById('locationText').textContent = `Wilayah Terdeteksi (Lat: ${lat.toFixed(2)}, Lng: ${lng.toFixed(2)})`;
+
+        const list = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+        const nameMap = { Fajr: 'Subuh', Dhuhr: 'Dzuhur', Asr: 'Ashar', Maghrib: 'Maghrib', Isha: 'Isya' };
+
+        let html = '';
+        list.forEach(key => {
+          html += `
+            <div class="sholat-card">
+              <span>${nameMap[key]}</span>
+              <span style="color:var(--primary);">${jadwalSholat[key]} WIB</span>
             </div>
           `;
         });
 
-        container.innerHTML = html;
+        document.getElementById('jadwalContainer').innerHTML = html;
       } catch (err) {
-        container.innerHTML = '<p style="text-align:center; color:red;">Gagal memuat data ayat.</p>';
+        document.getElementById('jadwalContainer').innerHTML = 'Gagal memuat jadwal sholat.';
       }
     }
 
-    // Jalankan aplikasi
-    getSurahList();
+    // Notifikasi & Pengingat Adzan
+    function requestNotificationPermission() {
+      if ('Notification' in window) {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            alert('Notifikasi Adzan diaktifkan!');
+          }
+        });
+      }
+    }
+
+    function checkAdzanTask() {
+      setInterval(() => {
+        const now = new Date();
+        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+        for (let key in jadwalSholat) {
+          if (jadwalSholat[key] === currentTime && now.getSeconds() === 0) {
+            triggerAdzanNotification(key);
+          }
+        }
+      }, 1000);
+    }
+
+    function triggerAdzanNotification(sholatName) {
+      if (Notification.permission === 'granted') {
+        new Notification(`Waktunya Sholat ${sholatName}`, {
+          body: 'Mari tunaikan ibadah sholat tepat waktu.',
+          icon: 'https://cdn-icons-png.flaticon.com/512/2903/2903561.png'
+        });
+      }
+    }
   </script>
 </body>
 </html>
-
