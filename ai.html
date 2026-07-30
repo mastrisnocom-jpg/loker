@@ -1,237 +1,621 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>Sistem Generator Text-to-Video AI</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
-            line-height: 1.6;
-            padding: 30px;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: #1e293b;
-            border-radius: 16px;
-            padding: 32px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            border: 1px solid #334155;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 28px;
-            border-bottom: 1px solid #334155;
-            padding-bottom: 20px;
-        }
-        .header h1 {
-            font-size: 26px;
-            color: #38bdf8;
-            margin-bottom: 8px;
-        }
-        .header p {
-            color: #94a3b8;
-            font-size: 14px;
-        }
-        .badge-container {
-            margin-top: 10px;
-        }
-        .badge {
-            display: inline-block;
-            background-color: #0369a1;
-            color: #e0f2fe;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-            margin: 2px;
-        }
-        .badge-alt {
-            background-color: #4338ca;
-            color: #e0e7ff;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #cbd5e1;
-            font-size: 14px;
-        }
-        textarea, select, input[type="text"] {
-            width: 100%;
-            padding: 12px 16px;
-            background-color: #0f172a;
-            border: 1px solid #475569;
-            border-radius: 8px;
-            color: #f8fafc;
-            font-size: 14px;
-        }
-        .grid-2 {
-            display: table;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-        .col {
-            display: table-cell;
-            width: 50%;
-            padding-right: 10px;
-        }
-        .col:last-child {
-            padding-right: 0;
-            padding-left: 10px;
-        }
-        .btn-generate {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-            margin-top: 10px;
-        }
-        .pipeline-box {
-            margin-top: 30px;
-            background-color: #0f172a;
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px dashed #475569;
-        }
-        .pipeline-title {
-            font-size: 15px;
-            font-weight: bold;
-            color: #38bdf8;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .step {
-            margin-bottom: 15px;
-            padding-left: 12px;
-            border-left: 3px solid #0284c7;
-        }
-        .step-title {
-            font-size: 13px;
-            font-weight: bold;
-            color: #f1f5f9;
-        }
-        .step-desc {
-            font-size: 12px;
-            color: #94a3b8;
-        }
-        .code-preview {
-            background-color: #020617;
-            padding: 12px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 11px;
-            color: #a5f3fc;
-            margin-top: 6px;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-        .video-placeholder {
-            margin-top: 25px;
-            background-color: #020617;
-            border-radius: 12px;
-            height: 220px;
-            border: 2px dashed #334155;
-            text-align: center;
-            padding-top: 80px;
-        }
-        .video-placeholder-text {
-            color: #64748b;
-            font-size: 14px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Islami & Song Video Studio HD 720p</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0d9488;
+      --bg: #0f172a;
+      --gold: #fbbf24;
+      --cyan: #38bdf8;
+      --arabic-size: 1.6rem;
+      --sub-size: 0.9rem;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+    body { background-color: var(--bg); color: white; padding-bottom: 120px; }
+
+    .player-wrapper {
+      width: 100%;
+      max-width: 850px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+
+    /* CONTAINER VIDEO / PLAYER HD 16:9 */
+    .video-player-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      border: 1px solid #334155;
+    }
+
+    /* BACKGROUND ELEMEN (GAMBAR & VIDEO) */
+    .bg-media {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.6) contrast(1.05);
+      z-index: 1;
+      display: none;
+    }
+    .bg-media.active { display: block; }
+
+    #exportCanvas { display: none; }
+
+    .channel-watermark {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--gold);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    }
+
+    .info-badge {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      color: #cbd5e1;
+    }
+
+    /* OVERLAY SUBTITLE / LIRIK */
+    .subtitle-overlay {
+      position: relative;
+      z-index: 10;
+      width: 90%;
+      margin: 20px;
+      text-align: center;
+    }
+
+    .arabic-text {
+      font-family: 'Amiri', serif;
+      font-size: var(--arabic-size);
+      direction: rtl;
+      line-height: 1.6;
+      margin-bottom: 6px;
+      color: #ffffff;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
+    }
+
+    .word { display: inline-block; padding: 0 3px; transition: all 0.15s ease; }
+    .word.highlight { color: var(--gold); text-shadow: 0 0 12px rgba(251, 191, 36, 0.9); transform: scale(1.08); font-weight: bold; }
+
+    .sub-text {
+      font-size: var(--sub-size);
+      color: #f1f5f9;
+      line-height: 1.4;
+      font-weight: 500;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95);
+    }
+
+    .controls-wrapper {
+      max-width: 850px;
+      margin: 0 auto;
+      padding: 0 15px;
+    }
+
+    .control-card {
+      background: #1e293b;
+      padding: 18px;
+      border-radius: 14px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      border: 1px solid #334155;
+      margin-bottom: 12px;
+    }
+
+    label { display: block; font-size: 0.72rem; color: #94a3b8; margin-bottom: 4px; }
+
+    select, input[type="file"], input[type="range"], input[type="text"], textarea, button {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: white;
+      font-size: 0.8rem;
+      outline: none;
+    }
+
+    textarea { height: 60px; font-family: monospace; }
+
+    .btn-play { background: var(--primary); border: none; font-weight: bold; cursor: pointer; }
+    .btn-download { background: #d97706; border: none; font-weight: bold; cursor: pointer; }
+
+    .mode-panel { display: none; }
+    .mode-panel.active { display: block; }
+
+    .player-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid #334155;
+      padding: 10px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      z-index: 1000;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>AI Text-to-Video Studio</h1>
-            <p>Integrasi Gemini API (Prompt Enhancer) & Kie.ai API (Video Generator)</p>
-            <div class="badge-container">
-                <span class="badge">Gemini Flash / Pro</span>
-                <span class="badge badge-alt">Kie.ai Engine</span>
-            </div>
+
+  <div class="player-wrapper">
+    <div class="video-player-container">
+      <div class="info-badge" id="infoBadge">Mode Al-Qur'an</div>
+      <div class="channel-watermark" id="channelDisplay">▶ Mukjizat doa</div>
+
+      <!-- MEDIA BACKGROUND: BISA GAMBAR ATAU VIDEO -->
+      <img id="bgImage" class="bg-media" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1280&q=80" alt="Background Gambar">
+      
+      <video id="bgVideo" class="bg-media active" autoplay loop muted playsinline crossOrigin="anonymous">
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4" type="video/mp4">
+      </video>
+
+      <!-- OVERLAY SUBTITLE TEKS -->
+      <div class="subtitle-overlay">
+        <div class="arabic-text" id="arabicDisplay">
+          <span class="word">Klik</span> <span class="word">Putar</span>
         </div>
-
-        <form>
-            <div class="form-group">
-                <label>Ide Video (Teks Sederhana / Bahasa Indonesia):</label>
-                <textarea rows="3" placeholder="Contoh: Kucing astronot terbang di ruang angkasa dengan latar belakang planet bumi...">Kucing astronot melayang di luar angkasa, melihat ke arah bumi dengan cahaya realistis.</textarea>
-            </div>
-
-            <div class="grid-2">
-                <div class="col">
-                    <label>Pilih Model Video (Kie.ai):</label>
-                    <select>
-                        <option>Veo 2 (Google)</option>
-                        <option selected>Kling AI v1.5</option>
-                        <option>Runway Gen-3</option>
-                        <option>Wan 2.1</option>
-                    </select>
-                </div>
-                <div class="col">
-                    <label>Rasio Aspek:</label>
-                    <select>
-                        <option selected>16:9 (Landscape / YouTube)</option>
-                        <option>9:16 (Portrait / TikTok / Reels)</option>
-                        <option>1:1 (Square)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="btn-generate">
-                🚀 Generate Video Otomatis
-            </div>
-        </form>
-
-        <div class="pipeline-box">
-            <div class="pipeline-title">⚡ Simulasi Alur Proses Sistem (Backend Architecture)</div>
-            
-            <div class="step">
-                <div class="step-title">Langkah 1: Gemini API – Prompt Enhancement</div>
-                <div class="step-desc">Mengubah teks sederhana user menjadi prompt sinematik profesional dalam bahasa Inggris.</div>
-                <div class="code-preview">// Output dari Gemini API:
-"Cinematic wide shot of an astronaut cat floating gracefully in zero gravity outside a spaceship, Earth visible in the background with realistic atmosphere glow, detailed fur, cinematic lighting, 8k resolution, smooth camera movement, --ar 16:9"</div>
-            </div>
-
-            <div class="step">
-                <div class="step-title">Langkah 2: Kie.ai API – Video Generation Request</div>
-                <div class="step-desc">Mengirim hasil prompt Gemini ke endpoint Text-to-Video Kie.ai.</div>
-                <div class="code-preview">POST https://api.kie.ai/v1/jobs/create-video
-Authorization: Bearer YOUR_KIE_AI_API_KEY
-Content-Type: application/json
-
-{
-  "model": "kling-v1.5",
-  "prompt": "Cinematic wide shot of an astronaut cat...",
-  "aspect_ratio": "16:9",
-  "duration": 5
-}</div>
-            </div>
-        </div>
-
-        <div class="video-placeholder">
-            <div class="video-placeholder-text">
-                🎬 Output Video Hasil Generasi Akan Tampil Di Sini
-            </div>
-        </div>
+        <div class="sub-text" id="subDisplay">Pilih konten lalu tekan 'Putar'</div>
+      </div>
     </div>
+  </div>
+
+  <canvas id="exportCanvas" width="1280" height="720"></canvas>
+
+  <div class="controls-wrapper">
+    <!-- MODES & BACKGROUND SELECTION -->
+    <div class="control-card">
+      <div>
+        <label>Pilih Mode Konten:</label>
+        <select id="modeSelect" onchange="switchContentMode(this.value)">
+          <option value="quran">📖 Mode Al-Qur'an Karaoke</option>
+          <option value="song">🎵 Mode Lagu / Music Video</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Pilih Tipe Background:</label>
+        <select id="bgTypeSelect" onchange="switchBgType(this.value)">
+          <option value="video">🎥 Video Latar</option>
+          <option value="image">🖼️ Gambar Latar</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Nama Channel Youtube:</label>
+        <input type="text" id="channelNameInput" value="Mukjizat doa" oninput="updateChannelName()">
+      </div>
+    </div>
+
+    <!-- PANEL 1: KONTEN AL-QURAN -->
+    <div id="quranPanel" class="mode-panel active">
+      <div class="control-card">
+        <div>
+          <label>Pilih Surah:</label>
+          <select id="surahSelect" onchange="loadSurah(this.value)">
+            <option value="">Memuat surah...</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Unggah Audio MP3 Sendiri (Optional):</label>
+          <input type="file" id="uploadAudioQuran" accept="audio/*" onchange="handleAudioUpload(event)">
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 2: KONTEN LAGU -->
+    <div id="songPanel" class="mode-panel">
+      <div class="control-card">
+        <div>
+          <label>1. Unggah Lagu MP3:</label>
+          <input type="file" id="uploadSong" accept="audio/*" onchange="handleSongUpload(event)">
+        </div>
+
+        <div>
+          <label>2. Cari Lirik Otomatis (Judul Lagu):</label>
+          <div style="display:flex; gap:5px;">
+            <input type="text" id="songQuery" placeholder="Sheila on 7 - Dan">
+            <button style="width:70px; background:#0284c7;" onclick="searchSongLyrics()">Cari</button>
+          </div>
+        </div>
+
+        <div style="grid-column: span 2;">
+          <label>Atau Paste Lirik Format .LRC Manual:</label>
+          <textarea id="lrcManualInput" placeholder="[00:12.30] Lirik lagu di sini..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- BACKGROUND UPLOAD & AUDIO EFFECTS -->
+    <div class="control-card">
+      <div>
+        <label>Unggah Background Gambar (JPG/PNG):</label>
+        <input type="file" id="uploadBgImg" accept="image/*" onchange="handleBgImgUpload(event)">
+      </div>
+
+      <div>
+        <label>Unggah Background Video (MP4):</label>
+        <input type="file" id="uploadBgVid" accept="video/mp4" onchange="handleBgVidUpload(event)">
+      </div>
+
+      <div>
+        <label>Preset Equalizer Audio:</label>
+        <select id="eqPreset" onchange="applyEQPreset(this.value)">
+          <option value="flat">Normal / Flat</option>
+          <option value="bass">Bass Boost</option>
+          <option value="treble">Treble Boost</option>
+          <option value="vocal">Vocal / Clear</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Pitch Audio: <b id="valPitch">1.0x</b></label>
+        <input type="range" id="pitchSlider" min="0.7" max="1.3" step="0.05" value="1.0" oninput="updatePitch(this.value)">
+      </div>
+
+      <div>
+        <label>Kontrol Putar:</label>
+        <button class="btn-play" onclick="startPlay()">▶️ Putar Media</button>
+      </div>
+
+      <div>
+        <label>Ekspor Video HD 720p:</label>
+        <button class="btn-download" id="recBtn" onclick="toggleRecord()">🎥 Rekam & Unduh Video 720p</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="player-bar">
+    <div style="font-size:0.8rem; font-weight:600; color:#38bdf8;" id="playingTitle">Siap Memutar</div>
+    <audio id="audioElement" controls style="width:100%; max-width:600px;" crossOrigin="anonymous"></audio>
+  </div>
+
+  <script>
+    const API_QURAN = 'https://api.quran.com/api/v4';
+    let currentMode = 'quran'; // 'quran' atau 'song'
+    let bgType = 'video'; // 'video' atau 'image'
+
+    let currentVerses = [], currentAyatIndex = 0, currentSurahNum = 1;
+    let songLyrics = [], currentSongLyricIndex = -1;
+    let isCustomAudio = false;
+
+    let mediaRecorder, recordedChunks = [], isRecording = false, exportedBlob = null;
+    let canvasAnimationId;
+
+    let audioCtx, audioSource, audioAnalyser, audioDestination;
+    let lowFilter, midFilter, highFilter;
+
+    const audio = document.getElementById('audioElement');
+    const bgVideo = document.getElementById('bgVideo');
+    const bgImage = document.getElementById('bgImage');
+    const canvas = document.getElementById('exportCanvas');
+    const ctx = canvas.getContext('2d');
+
+    window.onload = () => {
+      getSurahList();
+      initSyncEngine();
+      updateChannelName();
+    };
+
+    function updateChannelName() {
+      const name = document.getElementById('channelNameInput').value || "Mukjizat doa";
+      document.getElementById('channelDisplay').innerHTML = `▶ ${name}`;
+    }
+
+    // SWITCH MODE AL-QURAN DAN LAGU
+    function switchContentMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-panel').forEach(e => e.classList.remove('active'));
+
+      if (mode === 'quran') {
+        document.getElementById('quranPanel').classList.add('active');
+        document.getElementById('infoBadge').innerText = "Mode Al-Qur'an";
+        renderAyat(0);
+      } else {
+        document.getElementById('songPanel').classList.add('active');
+        document.getElementById('infoBadge').innerText = "Mode Lagu / Musik";
+        document.getElementById('arabicDisplay').innerHTML = "";
+        document.getElementById('subDisplay').innerText = "Unggah lagu & lirik...";
+      }
+    }
+
+    // SWITCH BACKGROUND GAMBAR / VIDEO
+    function switchBgType(type) {
+      bgType = type;
+      bgVideo.classList.remove('active');
+      bgImage.classList.remove('active');
+
+      if (type === 'video') {
+        bgVideo.classList.add('active');
+        bgVideo.play();
+      } else {
+        bgImage.classList.add('active');
+      }
+    }
+
+    function handleBgImgUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        bgImage.src = URL.createObjectURL(file);
+        document.getElementById('bgTypeSelect').value = 'image';
+        switchBgType('image');
+      }
+    }
+
+    function handleBgVidUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        bgVideo.src = URL.createObjectURL(file);
+        document.getElementById('bgTypeSelect').value = 'video';
+        switchBgType('video');
+      }
+    }
+
+    /* ENGINE SINKRONISASI REAL-TIME (AL-QURAN & LAGU) */
+    function initSyncEngine() {
+      audio.addEventListener('timeupdate', () => {
+        if (!audio.duration) return;
+        const currentMs = audio.currentTime * 1000;
+        const durationMs = audio.duration * 1000;
+
+        // 1. SINKRONISASI MODE AL-QURAN
+        if (currentMode === 'quran') {
+          if (isCustomAudio && currentVerses.length > 1) {
+            const ayatIndex = Math.floor((currentMs / durationMs) * currentVerses.length);
+            if (ayatIndex !== currentAyatIndex && ayatIndex < currentVerses.length) {
+              currentAyatIndex = ayatIndex;
+              renderAyat(currentAyatIndex);
+            }
+          }
+
+          const totalWords = currentVerses[currentAyatIndex] ? currentVerses[currentAyatIndex].words.filter(w => w.char_type_name === 'word').length : 1;
+          const wordDuration = durationMs / totalWords;
+          const activeWordPos = Math.floor((currentMs % wordDuration) / (wordDuration / totalWords)) + 1;
+
+          document.querySelectorAll('.word').forEach((el, idx) => {
+            if (idx + 1 === activeWordPos) el.classList.add('highlight');
+            else el.classList.remove('highlight');
+          });
+        }
+        // 2. SINKRONISASI MODE LAGU (LRC)
+        else if (currentMode === 'song' && songLyrics.length > 0) {
+          const currentTime = audio.currentTime;
+          let activeIndex = -1;
+
+          for (let i = 0; i < songLyrics.length; i++) {
+            if (currentTime >= songLyrics[i].time) activeIndex = i;
+            else break;
+          }
+
+          if (activeIndex !== -1 && activeIndex !== currentSongLyricIndex) {
+            currentSongLyricIndex = activeIndex;
+            document.getElementById('subDisplay').innerText = songLyrics[currentSongLyricIndex].text;
+          }
+        }
+      });
+
+      audio.addEventListener('ended', () => {
+        if (currentMode === 'quran' && !isCustomAudio && currentAyatIndex < currentVerses.length - 1) {
+          currentAyatIndex++;
+          startPlay();
+        } else if (isRecording) {
+          toggleRecord();
+        }
+      });
+    }
+
+    /* AL-QURAN ENGINE */
+    async function getSurahList() {
+      try {
+        const res = await fetch(`${API_QURAN}/chapters?language=id`);
+        const result = await res.json();
+        const select = document.getElementById('surahSelect');
+        select.innerHTML = '';
+        result.chapters.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = `${c.id}. ${c.name_simple} (${c.translated_name.name})`;
+          select.appendChild(opt);
+        });
+        loadSurah(1);
+      } catch (e) {}
+    }
+
+    async function loadSurah(chapterId) {
+      currentSurahNum = chapterId;
+      try {
+        const res = await fetch(`${API_QURAN}/verses/by_chapter/${chapterId}?language=id&words=true&word_fields=text_uthmani&translations=33`);
+        const result = await res.json();
+        currentVerses = result.verses;
+        currentAyatIndex = 0;
+        if (currentMode === 'quran') renderAyat(0);
+      } catch (e) {}
+    }
+
+    function renderAyat(index) {
+      if (!currentVerses.length) return;
+      const verse = currentVerses[index];
+
+      let wordsHtml = '';
+      verse.words.forEach(w => {
+        if (w.char_type_name === "word") {
+          wordsHtml += `<span class="word" id="w-${w.position}">${w.text_uthmani}</span> `;
+        }
+      });
+      document.getElementById('arabicDisplay').innerHTML = wordsHtml;
+      document.getElementById('subDisplay').innerText = verse.translations[0] ? `"${verse.translations[0].text}"` : '';
+
+      if (!isCustomAudio) {
+        const sPad = String(currentSurahNum).padStart(3, '0');
+        const aPad = String(verse.verse_number).padStart(3, '0');
+        audio.src = `https://everyayah.com/data/Alafasy_128kbps/${sPad}${aPad}.mp3`;
+      }
+    }
+
+    /* SONG & LYRICS ENGINE */
+    function handleSongUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        audio.src = URL.createObjectURL(file);
+        document.getElementById('songQuery').value = file.name.replace(/\.[^/.]+$/, "");
+      }
+    }
+
+    async function searchSongLyrics() {
+      const query = document.getElementById('songQuery').value;
+      if (!query) return;
+      document.getElementById('subDisplay').innerText = "Mencari lirik...";
+
+      try {
+        const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        if (data.length > 0 && data[0].syncedLyrics) {
+          parseLrc(data[0].syncedLyrics);
+          alert(`Lirik ditemukan: ${data[0].trackName}`);
+        } else {
+          alert("Lirik tidak ditemukan, masukkan manual di kolom LRC.");
+        }
+      } catch (err) {}
+    }
+
+    function parseLrc(lrcText) {
+      songLyrics = [];
+      const lines = lrcText.split('\n');
+      const reg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
+      lines.forEach(l => {
+        const m = reg.exec(l);
+        if (m) {
+          const time = parseInt(m[1]) * 60 + parseInt(m[2]) + parseInt(m[3].padEnd(3, '0')) / 1000;
+          const text = l.replace(reg, '').trim();
+          if (text) songLyrics.push({ time, text });
+        }
+      });
+      songLyrics.sort((a, b) => a.time - b.time);
+    }
+
+    function handleAudioUpload(e) { me = e.target.files[0]; if (me) { audio.src = URL.createObjectURL(me); isCustomAudio = true; } }
+
+    function updatePitch(val) { document.getElementById('valPitch').innerText = val + 'x'; audio.playbackRate = parseFloat(val); audio.preservesPitch = false; }
+
+    function applyEQPreset(p) {
+      if (!lowFilter) return;
+      if (p === 'bass') { lowFilter.gain.value = 8; highFilter.gain.value = -3; }
+      else if (p === 'treble') { lowFilter.gain.value = -3; highFilter.gain.value = 8; }
+      else if (p === 'vocal') { lowFilter.gain.value = -2; midFilter.gain.value = 6; }
+      else { lowFilter.gain.value = 0; midFilter.gain.value = 0; highFilter.gain.value = 0; }
+    }
+
+    function startPlay() {
+      if (currentMode === 'song' && document.getElementById('lrcManualInput').value) {
+        parseLrc(document.getElementById('lrcManualInput').value);
+      }
+      audio.play();
+      if (bgType === 'video') bgVideo.play();
+    }
+
+    /* DRAW CANVAS RENDERER UNTUK REKAM HD 720P */
+    function drawCanvasFrame() {
+      if (!isRecording) return;
+
+      // Draw Background Gambar atau Video
+      if (bgType === 'image') {
+        ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.drawImage(bgVideo, 0, 0, canvas.width, canvas.height);
+      }
+
+      // Shadow overlay
+      const grad = ctx.createLinearGradient(0, canvas.height - 250, 0, canvas.height);
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(1, 'rgba(0,0,0,0.85)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, canvas.height - 250, canvas.width, 250);
+
+      // Watermark Channel
+      const channelName = document.getElementById('channelNameInput').value || "Mukjizat doa";
+      ctx.font = 'bold 24px Inter, sans-serif';
+      ctx.fillStyle = '#fbbf24';
+      ctx.textAlign = 'right';
+      ctx.shadowColor = "rgba(0,0,0,0.9)"; ctx.shadowBlur = 6;
+      ctx.fillText(`▶ ${channelName}`, canvas.width - 40, 50);
+
+      // Render Teks
+      ctx.textAlign = 'center';
+      const subText = document.getElementById('subDisplay').innerText;
+      ctx.font = '22px Inter, sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(subText, 640, 640);
+
+      if (currentMode === 'quran') {
+        const arabText = document.getElementById('arabicDisplay').innerText;
+        ctx.font = 'bold 36px Amiri, serif';
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText(arabText, 640, 570);
+      }
+
+      ctx.shadowColor = "transparent";
+      canvasAnimationId = requestAnimationFrame(drawCanvasFrame);
+    }
+
+    async function toggleRecord() {
+      const recBtn = document.getElementById('recBtn');
+      if (!isRecording) {
+        const stream = canvas.captureStream(30);
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = () => {
+          exportedBlob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(exportedBlob);
+          const a = document.createElement('a'); a.href = url;
+          a.download = `Studio_Video720p_${Date.now()}.webm`; a.click();
+        };
+
+        mediaRecorder.start(1000);
+        isRecording = true;
+        recBtn.innerText = "⏹️ Hentikan & Unduh";
+        drawCanvasFrame();
+        startPlay();
+      } else {
+        mediaRecorder.stop();
+        isRecording = false;
+        recBtn.innerText = "🎥 Rekam & Unduh Video 720p";
+      }
+    }
+  </script>
 </body>
 </html>
-
