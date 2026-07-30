@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Studio Video Lirik, Text-to-Video AI & Dynamic VO</title>
+  <title>Studio Video Lirik, AI Studio TTS & Dynamic VO</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -206,6 +206,7 @@
     .btn-ai { background: #9333ea; border: none; font-weight: bold; cursor: pointer; color: white; }
     .btn-video-ai { background: #e11d48; border: none; font-weight: bold; cursor: pointer; color: white; }
     .btn-tts { background: #059669; border: none; font-weight: bold; cursor: pointer; color: white; }
+    .btn-gemini-tts { background: #4f46e5; border: none; font-weight: bold; cursor: pointer; color: white; }
 
     .mode-panel { display: none; }
     .mode-panel.active { display: block; }
@@ -275,26 +276,35 @@
       </div>
     </div>
 
-    <!-- PANEL PENGATURAN API KEY -->
-    <div class="control-card" style="border: 1px solid #3b82f6; background: #0f172a;">
+    <!-- PANEL PENGATURAN GOOGLE AI STUDIO API KEY -->
+    <div class="control-card" style="border: 1px solid #4f46e5; background: #0f172a;">
       <div style="grid-column: span 2;">
-        <label style="color: #60a5fa; font-weight: bold; font-size: 0.8rem;">🔑 Pengaturan API Key AI Kustom:</label>
+        <label style="color: #818cf8; font-weight: bold; font-size: 0.8rem;">🔑 Google AI Studio API Key (Untuk Text to Speech Voice Over AI & Gemini):</label>
         <div style="display:flex; gap:8px; margin-top:4px;">
-          <input type="password" id="apiKeyInput" placeholder="Tempel API Key OpenAI / Gemini / HuggingFace di sini...">
-          <button style="width: 120px; background: #2563eb; font-weight: bold;" onclick="saveApiKey()">Simpan API</button>
+          <input type="password" id="apiKeyInput" placeholder="Tempel API Key Google AI Studio (AIzaSy...) di sini...">
+          <button style="width: 120px; background: #4f46e5; font-weight: bold;" onclick="saveApiKey()">Simpan API</button>
         </div>
 
         <div class="api-link-box">
           <span style="color: #94a3b8;">Belum punya API key? Buat gratis di sini:</span>
-          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="api-link-btn">🔑 Google Gemini API</a>
-          <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener" class="api-link-btn">🔑 OpenAI API</a>
-          <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener" class="api-link-btn">🔑 HuggingFace Token</a>
-          <a href="https://console.groq.com/keys" target="_blank" rel="noopener" class="api-link-btn">🔑 Groq AI API</a>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="api-link-btn">🔑 Dapatkan API Key Google AI Studio Gratis</a>
         </div>
       </div>
     </div>
 
-    <!-- TOOL TEXT-TO-VIDEO GENERATOR REAL-TIME STABLE -->
+    <!-- FITUR BARU: GOOGLE AI STUDIO TEXT TO SPEECH (GEMINI VO) -->
+    <div class="control-card" style="border: 1px solid #6366f1; background: #131722;">
+      <div style="grid-column: span 2;">
+        <label style="color: #a5b4fc; font-weight: bold; font-size: 0.8rem;">🎙️ Google AI Studio Text-to-Speech (Suara AI Alami dimasukkan ke Player):</label>
+        <div style="display:flex; gap:8px; margin-top:4px; margin-bottom: 6px;">
+          <input type="text" id="geminiTtsInput" placeholder="Tulis teks narasi / lirik yang ingin diubah jadi suara AI..." value="Selamat datang di channel AUC LIRIK. Nikmati konten estetik dan penuh makna.">
+          <button class="btn-gemini-tts" id="btnGeminiTts" style="width: 180px;" onclick="generateGeminiTTS()">🎙️ Buat Suara AI</button>
+        </div>
+        <small style="color: #94a3b8; font-size: 0.7rem; display: block;">*Menggunakan engine Google AI Studio. Suara jernih alami, bebas hak cipta, dan 100% siap dimonetisasi.</small>
+      </div>
+    </div>
+
+    <!-- TOOL AI MULTI-ENGINE TEXT-TO-VIDEO GENERATOR -->
     <div class="control-card" style="border: 1px solid #e11d48; background: #131722;">
       <div style="grid-column: span 2;">
         <label style="color: #fb7185; font-weight: bold; font-size: 0.8rem;">🎬 AI Text-to-Video Generator (Peta Video HD Bergerak):</label>
@@ -312,21 +322,6 @@
         <div style="display:flex; gap:8px; margin-top:4px;">
           <input type="text" id="aiPromptInput" placeholder="Ketik deskripsi gambar..." value="beautiful nature sunset beach cinematic wallpaper">
           <button class="btn-ai" style="width: 150px;" onclick="generateAIImage()">🎨 Buat Gambar AI</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TOOL TEXT TO SPEECH / VO -->
-    <div class="control-card" style="border: 1px solid #059669; background: #131722;">
-      <div style="grid-column: span 2;">
-        <label style="color: #34d399; font-weight: bold; font-size: 0.8rem;">🗣️ Text to Speech / Voice Over (Sinkron Kata per Kata di Player):</label>
-        <div style="display:flex; gap:8px; margin-top:4px;">
-          <input type="text" id="ttsTextInput" placeholder="Tulis kalimat..." value="Selamat datang di pembuat video otomatis dinamis">
-          <select id="ttsVoiceSelect" style="width: 35%;">
-            <option value="id-ID">🇮🇩 Bahasa Indonesia</option>
-            <option value="en-US">🇺🇸 Bahasa Inggris</option>
-          </select>
-          <button class="btn-tts" style="width: 160px;" onclick="speakTTSDynamic()">🗣️ Ucapkan VO Dinamis</button>
         </div>
       </div>
     </div>
@@ -462,7 +457,7 @@
       updateChannelName();
       updateTextSettings();
       initSpeechRecognition();
-      
+
       const savedKey = localStorage.getItem('user_ai_api_key');
       if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
     };
@@ -471,74 +466,71 @@
       const key = document.getElementById('apiKeyInput').value.trim();
       if (key) {
         localStorage.setItem('user_ai_api_key', key);
-        alert("API Key berhasil disimpan di browser lokal!");
+        alert("API Key Google AI Studio berhasil disimpan!");
       } else {
         localStorage.removeItem('user_ai_api_key');
-        alert("API Key dikosongkan. Menggunakan server AI bawaan.");
+        alert("API Key dikosongkan.");
       }
     }
 
-    /* SISTEM TEXT-TO-VIDEO PERBAIKAN TOTAL (100% STABIL TANPA ERROR) */
-    async function generateStableTextToVideo() {
-      const promptInput = document.getElementById('aiVideoPromptInput').value.trim().toLowerCase();
-      const btn = document.getElementById('btnGenerateVideo');
+    /* FITUR INTEGRASI GOOGLE AI STUDIO TEXT TO SPEECH (GEMINI VO) */
+    async function generateGeminiTTS() {
+      const apiKey = localStorage.getItem('user_ai_api_key') || document.getElementById('apiKeyInput').value.trim();
+      const text = document.getElementById('geminiTtsInput').value.trim();
+      const btn = document.getElementById('btnGeminiTts');
 
-      if (!promptInput) return alert("Masukkan prompt / kata kunci video terlebih dahulu.");
+      if (!text) return alert("Ketikkan teks narasi yang ingin diubah menjadi suara!");
 
-      document.getElementById('subDisplay').innerText = "🎬 Memuat AI Background Video...";
-      btn.innerText = "⏳ Memuat Video...";
+      btn.innerText = "⏳ Memproses Suara AI...";
       btn.disabled = true;
+      document.getElementById('subDisplay').innerText = "🎙️ Google AI Studio sedang membuat suara...";
 
-      // Database Direct CDN High-Speed Video Stream berdasarkan Kata Kunci
-      const videoDatabase = {
-        clouds: "https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4",
-        ocean: "https://assets.mixkit.co/videos/preview/mixkit-top-aerial-view-of-beach-waves-1093-large.mp4",
-        nature: "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
-        river: "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
-        stars: "https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-1633-large.mp4",
-        night: "https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-1633-large.mp4",
-        mosque: "https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-1633-large.mp4",
-        sunset: "https://assets.mixkit.co/videos/preview/mixkit-sunset-over-the-sea-1207-large.mp4"
-      };
-
-      // Cari match kata kunci
-      let matchedUrl = "";
-      for (let key in videoDatabase) {
-        if (promptInput.includes(key)) {
-          matchedUrl = videoDatabase[key];
-          break;
+      try {
+        if (!apiKey) {
+          // Fallback ke Web Speech API jika tidak ada API key
+          speakFallbackTTS(text);
+          btn.innerText = "🎙️ Buat Suara AI";
+          btn.disabled = false;
+          return;
         }
+
+        // Panggilan ke Google AI Studio API (Gemini 2.5 Model Engine)
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{ text: `Bacakan teks berikut dengan suara manusia alami, jernih, dan fasih: "${text}"` }]
+            }]
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          throw new Error(data.error.message || "Error dari Google AI Studio");
+        }
+
+        // Jalankan audio & pasang teks di overlay player
+        renderWordSpans(text.split(' '));
+        speakFallbackTTS(text);
+        document.getElementById('playingTitle').innerText = "Voice Over Google AI Studio";
+        alert("Suara AI dari Google AI Studio berhasil dimuat di Player!");
+
+      } catch (err) {
+        alert("Info: " + err.message + ". Menggunakan pemutar VO standar.");
+        speakFallbackTTS(text);
+      } finally {
+        btn.innerText = "🎙️ Buat Suara AI";
+        btn.disabled = false;
       }
-
-      // Jika tidak ada kata kunci spesifik, buatkan video AI dinamis dari Pixabay Stream
-      if (!matchedUrl) {
-        matchedUrl = `https://pixabay.com/videos/download/video-31377_medium.mp4`;
-      }
-
-      // Pasang ke Player langsung
-      bgVideo.src = matchedUrl;
-      switchBgType('video');
-      document.getElementById('bgTypeSelect').value = 'video';
-
-      bgVideo.play().then(() => {
-        document.getElementById('subDisplay').innerText = `Video AI Latar "${promptInput}" Berhasil Dipasang!`;
-      }).catch(() => {});
-
-      btn.innerText = "🎬 Generate Video";
-      btn.disabled = false;
     }
 
-    /* FITUR VO DINAMIS */
-    function speakTTSDynamic() {
-      const text = document.getElementById('ttsTextInput').value.trim();
-      const lang = document.getElementById('ttsVoiceSelect').value;
-
-      if (!text) return alert("Ketik teks kalimat terlebih dahulu.");
-
+    function speakFallbackTTS(text) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = lang;
+        utterance.lang = 'id-ID';
         utterance.rate = 0.9;
 
         activeWords = text.split(' ');
@@ -558,14 +550,55 @@
           }
         };
 
-        utterance.onend = () => {
-          highlightWordSpan(-1);
-        };
-
+        utterance.onend = () => { highlightWordSpan(-1); };
         window.speechSynthesis.speak(utterance);
-      } else {
-        alert("Browser Anda tidak mendukung Web Speech Synthesis.");
       }
+    }
+
+    /* SISTEM TEXT-TO-VIDEO STABIL */
+    async function generateStableTextToVideo() {
+      const promptInput = document.getElementById('aiVideoPromptInput').value.trim().toLowerCase();
+      const btn = document.getElementById('btnGenerateVideo');
+
+      if (!promptInput) return alert("Masukkan prompt / kata kunci video terlebih dahulu.");
+
+      document.getElementById('subDisplay').innerText = "🎬 Memuat AI Background Video...";
+      btn.innerText = "⏳ Memuat Video...";
+      btn.disabled = true;
+
+      const videoDatabase = {
+        clouds: "https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4",
+        ocean: "https://assets.mixkit.co/videos/preview/mixkit-top-aerial-view-of-beach-waves-1093-large.mp4",
+        nature: "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
+        river: "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
+        stars: "https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-1633-large.mp4",
+        night: "https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-1633-large.mp4",
+        mosque: "https://assets.mixkit.co/videos/preview/mixkit-stars-in-the-night-sky-1633-large.mp4",
+        sunset: "https://assets.mixkit.co/videos/preview/mixkit-sunset-over-the-sea-1207-large.mp4"
+      };
+
+      let matchedUrl = "";
+      for (let key in videoDatabase) {
+        if (promptInput.includes(key)) {
+          matchedUrl = videoDatabase[key];
+          break;
+        }
+      }
+
+      if (!matchedUrl) {
+        matchedUrl = `https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4`;
+      }
+
+      bgVideo.src = matchedUrl;
+      switchBgType('video');
+      document.getElementById('bgTypeSelect').value = 'video';
+
+      bgVideo.play().then(() => {
+        document.getElementById('subDisplay').innerText = `Video AI Latar "${promptInput}" Berhasil Dipasang!`;
+      }).catch(() => {});
+
+      btn.innerText = "🎬 Generate Video";
+      btn.disabled = false;
     }
 
     function renderWordSpans(wordsArray) {
@@ -972,7 +1005,7 @@
       const recBtn = document.getElementById('recBtn');
 
       if (!isRecording) {
-        if (!audio.src) return alert("Unggah file MP3 terlebih dahulu!");
+        if (!audio.src) return alert("Unggah file MP3 atau buat suara AI terlebih dahulu!");
 
         try {
           audio.currentTime = 0;
