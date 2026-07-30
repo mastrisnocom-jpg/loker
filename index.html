@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Qur'an Video Player - Custom Audio & Auto Download</title>
+  <title>Qur'an Video Player - Canvas Export HD</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,6 @@
       --karaoke-gold: #fbbf24;
       --karaoke-glow: rgba(251, 191, 36, 0.8);
 
-      /* Custom Dynamic Text Styles */
       --arabic-size: 1.5rem;
       --translation-size: 0.85rem;
       --text-align: center;
@@ -26,7 +25,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
     body { background-color: var(--bg); color: white; padding-bottom: 120px; }
 
-    /* Container Video Player 16:9 */
+    /* Container Player 16:9 */
     .player-wrapper {
       width: 100%;
       max-width: 850px;
@@ -57,6 +56,11 @@
       z-index: 1;
     }
 
+    /* Hidden Canvas untuk Rendering Video Tanpa Perekaman Layar */
+    #exportCanvas {
+      display: none;
+    }
+
     .surah-badge {
       position: absolute;
       top: 15px;
@@ -71,7 +75,7 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* SUBTITLE OVERLAY */
+    /* SUBTITLE OVERLAY LAYOUT */
     .subtitle-overlay {
       position: relative;
       z-index: 10;
@@ -160,11 +164,11 @@
     .btn-play { background: var(--primary); border: none; font-weight: bold; cursor: pointer; }
     .btn-download { background: #d97706; border: none; font-weight: bold; cursor: pointer; }
 
-    /* Modal Pop-up Download */
+    /* Modal Download Popup */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.85);
       display: none;
       justify-content: center;
       align-items: center;
@@ -195,7 +199,7 @@
       cursor: pointer;
     }
 
-    /* Fixed Audio Bar Bottom */
+    /* Fixed Audio Bar */
     .player-bar {
       position: fixed;
       bottom: 0; left: 0; right: 0;
@@ -231,10 +235,12 @@
     </div>
   </div>
 
+  <!-- Hidden Canvas Rendering untuk Membuat File MP4/WebM -->
+  <canvas id="exportCanvas" width="1280" height="720"></canvas>
+
   <!-- PANEL KONTROL & FORM AUDIO -->
   <div class="controls-wrapper">
     
-    <!-- BARIS 1: KONTROL SURAH, UPLOAD MP4, & UPLOAD AUDIO -->
     <div class="control-card">
       <div>
         <label>Pilih Surah:</label>
@@ -259,12 +265,12 @@
       </div>
 
       <div>
-        <label>Ekspor Video:</label>
+        <label>Ekspor / Simpan Video:</label>
         <button class="btn-download" id="recBtn" onclick="toggleRecord()">🎥 Rekam & Unduh MP4</button>
       </div>
     </div>
 
-    <!-- BARIS 2: PENGATURAN TEKS -->
+    <!-- PENGATURAN TEKS -->
     <div class="control-card">
       <div class="setting-group">
         <label>Ukuran Teks Arab: <b id="valArabic">1.5rem</b></label>
@@ -300,8 +306,8 @@
   <!-- MODAL DOWNLOAD SETELAH SELESAI -->
   <div class="modal-overlay" id="downloadModal">
     <div class="modal-box">
-      <h3>🎉 Surah Selesai Diputar!</h3>
-      <p>Hasil rekaman video subtitle Al-Qur'an Anda telah siap untuk disimpan ke memori HP/Komputer.</p>
+      <h3>🎉 Surah / Perekaman Selesai!</h3>
+      <p>Video Al-Qur'an Anda sudah berhasil diproses dan siap disimpan langsung ke HP Anda.</p>
       <button class="btn-save" id="saveVideoBtn" onclick="downloadVideoToDevice()">💾 Simpan Ke HP Sekarang</button>
     </div>
   </div>
@@ -323,9 +329,12 @@
     let recordedChunks = [];
     let isRecording = false;
     let exportedBlobUrl = null;
+    let canvasAnimationId = null;
 
     const audio = document.getElementById('audioElement');
     const bgVideo = document.getElementById('bgVideo');
+    const canvas = document.getElementById('exportCanvas');
+    const ctx = canvas.getContext('2d');
 
     window.onload = () => {
       getSurahList();
@@ -423,7 +432,6 @@
       });
     }
 
-    /* FITUR UNGGAH AUDIO SENDIRI & OTOMATIS DETEKSI TEKS ARAB */
     function handleAudioUpload(event) {
       const file = event.target.files[0];
       if (file) {
@@ -432,8 +440,6 @@
         isCustomAudio = true;
         
         document.getElementById('playingTitle').innerText = `Audio Sendiri: ${file.name}`;
-        
-        // Otomatis menyesuaikan teks ayat pertama
         currentAyatIndex = 0;
         renderAyat(0);
       }
@@ -448,7 +454,6 @@
       }
     }
 
-    /* ENGINE SINKRONISASI KARAOKE */
     function initKaraokeEngine() {
       audio.addEventListener('timeupdate', () => {
         if (!audio.duration) return;
@@ -456,7 +461,6 @@
         const durationMs = audio.duration * 1000;
         const currentMs = audio.currentTime * 1000;
 
-        // Jika menggunakan audio kustom sendiri, teks berganti secara progresif otomatis
         if (isCustomAudio && currentVerses.length > 1) {
           const ayatIndexByTime = Math.floor((currentMs / durationMs) * currentVerses.length);
           if (ayatIndexByTime !== currentAyatIndex && ayatIndexByTime < currentVerses.length) {
@@ -479,13 +483,11 @@
         });
       });
 
-      /* EVENT SURAT SELESAI DIPUTAR */
       audio.addEventListener('ended', () => {
         if (!isCustomAudio && currentAyatIndex < currentVerses.length - 1) {
           currentAyatIndex++;
           startPlay();
         } else {
-          // Jika selesai, hentikan perekaman dan tampilkan dialog download
           if (isRecording) {
             toggleRecord();
           } else {
@@ -495,26 +497,74 @@
       });
     }
 
-    /* REKAM & EKSPOR HASIL MP4/WEBM */
+    /* SISTEM CANVAS RECORDING DENGAN DUKUNGAN LANGSUNG UNTUK HP */
+    function drawCanvasFrame() {
+      if (!isRecording) return;
+
+      // Gambar Video Latar ke Canvas
+      ctx.drawImage(bgVideo, 0, 0, canvas.width, canvas.height);
+
+      // Gambar Gelap Filter
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Gambar Kotak Subtitle
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+      ctx.roundRect(100, 520, 1080, 150, 20);
+      ctx.fill();
+
+      // Gambar Teks Terjemahan
+      ctx.font = '24px Inter, sans-serif';
+      ctx.fillStyle = '#e2e8f0';
+      ctx.textAlign = 'center';
+      const transText = document.getElementById('translationDisplay').innerText;
+      ctx.fillText(transText, 640, 610);
+
+      // Gambar Teks Arab
+      ctx.font = 'bold 38px Amiri, serif';
+      ctx.fillStyle = '#ffffff';
+      const arabText = document.getElementById('arabicDisplay').innerText;
+      ctx.fillText(arabText, 640, 570);
+
+      canvasAnimationId = requestAnimationFrame(drawCanvasFrame);
+    }
+
     async function toggleRecord() {
       const recBtn = document.getElementById('recBtn');
 
       if (!isRecording) {
         try {
-          const stream = await navigator.mediaDevices.getDisplayMedia({
-            video: { mediaSource: "screen" },
-            audio: true
-          });
+          // Buat Stream Gabungan dari Canvas dan Audio Pemutar
+          const canvasStream = canvas.captureStream(30);
+          
+          let audioStream;
+          if (audio.captureStream) {
+            audioStream = audio.captureStream();
+          } else if (audio.mozCaptureStream) {
+            audioStream = audio.mozCaptureStream();
+          }
+
+          const combinedStream = new MediaStream([
+            ...canvasStream.getVideoTracks(),
+            ...(audioStream ? audioStream.getAudioTracks() : [])
+          ]);
 
           recordedChunks = [];
-          mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+          
+          let options = { mimeType: 'video/webm' };
+          if (!MediaRecorder.isTypeSupported('video/webm')) {
+            options = { mimeType: 'video/mp4' };
+          }
+
+          mediaRecorder = new MediaRecorder(combinedStream, options);
 
           mediaRecorder.ondataavailable = (e) => {
             if (e.data.size > 0) recordedChunks.push(e.data);
           };
 
           mediaRecorder.onstop = () => {
-            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            cancelAnimationFrame(canvasAnimationId);
+            const blob = new Blob(recordedChunks, { type: 'video/mp4' });
             exportedBlobUrl = URL.createObjectURL(blob);
             showDownloadModal();
           };
@@ -524,9 +574,10 @@
           recBtn.innerText = "⏹️ Hentikan & Unduh MP4";
           recBtn.style.background = "#dc2626";
 
+          drawCanvasFrame();
           startPlay();
         } catch (err) {
-          alert("Izin perekaman layar diperlukan untuk mengunduh video.");
+          alert("Perangkat Anda mengkonfirmasi perekaman via Canvas.");
         }
       } else {
         mediaRecorder.stop();
@@ -536,26 +587,25 @@
       }
     }
 
-    /* MODAL POPUP & UNDUH KE GALERI HP */
     function showDownloadModal() {
       document.getElementById('downloadModal').style.display = 'flex';
     }
 
     function downloadVideoToDevice() {
       if (!exportedBlobUrl && recordedChunks.length > 0) {
-        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const blob = new Blob(recordedChunks, { type: 'video/mp4' });
         exportedBlobUrl = URL.createObjectURL(blob);
       }
 
       if (exportedBlobUrl) {
         const a = document.createElement('a');
         a.href = exportedBlobUrl;
-        a.download = `Quran_Subtitle_Video_${Date.now()}.mp4`;
+        a.download = `Quran_Video_${Date.now()}.mp4`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
       } else {
-        alert("Silakan aktifkan tombol 'Rekam & Unduh MP4' terlebih dahulu sebelum memutar agar video dapat disimpan.");
+        alert("Tekan 'Rekam & Unduh MP4' terlebih dahulu untuk mengekspor video.");
       }
 
       document.getElementById('downloadModal').style.display = 'none';
