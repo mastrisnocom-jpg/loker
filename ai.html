@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Islami & Song Video Studio HD 720p - Fixed Search</title>
+  <title>Islami & Song Video Studio HD 720p - Full Song Player</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -206,7 +206,7 @@
 
   <div class="player-wrapper">
     <div class="video-player-container" id="playerContainer">
-      <div class="info-badge" id="infoBadge">Mode Al-Qur'an</div>
+      <div class="info-badge" id="infoBadge">Mode Lagu Full</div>
       <div class="channel-watermark" id="channelDisplay">▶ AUC LIRIK</div>
 
       <!-- BACKGROUND MEDIA -->
@@ -270,20 +270,20 @@
       </div>
     </div>
 
-    <!-- PANEL 2: KONTEN LAGU DENGAN PENCARIAN APPLE ITUNES REAL -->
+    <!-- PANEL 2: KONTEN LAGU DENGAN OPSIONAL LAGU FULL -->
     <div id="songPanel" class="mode-panel active">
       <div class="control-card">
         <div style="grid-column: span 2;">
-          <label>Cari Lagu Apapun (Denny Caknan, Sheila on 7, Pop, Dangdut, dll):</label>
+          <label>1. Masukkan Link Direct MP3 / Cari Perpustakaan Lagu Full:</label>
           <div style="display:flex; gap:5px;">
-            <input type="text" id="songQuery" value="Denny Caknan" placeholder="Ketik nama penyanyi / judul lagu...">
-            <button style="width:100px; background:#0284c7; font-weight:bold;" onclick="searchSongAndLyrics()">Cari Lagu</button>
+            <input type="text" id="songQuery" value="Denny Caknan" placeholder="Ketik nama lagu atau paste URL MP3 direct...">
+            <button style="width:110px; background:#0284c7; font-weight:bold;" onclick="searchFullAudioAndLyrics()">Cari Lagu Full</button>
           </div>
           <div class="song-results" id="songResults" style="display:none;"></div>
         </div>
 
         <div>
-          <label>Atau Unggah Lagu MP3 Sendiri (Full Version):</label>
+          <label>2. Atau Unggah File MP3 Lagu Full dari HP/Komputer:</label>
           <input type="file" id="uploadSong" accept="audio/*" onchange="handleSongUpload(event)">
         </div>
 
@@ -443,49 +443,59 @@
       }
     }
 
-    /* PENCARIAN LAGU VIA ITUNES SEARCH API (BEBAS CORS & RESMI) */
-    async function searchSongAndLyrics() {
-      const q = document.getElementById('songQuery').value;
-      if (!q) return alert("Masukkan nama penyanyi/lagu terlebih dahulu.");
+    /* PENCARIAN DENGAN DUKUNGAN AUDIO FULL & ARCHIVE API */
+    async function searchFullAudioAndLyrics() {
+      const q = document.getElementById('songQuery').value.trim();
+      if (!q) return alert("Masukkan kata kunci atau link lagu.");
 
       const resultsContainer = document.getElementById('songResults');
       resultsContainer.style.display = 'block';
-      resultsContainer.innerHTML = '<div style="padding:10px; font-size:0.8rem; text-align:center;">🔍 Mencari lagu dari server Apple iTunes...</div>';
+
+      // Jika memasukkan Link Direct MP3 langsung
+      if (q.startsWith("http://") || q.startsWith("https://")) {
+        audio.src = q;
+        document.getElementById('playingTitle').innerText = `Lagu dari URL Direct MP3`;
+        resultsContainer.style.display = 'none';
+        alert("Berhasil memuat URL lagu MP3 full!");
+        searchLyricsOnly(q);
+        return;
+      }
+
+      resultsContainer.innerHTML = '<div style="padding:10px; font-size:0.8rem; text-align:center;">🔍 Mencari audio lagu penuh dari Internet Archive...</div>';
 
       try {
-        // iTunes API Publik
-        const resAudio = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=6`);
+        // Cari Lagu Berdurasi Penuh dari Perpustakaan Internet Archive
+        const resAudio = await fetch(`https://archive.org/advancedsearch.php?q=${encodeURIComponent(q)}+AND+mediatype:audio&fl[]=identifier,title,creator&sort[]=&rows=5&page=1&output=json`);
         const dataAudio = await resAudio.json();
 
         let html = '';
-        if (dataAudio.results && dataAudio.results.length > 0) {
-          dataAudio.results.forEach(track => {
-            const trackName = track.trackName.replace(/'/g, "\\'");
-            const artistName = track.artistName.replace(/'/g, "\\'");
+        if (dataAudio.response && dataAudio.response.docs.length > 0) {
+          dataAudio.response.docs.forEach(doc => {
+            const trackUrl = `https://archive.org/download/${doc.identifier}/${doc.identifier}_vbr.mp3`;
+            const docTitle = (doc.title || doc.identifier).replace(/'/g, "\\'");
             
             html += `
-              <div class="song-item" onclick="selectOnlineAudio('${track.previewUrl}', '${trackName} - ${artistName}', '${trackName}')">
-                <span>🎵 <b>${track.trackName}</b> - <small>${track.artistName}</small></span>
-                <span style="color:#38bdf8; font-weight:bold;">▶ Pilih</span>
+              <div class="song-item" onclick="selectOnlineAudio('${trackUrl}', '${docTitle}', '${docTitle}')">
+                <span>🎵 <b>${doc.title || doc.identifier}</b></span>
+                <span style="color:#38bdf8; font-weight:bold;">▶ Putar Lagu Full</span>
               </div>
             `;
           });
         } else {
-          html = '<div style="padding:10px; font-size:0.8rem; color:#ef4444;">Lagu tidak ditemukan. Silakan periksa ejaan.</div>';
+          html = '<div style="padding:10px; font-size:0.8rem; color:#ef4444;">Lagu full dari server archive tidak ditemukan. Silakan gunakan tombol Unggah File MP3 Lagu Full.</div>';
         }
 
         resultsContainer.innerHTML = html;
+        searchLyricsOnly(q);
       } catch (err) {
-        resultsContainer.innerHTML = '<div style="padding:10px; font-size:0.8rem; color:#ef4444;">Gagal terhubung ke server lagu.</div>';
+        resultsContainer.innerHTML = '<div style="padding:10px; font-size:0.8rem; color:#ef4444;">Gagal terhubung ke server lagu full. Gunakan opsi unggah MP3 lagu Anda sendiri.</div>';
       }
     }
 
     function selectOnlineAudio(url, title, trackOnly) {
       audio.src = url;
-      document.getElementById('playingTitle').innerText = `Lagu Dipilih: ${title}`;
+      document.getElementById('playingTitle').innerText = `Lagu Full: ${title}`;
       document.getElementById('songResults').style.display = 'none';
-      
-      // Otomatis cari lirik berdasarkan nama lagu yang dipilih
       searchLyricsOnly(trackOnly || title);
     }
 
@@ -618,7 +628,7 @@
       const file = e.target.files[0]; 
       if (file) { 
         audio.src = URL.createObjectURL(file); 
-        document.getElementById('playingTitle').innerText = `Audio Sendiri: ${file.name}`;
+        document.getElementById('playingTitle').innerText = `Audio Lagu Full: ${file.name}`;
       } 
     }
     function handleAudioUpload(e) { 
