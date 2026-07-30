@@ -3,24 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Qur'an Video Player 16:9 Karaoke Pro</title>
+  <title>Qur'an Video Player - Subtitle Film Style</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <style>
     :root {
       --primary: #0d9488;
       --bg: #0f172a;
       --karaoke-gold: #fbbf24;
-      --karaoke-glow: rgba(251, 191, 36, 0.7);
+      --karaoke-glow: rgba(251, 191, 36, 0.8);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
-    body { background-color: var(--bg); color: white; padding-bottom: 120px; }
+    body { background-color: var(--bg); color: white; padding-bottom: 110px; }
 
-    /* Container Video Player Presisi Aspect Ratio 16:9 */
+    /* Container Video Player 16:9 */
     .player-wrapper {
       width: 100%;
       max-width: 850px;
@@ -31,13 +31,13 @@
     .video-player-container {
       position: relative;
       width: 100%;
-      aspect-ratio: 16 / 9; /* Rasio Standar 16:9 */
+      aspect-ratio: 16 / 9;
       background: #000;
       border-radius: 16px;
       overflow: hidden;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-end; /* Posisi teks ditaruh di bawah seperti film */
       box-shadow: 0 10px 30px rgba(0,0,0,0.6);
       border: 1px solid #334155;
     }
@@ -48,64 +48,76 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      filter: brightness(0.4) contrast(1.1);
+      filter: brightness(0.6) contrast(1.05);
       z-index: 1;
     }
 
-    /* Overlay Teks Arab & Terjemahan */
-    .quran-overlay {
-      position: relative;
-      z-index: 10;
-      width: 90%;
-      text-align: center;
-      padding: 20px;
-      background: rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(8px);
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-    }
-
+    /* Badge Surah Di Pojok Atas Kiri (Ala watermark TV / Film) */
     .surah-badge {
-      display: inline-block;
-      background: rgba(255, 255, 255, 0.2);
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      margin-bottom: 10px;
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      color: #cbd5e1;
+      border: 1px solid rgba(255, 255, 255, 0.1);
       letter-spacing: 0.5px;
     }
 
+    /* OVERLAY SUBTITLE FILM (Bagian Bawah) */
+    .subtitle-overlay {
+      position: relative;
+      z-index: 10;
+      width: 92%;
+      margin-bottom: 20px;
+      text-align: center;
+      padding: 10px 18px;
+      background: rgba(0, 0, 0, 0.65); /* Transparan gelap khas subtitle */
+      backdrop-filter: blur(6px);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Teks Arab Ukuran Lebih Kecil & Ringkas */
     .arabic-text {
       font-family: 'Amiri', serif;
-      font-size: 2.2rem;
+      font-size: 1.45rem; /* Ukuran diperkecil */
       direction: rtl;
-      line-height: 2.1;
-      margin-bottom: 10px;
+      line-height: 1.8;
+      margin-bottom: 4px;
       color: #ffffff;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.9);
     }
 
     .word {
       display: inline-block;
-      padding: 0 4px;
-      border-radius: 6px;
-      transition: all 0.2s ease;
+      padding: 0 3px;
+      border-radius: 4px;
+      transition: all 0.15s ease;
     }
 
-    /* Highlight Karaoke Menyala */
+    /* Highlight Karaoke Subtitle */
     .word.highlight {
       color: var(--karaoke-gold);
-      transform: scale(1.15);
-      text-shadow: 0 0 14px var(--karaoke-glow);
+      text-shadow: 0 0 10px var(--karaoke-glow);
       font-weight: bold;
+      transform: scale(1.08);
     }
 
+    /* Terjemahan Subtitle Film */
     .translation-text {
-      font-size: 0.9rem;
+      font-size: 0.82rem; /* Ukuran subtitle film standar */
       color: #e2e8f0;
-      line-height: 1.4;
-      max-height: 60px;
+      line-height: 1.35;
+      font-weight: 300;
+      max-height: 40px;
       overflow: hidden;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
     }
 
     /* Panel Kontrol Pengaturan */
@@ -117,7 +129,7 @@
 
     .control-card {
       background: #1e293b;
-      padding: 18px;
+      padding: 16px;
       border-radius: 14px;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -127,12 +139,12 @@
 
     select, input[type="file"], button {
       width: 100%;
-      padding: 10px 12px;
+      padding: 9px 12px;
       border-radius: 8px;
       border: 1px solid #334155;
       background: #0f172a;
       color: white;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       outline: none;
     }
 
@@ -157,11 +169,11 @@
       background: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(10px);
       border-top: 1px solid #334155;
-      padding: 12px 20px;
+      padding: 10px 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       z-index: 1000;
     }
   </style>
@@ -171,16 +183,19 @@
   <!-- KOTAK PLAYER 16:9 -->
   <div class="player-wrapper">
     <div class="video-player-container" id="captureArea">
+      <!-- Watermark Surah Pojok Atas -->
+      <div class="surah-badge" id="surahBadge">Memuat Surah...</div>
+
       <video id="bgVideo" autoplay loop muted playsinline crossOrigin="anonymous">
         <source id="videoSource" src="https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4" type="video/mp4">
       </video>
 
-      <div class="quran-overlay">
-        <div class="surah-badge" id="surahBadge">Memuat Surah...</div>
+      <!-- SUBTITLE STYLE FILM OVERLAY -->
+      <div class="subtitle-overlay">
         <div class="arabic-text" id="arabicDisplay">
           <span class="word">Klik</span> <span class="word">Putar</span>
         </div>
-        <div class="translation-text" id="translationDisplay">Pilih surah lalu tekan tombol 'Putar Karaoke'</div>
+        <div class="translation-text" id="translationDisplay">Pilih surah lalu tekan tombol 'Putar Subtitle'</div>
       </div>
     </div>
   </div>
@@ -189,24 +204,24 @@
   <div class="controls-wrapper">
     <div class="control-card">
       <div>
-        <label style="font-size:0.75rem; color:#94a3b8;">Pilih Surah:</label>
+        <label style="font-size:0.72rem; color:#94a3b8;">Pilih Surah:</label>
         <select id="surahSelect" onchange="loadSurah(this.value)">
           <option value="">Memuat daftar surah...</option>
         </select>
       </div>
 
       <div>
-        <label style="font-size:0.75rem; color:#94a3b8;">Unggah MP4 Sendiri:</label>
+        <label style="font-size:0.72rem; color:#94a3b8;">Unggah MP4 Latar:</label>
         <input type="file" id="uploadVideo" accept="video/mp4" onchange="handleVideoUpload(event)">
       </div>
 
       <div>
-        <label style="font-size:0.75rem; color:#94a3b8;">Kontrol Pemutar:</label>
-        <button class="btn-play" onclick="startPlay()">▶️ Putar Karaoke</button>
+        <label style="font-size:0.72rem; color:#94a3b8;">Kontrol Pemutar:</label>
+        <button class="btn-play" onclick="startPlay()">▶️ Putar Subtitle</button>
       </div>
 
       <div>
-        <label style="font-size:0.75rem; color:#94a3b8;">Ekspor / Rekam Video:</label>
+        <label style="font-size:0.72rem; color:#94a3b8;">Ekspor / Rekam Video:</label>
         <button class="btn-download" id="recBtn" onclick="toggleRecord()">🎥 Rekam & Unduh MP4</button>
       </div>
     </div>
@@ -214,7 +229,7 @@
 
   <!-- FIXED AUDIO PLAYER BAR -->
   <div class="player-bar">
-    <div style="font-size:0.85rem; font-weight:600; color:#38bdf8;" id="playingTitle">Siap Memutar</div>
+    <div style="font-size:0.8rem; font-weight:600; color:#38bdf8;" id="playingTitle">Siap Memutar</div>
     <audio id="audioElement" controls style="width:100%; max-width:600px;" crossOrigin="anonymous"></audio>
   </div>
 
@@ -223,7 +238,6 @@
     let currentVerses = [];
     let currentAyatIndex = 0;
     let currentSurahNum = 1;
-    let audioSegments = [];
 
     let mediaRecorder;
     let recordedChunks = [];
@@ -258,7 +272,7 @@
       }
     }
 
-    // 2. Load Data Ayat & Timestamp
+    // 2. Load Data Ayat
     async function loadSurah(chapterId) {
       currentSurahNum = chapterId;
       try {
@@ -273,19 +287,19 @@
       }
     }
 
-    // 3. Formatter URL Audio CDN EveryAyah (Stabil)
+    // 3. Audio URL EveryAyah CDN
     function getAudioUrl(surahNum, ayatNum) {
       const sPad = String(surahNum).padStart(3, '0');
       const aPad = String(ayatNum).padStart(3, '0');
       return `https://everyayah.com/data/Alafasy_128kbps/${sPad}${aPad}.mp3`;
     }
 
-    // 4. Render Teks ke Layar Player
+    // 4. Render Subtitle ke Layar
     function renderAyat(index) {
       if (!currentVerses.length) return;
       const verse = currentVerses[index];
 
-      document.getElementById('surahBadge').innerText = `Surah Ke-${currentSurahNum} : Ayat ${verse.verse_number}`;
+      document.getElementById('surahBadge').innerText = `Surah ${currentSurahNum} : Ayat ${verse.verse_number}`;
 
       let wordsHtml = '';
       verse.words.forEach(w => {
@@ -298,14 +312,10 @@
       const translation = verse.translations[0] ? verse.translations[0].text : '';
       document.getElementById('translationDisplay').innerHTML = `"${translation}"`;
 
-      // Gunakan CDN audio EveryAyah yang stabil
       audio.src = getAudioUrl(currentSurahNum, verse.verse_number);
-      
-      // Ambil timestamp segmen
-      audioSegments = verse.words ? verse.words.map((w, i) => [i + 1, (i * 400), ((i + 1) * 400)]) : [];
     }
 
-    // 5. Jalankan Audio & Video Synchronized
+    // 5. Jalankan Audio & Video
     function startPlay() {
       if (!currentVerses.length) return;
 
@@ -315,7 +325,7 @@
       audio.play().then(() => {
         document.getElementById('playingTitle').innerText = `Memutar Surah ${currentSurahNum} : Ayat ${currentVerses[currentAyatIndex].verse_number}`;
       }).catch(err => {
-        console.log("Autoplay dicegah browser, klik tombol play manual.");
+        console.log("Autoplay dicegah, gunakan kontrol audio bawah.");
       });
     }
 
@@ -329,7 +339,7 @@
       }
     }
 
-    // 7. Engine Synchronized Karaoke Highlight
+    // 7. Engine Synchronized Subtitle Highlight
     function initKaraokeEngine() {
       audio.addEventListener('timeupdate', () => {
         if (!audio.duration) return;
@@ -360,7 +370,7 @@
       });
     }
 
-    // 8. Merekam & Ekspor Layar Player MP4
+    // 8. Merekam & Ekspor Video
     async function toggleRecord() {
       const recBtn = document.getElementById('recBtn');
 
@@ -387,7 +397,7 @@
 
           startPlay();
         } catch (err) {
-          alert("Izin perekaman layar dibutuhkan untuk mengunduh video.");
+          alert("Izin perekaman layar dibutuhkan.");
         }
       } else {
         mediaRecorder.stop();
@@ -402,7 +412,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Quran_Player_16x9_${Date.now()}.mp4`;
+      a.download = `Quran_Subtitle_Style_${Date.now()}.mp4`;
       a.click();
     }
   </script>
