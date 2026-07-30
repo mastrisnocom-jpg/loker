@@ -2,17 +2,17 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Work Request & RAB - BINAYASA</title>
-    <!-- Tailwind CSS untuk UI Input -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- html2pdf.js untuk ekspor PDF presisi -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* CSS khusus untuk Dokumen Formulir */
         .document-page {
             width: 210mm;
             min-height: 297mm;
-            padding: 10mm;
+            padding: 8mm;
             margin: auto;
             background: white;
             font-family: Arial, sans-serif;
@@ -29,18 +29,14 @@
         .doc-table th, .doc-table td {
             border: 1px solid #000;
             padding: 4px;
-            vertical-align: top;
-        }
-
-        .no-border-td {
-            border: none !important;
+            vertical-align: middle;
         }
 
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .font-bold { font-weight: bold; }
 
-        /* Menyembunyikan elemen input saat cetak */
+        /* Style untuk input agar menyatu dengan dokumen */
         .editable-input {
             width: 100%;
             border: none;
@@ -48,177 +44,220 @@
             background: transparent;
             font-family: inherit;
             font-size: inherit;
+            color: inherit;
+        }
+
+        .editable-input:focus {
+            background-color: #f0f9ff;
+            border-radius: 2px;
+        }
+
+        /* Menyembunyikan tombol hapus saat export PDF */
+        .no-print {
+            display: inline-block;
         }
     </style>
 </head>
 <body class="bg-slate-200 p-4">
 
-    <!-- Tombol Aksi Webapp -->
-    <div class="max-w-[210mm] mx-auto mb-4 flex justify-between items-center bg-white p-4 rounded shadow">
-        <h2 class="font-bold text-slate-800">Formulir Work Request / RAB</h2>
-        <div class="flex gap-2">
-            <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-semibold">
+    <!-- Panel Kontrol Utama -->
+    <div class="max-w-[210mm] mx-auto mb-4 bg-white p-4 rounded-lg shadow-md flex flex-wrap justify-between items-center gap-3">
+        <div>
+            <h2 class="font-bold text-slate-800 text-lg">Aplikasi RAB & Work Request</h2>
+            <p class="text-xs text-slate-500">Formulir Interaktif & Riwayat Penyimpanan</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <button onclick="saveToHistory()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1 shadow">
+                💾 Simpan Ke Riwayat
+            </button>
+            <button onclick="toggleHistoryModal()" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1 shadow">
+                📜 Riwayat RAB (<span id="historyCount">0</span>)
+            </button>
+            <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded text-xs font-semibold shadow">
                 📥 Export CSV
             </button>
-            <button onclick="exportPDF()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold">
-                📄 Export PDF Presisi
+            <button onclick="exportPDF()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-semibold shadow">
+                📄 Export PDF
             </button>
         </div>
     </div>
 
-    <!-- AREA DOKUMEN WORK REQUEST (Akan di-export ke PDF) -->
+    <!-- AREA DOKUMEN WORK REQUEST (Semua Elemen BISA DIEDIT) -->
     <div id="pdfDocument" class="document-page shadow-lg">
         
-        <!-- Header & Logo -->
+        <!-- Header Logo & Judul -->
         <table class="doc-table mb-2">
             <tr>
                 <td class="w-1/3 text-center" style="border: none;">
                     <div class="flex items-center gap-2">
                         <div class="w-8 h-8 rounded-full border-2 border-blue-600 flex items-center justify-center font-bold text-blue-800 text-xs">B</div>
-                        <span class="text-lg font-bold text-blue-900 tracking-wider">BINAYASA</span>
+                        <input type="text" id="companyName" value="BINAYASA" class="editable-input text-lg font-bold text-blue-900 tracking-wider">
                     </div>
                 </td>
                 <td class="text-center font-bold text-base" style="border: none;">
-                    WORK REQUEST
+                    <input type="text" id="docTitle" value="WORK REQUEST" class="editable-input text-center font-bold text-base">
                 </td>
                 <td style="border: none;"></td>
             </tr>
         </table>
 
-        <!-- Info Pemohon & Tanggal -->
+        <!-- Info Pemohon, Divisi, No. WR, Tanggal -->
         <table class="doc-table mb-2">
             <tr>
                 <td class="w-20 font-bold">Pemohon</td>
                 <td class="w-2 text-center">:</td>
-                <td><input type="text" class="editable-input" value="Pengelola Gedung BSN Kantor Cabang Surabaya"></td>
+                <td><input type="text" id="pemohon" value="Pengelola Gedung BSN Kantor Cabang Surabaya" class="editable-input"></td>
                 <td class="w-20 font-bold">No. WR</td>
                 <td class="w-2 text-center">:</td>
-                <td class="w-32"><input type="text" class="editable-input" value="/WR-SBY-S/ /2026"></td>
+                <td class="w-36"><input type="text" id="noWr" value="/WR-SBY-S/ /2026" class="editable-input"></td>
             </tr>
             <tr>
                 <td class="font-bold">Divisi</td>
                 <td class="text-center">:</td>
-                <td><input type="text" class="editable-input" value="Bank BSN Kantor Cabang Surabaya"></td>
+                <td><input type="text" id="divisi" value="Bank BSN Kantor Cabang Surabaya" class="editable-input"></td>
                 <td class="font-bold">Tanggal</td>
                 <td class="text-center">:</td>
-                <td><input type="text" class="editable-input" value="/ /2026"></td>
+                <td><input type="text" id="tanggal" value="30/07/2026" class="editable-input"></td>
             </tr>
         </table>
 
-        <!-- Main Layout (Permohonan + Tanda Tangan) -->
+        <!-- Uraian Permohonan & Approval TTD -->
         <table class="doc-table mb-2">
             <tr>
-                <!-- Kiri: Uraian & Status -->
                 <td class="w-2/3 p-0" style="vertical-align: top;">
                     <div class="p-2 border-b border-black font-bold">Uraian Permohonan :</div>
-                    <div class="p-2 min-h-[80px]">
-                        - Permohonan penggantian dan Pemindahan AC KC, dan KCP BSN Surabaya
+                    <div class="p-2 min-h-[60px]">
+                        <textarea id="uraianPermohonan" class="editable-input w-full h-16 resize-none">- Permohonan penggantian dan Pemindahan AC KC, dan KCP BSN Surabaya</textarea>
                     </div>
                     <div class="p-2 border-t border-black flex gap-8">
-                        <label class="flex items-center gap-1"><input type="checkbox"> Segera</label>
-                        <label class="flex items-center gap-1"><input type="checkbox" checked> Normal</label>
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" id="chkSegera"> Segera</label>
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" id="chkNormal" checked> Normal</label>
                     </div>
                 </td>
-                <!-- Kanan: Tanda Tangan Menyetujui -->
                 <td class="w-1/3 p-0" style="vertical-align: top;">
                     <div class="p-1 text-center font-bold border-b border-black">Tanda Tangan</div>
                     <div class="p-1 text-center font-bold border-b border-black">Menyetujui</div>
-                    <div class="h-24"></div>
+                    <div class="h-20"></div>
                 </td>
             </tr>
         </table>
 
-        <!-- Tabel Rincian Pekerjaan & TTD Pembuat -->
+        <!-- Tabel Item Pekerjaan -->
         <table class="doc-table">
             <thead>
                 <tr>
                     <th class="w-8">No</th>
                     <th class="w-12">Qty</th>
                     <th>Uraian</th>
-                    <th class="w-24">Hrg Satuan</th>
-                    <th class="w-24">Total harga</th>
-                    <th class="w-48">BSN Kantor Cabang Surabaya</th>
+                    <th class="w-28">Hrg Satuan (Rp)</th>
+                    <th class="w-28">Total Harga (Rp)</th>
+                    <th class="w-48"><input type="text" id="ttdUnitTitle" value="BSN Kantor Cabang Surabaya" class="editable-input font-bold text-center"></th>
                 </tr>
             </thead>
             <tbody id="itemRows">
-                <!-- Data baris akan diisi oleh JS -->
+                <!-- Baris tabel diproduksi secara dinamis via JavaScript -->
             </tbody>
-            <!-- Summary Kalkulasi Tax & Fee -->
+            
+            <!-- Ringkasan Kalkulasi & Pajak -->
             <tbody>
                 <tr>
-                    <td colspan="3" rowspan="5" style="border-right: none;"></td>
+                    <td colspan="3" rowspan="5" style="border-right: none;" class="align-bottom p-2">
+                        <button onclick="addItemRow()" class="no-print bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded border text-xs font-semibold">
+                            + Tambah Baris
+                        </button>
+                    </td>
                     <td class="font-bold">Total harga</td>
-                    <td class="text-right font-bold" id="subtotalVal">Rp 535.500</td>
-                    <td rowspan="5" class="p-2" style="vertical-align: top;">
-                        <div class="text-center font-bold mb-8">Dibuat Oleh</div>
-                        <div class="text-center underline font-bold">Sutrisno</div>
-                        <div class="text-center text-xs">Kepala Unit</div>
-                        <div class="mt-2 text-xs">
+                    <td class="text-right font-bold" id="subtotalVal">Rp 0</td>
+                    <td rowspan="5" class="p-2 text-center" style="vertical-align: top;">
+                        <div class="font-bold mb-8">Dibuat Oleh</div>
+                        <input type="text" id="ttdNama" value="Sutrisno" class="editable-input text-center font-bold underline">
+                        <input type="text" id="ttdJabatan" value="Kepala Unit" class="editable-input text-center text-xs">
+                        <div class="mt-4 text-xs text-left">
                             Dibebankan ke :<br>
-                            <label><input type="checkbox" checked> BSN Surabaya</label><br>
-                            <label><input type="checkbox"> Pengelola gedung</label>
+                            <label class="flex items-center gap-1"><input type="checkbox" id="chkBsn" checked> BSN Surabaya</label>
+                            <label class="flex items-center gap-1"><input type="checkbox" id="chkPengelola"> Pengelola gedung</label>
                         </div>
                     </td>
                 </tr>
                 <tr>
                     <td>DPP 1,11</td>
-                    <td class="text-right" id="dppVal">Rp 482.432</td>
+                    <td class="text-right" id="dppVal">Rp 0</td>
                 </tr>
                 <tr>
                     <td>PPN 11%</td>
-                    <td class="text-right" id="ppnVal">Rp 53.068</td>
+                    <td class="text-right" id="ppnVal">Rp 0</td>
                 </tr>
                 <tr>
-                    <td>PPH 23 2%</td>
-                    <td class="text-right" id="pphVal">Rp 9.649</td>
+                    <td>PPH 23 (2%)</td>
+                    <td class="text-right" id="pphVal">Rp 0</td>
                 </tr>
                 <tr>
                     <td>Fee 8%</td>
-                    <td class="text-right" id="feeVal">Rp 42.840</td>
+                    <td class="text-right" id="feeVal">Rp 0</td>
                 </tr>
                 <tr>
-                    <td colspan="3" class="font-bold">Waktu Pekerjaan</td>
+                    <td colspan="3" class="font-bold">
+                        Waktu Pekerjaan: <input type="text" id="waktuPekerjaan" value="3 Hari Kerja" class="editable-input inline-block w-48 font-normal">
+                    </td>
                     <td class="font-bold">Total Harga & Pajak</td>
-                    <td class="text-right font-bold" id="grandTotalVal">Rp 641.056</td>
+                    <td class="text-right font-bold text-blue-900" id="grandTotalVal">Rp 0</td>
                     <td></td>
                 </tr>
             </tbody>
         </table>
 
-        <!-- Footer Catatan & Waktu -->
+        <!-- Footer Catatan dan Penanggung Jawab -->
         <table class="doc-table mt-2">
             <tr>
                 <td class="w-1/2">
-                    Diperiksa oleh :<br>
-                    Tanggal :<br>
-                    Jam :
+                    Diperiksa oleh : <input type="text" id="diperiksaOleh" value="Tim Teknik" class="editable-input inline-block w-40"><br>
+                    Tanggal : <input type="text" id="tglPeriksa" value="30/07/2026" class="editable-input inline-block w-40"><br>
+                    Jam : <input type="text" id="jamPeriksa" value="09:00 WIB" class="editable-input inline-block w-40">
                 </td>
                 <td class="w-1/2">
-                    Dikerjakan oleh :<br>
-                    Tanggal :<br>
-                    Jam :
+                    Dikerjakan oleh : <input type="text" id="dikerjakanOleh" value="Vendor / Teknisi" class="editable-input inline-block w-40"><br>
+                    Tanggal : <input type="text" id="tglKerja" value="30/07/2026" class="editable-input inline-block w-40"><br>
+                    Jam : <input type="text" id="jamKerja" value="13:00 WIB" class="editable-input inline-block w-40">
                 </td>
             </tr>
             <tr>
-                <td class="h-16" style="vertical-align: top;">Catatan :</td>
-                <td style="vertical-align: top;" class="text-center font-bold">Persetujuan Tenant</td>
+                <td class="h-16" style="vertical-align: top;">
+                    Catatan :
+                    <textarea id="catatan" class="editable-input w-full h-10 resize-none"></textarea>
+                </td>
+                <td style="vertical-align: top;" class="text-center font-bold">
+                    Persetujuan Tenant
+                </td>
             </tr>
         </table>
 
     </div>
 
+    <!-- MODAL RIWAYAT RAB -->
+    <div id="historyModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl max-w-2xl w-full p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="text-lg font-bold text-slate-800">Riwayat RAB / Work Request</h3>
+                <button onclick="toggleHistoryModal()" class="text-slate-400 hover:text-slate-600 font-bold text-xl">✕</button>
+            </div>
+            <div id="historyList" class="max-h-96 overflow-y-auto space-y-2 mb-4">
+                <!-- Daftar Riwayat -->
+            </div>
+            <div class="flex justify-end">
+                <button onclick="toggleHistoryModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded text-xs font-semibold">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Data Contoh Sesuai Gambar Anda
-        const items = [
+        // Data Item Awal (Sesuai Gambar)
+        let items = [
             { qty: 11, desc: "andi", price: 10500 },
             { qty: 8, desc: "sopyan", price: 10500 },
             { qty: 11, desc: "tris", price: 10500 },
             { qty: 7, desc: "fandis", price: 10500 },
             { qty: 3, desc: "ricki", price: 10500 },
-            { qty: 11, desc: "fikri", price: 10500 },
-            { qty: 0, desc: "", price: 0 },
-            { qty: 0, desc: "", price: 0 },
-            { qty: 0, desc: "", price: 0 }
+            { qty: 11, desc: "fikri", price: 10500 }
         ];
 
         function renderRows() {
@@ -227,27 +266,29 @@
             let subtotal = 0;
 
             items.forEach((item, i) => {
-                const total = item.qty * item.price;
-                subtotal += total;
+                const rowTotal = item.qty * item.price;
+                subtotal += rowTotal;
 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td class="text-center">${i + 1}</td>
-                    <td class="text-center">${item.qty || ''}</td>
-                    <td>${item.desc}</td>
-                    <td class="text-right">${item.price ? 'Rp ' + item.price.toLocaleString('id-ID') : ''}</td>
-                    <td class="text-right">${total ? 'Rp ' + total.toLocaleString('id-ID') : 'Rp 0'}</td>
-                    ${i === 0 ? '<td rowspan="9" style="border-bottom:none;"></td>' : ''}
+                    <td class="text-center font-bold">${i + 1}</td>
+                    <td><input type="number" value="${item.qty}" onchange="updateItem(${i}, 'qty', this.value)" class="editable-input text-center"></td>
+                    <td><input type="text" value="${item.desc}" onchange="updateItem(${i}, 'desc', this.value)" class="editable-input"></td>
+                    <td><input type="number" value="${item.price}" onchange="updateItem(${i}, 'price', this.value)" class="editable-input text-right"></td>
+                    <td class="text-right font-semibold">Rp ${rowTotal.toLocaleString('id-ID')}</td>
+                    <td class="text-center">
+                        <button onclick="removeItemRow(${i})" class="no-print text-red-500 hover:text-red-700 font-bold text-xs">Hapus</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            // Kalkulasi Pajak sesuai Rumus di Lembar Kerja
+            // Hitung Pajak & Grand Total
             const dpp = Math.round(subtotal / 1.11);
             const ppn = Math.round(dpp * 0.11);
             const pph = Math.round(dpp * 0.02);
             const fee = Math.round(subtotal * 0.08);
-            const grandTotal = subtotal + ppn + fee - pph; // Penyesuaian total
+            const grandTotal = subtotal + ppn + fee - pph;
 
             document.getElementById("subtotalVal").innerText = "Rp " + subtotal.toLocaleString('id-ID');
             document.getElementById("dppVal").innerText = "Rp " + dpp.toLocaleString('id-ID');
@@ -257,12 +298,121 @@
             document.getElementById("grandTotalVal").innerText = "Rp " + grandTotal.toLocaleString('id-ID');
         }
 
-        // Export PDF menggunakan html2pdf
+        function updateItem(index, key, val) {
+            if (key === 'qty' || key === 'price') {
+                items[index][key] = parseFloat(val) || 0;
+            } else {
+                items[index][key] = val;
+            }
+            renderRows();
+        }
+
+        function addItemRow() {
+            items.push({ qty: 1, desc: "Pekerjaan Baru", price: 0 });
+            renderRows();
+        }
+
+        function removeItemRow(index) {
+            items.splice(index, 1);
+            renderRows();
+        }
+
+        // --- SISTEM RIWAYAT (LOCALSTORAGE) ---
+        function getHistory() {
+            return JSON.parse(localStorage.getItem("rab_history") || "[]");
+        }
+
+        function updateHistoryBadge() {
+            document.getElementById("historyCount").innerText = getHistory().length;
+        }
+
+        function saveToHistory() {
+            const history = getHistory();
+            const dataToSave = {
+                id: Date.now(),
+                timestamp: new Date().toLocaleString('id-ID'),
+                noWr: document.getElementById("noWr").value,
+                pemohon: document.getElementById("pemohon").value,
+                divisi: document.getElementById("divisi").value,
+                tanggal: document.getElementById("tanggal").value,
+                uraianPermohonan: document.getElementById("uraianPermohonan").value,
+                items: JSON.parse(JSON.stringify(items)),
+                ttdNama: document.getElementById("ttdNama").value,
+                ttdJabatan: document.getElementById("ttdJabatan").value
+            };
+
+            history.unshift(dataToSave);
+            localStorage.setItem("rab_history", JSON.stringify(history));
+            updateHistoryBadge();
+            alert("RAB Berhasil Disimpan ke Riwayat!");
+        }
+
+        function toggleHistoryModal() {
+            const modal = document.getElementById("historyModal");
+            modal.classList.toggle("hidden");
+            if (!modal.classList.contains("hidden")) {
+                renderHistoryList();
+            }
+        }
+
+        function renderHistoryList() {
+            const history = getHistory();
+            const container = document.getElementById("historyList");
+            container.innerHTML = "";
+
+            if (history.length === 0) {
+                container.innerHTML = `<p class="text-slate-400 text-center text-sm py-4">Belum ada riwayat RAB tersimpan.</p>`;
+                return;
+            }
+
+            history.forEach((record) => {
+                const item = document.createElement("div");
+                item.className = "flex justify-between items-center p-3 bg-slate-50 border rounded-lg hover:bg-slate-100 transition";
+                item.innerHTML = `
+                    <div>
+                        <div class="font-bold text-sm text-slate-800">${record.noWr || 'Tanpa No. WR'} - ${record.pemohon}</div>
+                        <div class="text-xs text-slate-500">${record.timestamp} | ${record.items.length} Item Pekerjaan</div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="loadHistory(${record.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-semibold">Buka</button>
+                        <button onclick="deleteHistory(${record.id})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold">Hapus</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function loadHistory(id) {
+            const history = getHistory();
+            const record = history.find(r => r.id === id);
+            if (record) {
+                document.getElementById("noWr").value = record.noWr || "";
+                document.getElementById("pemohon").value = record.pemohon || "";
+                document.getElementById("divisi").value = record.divisi || "";
+                document.getElementById("tanggal").value = record.tanggal || "";
+                document.getElementById("uraianPermohonan").value = record.uraianPermohonan || "";
+                document.getElementById("ttdNama").value = record.ttdNama || "";
+                document.getElementById("ttdJabatan").value = record.ttdJabatan || "";
+                items = record.items || [];
+                renderRows();
+                toggleHistoryModal();
+            }
+        }
+
+        function deleteHistory(id) {
+            let history = getHistory();
+            history = history.filter(r => r.id !== id);
+            localStorage.setItem("rab_history", JSON.stringify(history));
+            updateHistoryBadge();
+            renderHistoryList();
+        }
+
+        // --- EKSPOR PDF & CSV ---
         function exportPDF() {
             const element = document.getElementById('pdfDocument');
             const opt = {
-                margin:       5,
-                filename:     'Work_Request_BINAYASA.pdf',
+                margin:       3,
+                filename:     `RAB_${document.getElementById("noWr").value.replace(/[\/\s]/g, '_')}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -270,7 +420,6 @@
             html2pdf().set(opt).from(element).save();
         }
 
-        // Export CSV
         function exportCSV() {
             let csv = "No,Qty,Uraian,Harga Satuan,Total Harga\n";
             items.forEach((item, i) => {
@@ -279,11 +428,13 @@
             const blob = new Blob([csv], { type: 'text/csv' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'Work_Request.csv';
+            link.download = `RAB_${document.getElementById("noWr").value.replace(/[\/\s]/g, '_')}.csv`;
             link.click();
         }
 
+        // Inisialisasi awal
         renderRows();
+        updateHistoryBadge();
     </script>
 </body>
 </html>
