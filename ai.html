@@ -196,7 +196,7 @@
 
     label { display: block; font-size: 0.72rem; color: #94a3b8; margin-bottom: 4px; }
 
-    select, input[type="file"], input[type="range"], input[type="text"], input[type="password"], textarea, button {
+    select, input[type="file"], input[type="range"], input[type="text"], input[type="number"], input[type="password"], textarea, button {
       width: 100%;
       padding: 8px 10px;
       border-radius: 6px;
@@ -276,7 +276,7 @@
         <label>Pilih Mode Konten:</label>
         <select id="modeSelect" onchange="switchContentMode(this.value)">
           <option value="song" selected>🎵 Mode Lagu / Voice Over</option>
-          <option value="quran">📖 Mode Al-Qur'an Karaoke</option>
+          <option value="quran">📖 Mode Al-Qur'an Karaoke (Full Surah)</option>
         </select>
       </div>
 
@@ -312,6 +312,25 @@
       <div style="grid-column: span 2;">
         <label>Nama Channel Youtube / Watermark:</label>
         <input type="text" id="channelNameInput" value="AUC LIRIK" oninput="updateChannelName()">
+      </div>
+    </div>
+
+    <!-- PENGATURAN LOOP & DURASI KUSTOM -->
+    <div class="control-card" style="border: 1px solid #0d9488; background: #0f172a;">
+      <div>
+        <label style="color: #2dd4bf; font-weight: bold;">🔄 Pengaturan Auto-Looping:</label>
+        <select id="loopSelect" onchange="toggleLoopSetting(this.value)">
+          <option value="false" selected>❌ Nonaktifkan Loop (Putar Sekali)</option>
+          <option value="true">🔁 Aktifkan Auto-Loop (Ulang Otomatis)</option>
+        </select>
+      </div>
+
+      <div>
+        <label style="color: #2dd4bf; font-weight: bold;">⏱️ Batas Durasi Rekam Video (Detik):</label>
+        <div style="display:flex; gap:8px;">
+          <input type="number" id="recordDurationInput" value="0" placeholder="0 = Sampai Audio Selesai">
+        </div>
+        <small style="color: #94a3b8; font-size: 0.68rem; margin-top:2px; display:block;">*Isi '0' untuk rekam sampai selesai, atau isi misal 15, 30, 60 detik.</small>
       </div>
     </div>
 
@@ -413,7 +432,7 @@
     <div id="quranPanel" class="mode-panel">
       <div class="control-card">
         <div>
-          <label>Pilih Surah:</label>
+          <label>Pilih Surah (Full 1 Surat):</label>
           <select id="surahSelect" onchange="loadSurah(this.value)">
             <option value="">Memuat surah...</option>
           </select>
@@ -520,6 +539,7 @@
 
     let mediaRecorder, recordedChunks = [], isRecording = false;
     let exportAnimationId, fxAnimationLoopId;
+    let recordTimerInterval = null, recordSecondsCount = 0;
 
     let audioCtx = null, audioSource = null, audioDestination = null, analyser = null;
     let dataArray = null, bufferLength = 0;
@@ -581,6 +601,13 @@
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
+    }
+
+    /* FITUR SETTING AUTO-LOOPING */
+    function toggleLoopSetting(val) {
+      const isLoop = (val === 'true');
+      audio.loop = isLoop;
+      bgVideo.loop = isLoop;
     }
 
     /* PARTICLE FX & SPECTRUM ENGINE */
@@ -663,7 +690,6 @@
             context.fill();
           }
 
-          // Move Particles
           p.x += p.speedX;
           p.y += p.speedY;
 
@@ -695,7 +721,6 @@
             context.fillStyle = gradient;
             context.fillRect(x, height - 100 - barHeight, barWidth - 3, barHeight);
             
-            // Mirror reflection
             context.fillStyle = 'rgba(56, 189, 248, 0.15)';
             context.fillRect(x, height - 100, barWidth - 3, barHeight * 0.3);
 
@@ -1135,7 +1160,21 @@
       audio.addEventListener('timeupdate', () => {
         if (!audio.duration) return;
 
-        if (currentMode === 'song' && songLyrics.length > 0) {
+        // BILA MODE AL-QUR'AN: SINKRONISASI SEMUA AYAT DALAM 1 SURAT
+        if (currentMode === 'quran' && currentVerses.length > 0) {
+          const progress = audio.currentTime / audio.duration;
+          const targetIndex = Math.min(
+            Math.floor(progress * currentVerses.length),
+            currentVerses.length - 1
+          );
+
+          if (targetIndex !== currentAyatIndex) {
+            currentAyatIndex = targetIndex;
+            renderAyat(currentAyatIndex);
+          }
+        } 
+        // BILA MODE LAGU / LIRIK SINKRON
+        else if (currentMode === 'song' && songLyrics.length > 0) {
           const currentTime = audio.currentTime;
           let activeIndex = -1;
 
@@ -1171,6 +1210,12 @@
           highlightWordSpan(activeWordIndex);
         }
       });
+
+      audio.addEventListener('ended', () => {
+        if (!audio.loop && isRecording) {
+          stopAndSaveRecording();
+        }
+      });
     }
 
     function parseLrc(lrcText) {
@@ -1188,7 +1233,7 @@
       songLyrics.sort((a, b) => a.time - b.time);
     }
 
-    /* AL-QURAN ENGINE */
+    /* AL-QURAN ENGINE: MEMUAT AUDIO FULL 1 SURAH UTUH */
     async function getSurahList() {
       try {
         const res = await fetch(`${API_QURAN}/chapters?language=id`);
@@ -1207,12 +1252,24 @@
     async function loadSurah(chapterId) {
       if (!chapterId) return;
       currentSurahNum = chapterId;
+      document.getElementById('subDisplay').innerText = "Memuat data 1 surat Al-Qur'an...";
+
       try {
         const res = await fetch(`${API_QURAN}/verses/by_chapter/${chapterId}?language=id&words=true&word_fields=text_uthmani&translations=33`);
         const result = await res.json();
         currentVerses = result.verses;
+        currentAyatIndex = 0;
         renderAyat(0);
-      } catch (e) {}
+
+        // Memuat Audio FULL 1 SURAH (EveryAyah Server Full Surah Stream)
+        if (!isCustomAudio) {
+          const sPad = String(currentSurahNum).padStart(3, '0');
+          audio.src = `https://download.quranicaudio.com/quran/mishaari_raashid_al_3afaseey/${sPad}.mp3`;
+          document.getElementById('playingTitle').innerText = `Surah Ke-${currentSurahNum} (Full Surat)`;
+        }
+      } catch (e) {
+        alert("Gagal memuat surat Al-Qur'an.");
+      }
     }
 
     function renderAyat(index) {
@@ -1220,19 +1277,16 @@
       const verse = currentVerses[index];
 
       let wordsHtml = '';
-      verse.words.forEach(w => {
-        if (w.char_type_name === "word") {
-          wordsHtml += `<span class="word">${w.text_uthmani}</span> `;
-        }
-      });
-      document.getElementById('arabicDisplay').innerHTML = wordsHtml;
-      document.getElementById('subDisplay').innerText = verse.translations && verse.translations[0] ? `"${verse.translations[0].text}"` : '';
-
-      if (!isCustomAudio) {
-        const sPad = String(currentSurahNum).padStart(3, '0');
-        const aPad = String(verse.verse_number).padStart(3, '0');
-        audio.src = `https://everyayah.com/data/Alafasy_128kbps/${sPad}${aPad}.mp3`;
+      if (verse.words) {
+        verse.words.forEach(w => {
+          if (w.char_type_name === "word") {
+            wordsHtml += `<span class="word">${w.text_uthmani}</span> `;
+          }
+        });
       }
+
+      document.getElementById('arabicDisplay').innerHTML = wordsHtml || `Ayat ${verse.verse_number}`;
+      document.getElementById('subDisplay').innerText = verse.translations && verse.translations[0] ? `"${verse.translations[0].text}"` : '';
     }
 
     /* RENDER EXPORT CANVAS + FX ANIMATION FOR MP4 RECORDING FULL SCREEN */
@@ -1280,6 +1334,7 @@
 
     function toggleRecord() {
       const recBtn = document.getElementById('recBtn');
+      const maxDurationSec = parseInt(document.getElementById('recordDurationInput').value) || 0;
 
       if (!isRecording) {
         try {
@@ -1298,6 +1353,7 @@
 
           mediaRecorder.onstop = () => {
             cancelAnimationFrame(exportAnimationId);
+            clearInterval(recordTimerInterval);
             const blob = new Blob(recordedChunks, { type: 'video/mp4' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1308,9 +1364,21 @@
 
           mediaRecorder.start(1000);
           isRecording = true;
+          recordSecondsCount = 0;
 
-          recBtn.innerText = "⏹️ Hentikan & Simpan";
+          recBtn.innerText = "⏹️ Hentikan & Simpan (0s)";
           recBtn.style.background = "#dc2626";
+
+          // Timer Hitung Durasi Rekam
+          recordTimerInterval = setInterval(() => {
+            recordSecondsCount++;
+            if (maxDurationSec > 0 && recordSecondsCount >= maxDurationSec) {
+              recBtn.innerText = `⏹️ Menghentikan (${recordSecondsCount}s)...`;
+              stopAndSaveRecording();
+            } else {
+              recBtn.innerText = `⏹️ Hentikan & Simpan (${recordSecondsCount}s${maxDurationSec > 0 ? '/' + maxDurationSec + 's' : ''})`;
+            }
+          }, 1000);
 
           function exportRenderLoop() {
             if (isRecording) {
@@ -1332,6 +1400,7 @@
       if (mediaRecorder && isRecording) {
         mediaRecorder.stop();
         isRecording = false;
+        clearInterval(recordTimerInterval);
 
         const recBtn = document.getElementById('recBtn');
         recBtn.innerText = "🎥 Rekam Video MP4 Fullscreen";
