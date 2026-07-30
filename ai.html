@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Studio Video Lirik, AI Generator & Multi-Tool HD 720p</title>
+  <title>Studio Video Lirik, AI Generator & Dynamic VO HD 720p</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,8 +15,9 @@
       --primary-dark: #0f766e;
       --bg: #0f172a;
       --gold: #fbbf24;
+      --cyan: #38bdf8;
       --arabic-size: 1.6rem;
-      --sub-size: 0.9rem;
+      --sub-size: 1.1rem;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
@@ -108,17 +109,31 @@
       max-width: 100%;
     }
 
-    .word { display: inline-block; padding: 0 3px; transition: all 0.15s ease; }
-    .word.highlight { color: var(--gold); text-shadow: 0 0 12px rgba(251, 191, 36, 0.9); transform: scale(1.08); font-weight: bold; }
-
     .sub-text {
       font-size: var(--sub-size);
       color: #f1f5f9;
-      line-height: 1.4;
-      font-weight: 500;
-      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95);
+      line-height: 1.5;
+      font-weight: 600;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
       word-wrap: break-word;
       max-width: 100%;
+    }
+
+    /* ANIMASI DYNAMIK KATA (KARAOKE EFFEK) */
+    .word-span {
+      display: inline-block;
+      margin: 0 4px;
+      color: #cbd5e1;
+      opacity: 0.7;
+      transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .word-span.active {
+      color: var(--gold);
+      opacity: 1;
+      transform: scale(1.15) translateY(-2px);
+      text-shadow: 0 0 12px rgba(251, 191, 36, 0.9), 0 2px 8px rgba(0,0,0,1);
+      font-weight: 800;
     }
 
     .controls-wrapper {
@@ -190,20 +205,20 @@
 </head>
 <body>
 
-  <!-- PREVIEW PLAYER UTAMA (OUTPUT SEMUA TOOL TAMPIL DI SINI) -->
+  <!-- PREVIEW PLAYER UTAMA -->
   <div class="player-wrapper">
     <div class="video-player-container" id="playerContainer">
       <div class="info-badge" id="infoBadge">Mode Lagu / Musik</div>
       <div class="channel-watermark" id="channelDisplay">▶ AUC LIRIK</div>
 
-      <!-- BACKGROUND MEDIA (GAMBAR / AI / VIDEO) -->
+      <!-- BACKGROUND MEDIA -->
       <img id="bgImage" class="bg-media active" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1280&q=80" crossOrigin="anonymous">
 
       <video id="bgVideo" class="bg-media" autoplay loop muted playsinline crossOrigin="anonymous">
         <source src="https://assets.mixkit.co/videos/preview/mixkit-clouds-and-blue-sky-2408-large.mp4" type="video/mp4">
       </video>
 
-      <!-- OVERLAY TEKS SUBTITLE / LIRIK / AI TTS OUTPUT -->
+      <!-- OVERLAY SUBTITLE DINAMIS KATA PER KATA -->
       <div class="subtitle-overlay">
         <div class="arabic-text" id="arabicDisplay"></div>
         <div class="sub-text" id="subDisplay">Siap memutar media...</div>
@@ -219,7 +234,7 @@
       <div>
         <label>Pilih Mode Konten:</label>
         <select id="modeSelect" onchange="switchContentMode(this.value)">
-          <option value="song" selected>🎵 Mode Lagu / Music Video</option>
+          <option value="song" selected>🎵 Mode Lagu / Voice Over</option>
           <option value="quran">📖 Mode Al-Qur'an Karaoke</option>
         </select>
       </div>
@@ -238,39 +253,28 @@
       </div>
     </div>
 
-    <!-- PANEL PENGATURAN API KEY AI (OPTIONAL/GRATIS) -->
-    <div class="control-card" style="border: 1px solid #3b82f6; background: #0f172a;">
-      <div style="grid-column: span 2;">
-        <label style="color: #60a5fa; font-weight: bold; font-size: 0.8rem;">🔑 API Key AI Service (Opsional untuk OpenAI / Stability / Custom Engine):</label>
-        <div style="display:flex; gap:8px; margin-top:4px;">
-          <input type="password" id="apiKeyInput" placeholder="Masukkan OpenAI / Stability API Key (Kosongkan jika menggunakan server gratis Pollinations)...">
-          <button style="width: 120px; background: #2563eb; font-weight: bold;" onclick="saveApiKey()">Simpan API</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TOOL 1: AI IMAGE GENERATOR (OUTPUT LANGSUNG KE PLAYER) -->
-    <div class="control-card" style="border: 1px solid #9333ea; background: #131722;">
-      <div style="grid-column: span 2;">
-        <label style="color: #c084fc; font-weight: bold; font-size: 0.8rem;">🎨 Tool AI Gambar -> Langsung Dipasang di Player:</label>
-        <div style="display:flex; gap:8px; margin-top:4px;">
-          <input type="text" id="aiPromptInput" placeholder="Ketik deskripsi gambar ex: aesthetic mosque in desert at sunset 8k wallpaper" value="beautiful nature sunset beach cinematic wallpaper">
-          <button class="btn-ai" style="width: 150px;" onclick="generateAIImage()">🎨 Buat Gambar AI</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TOOL 2: TEXT TO SPEECH / TTS (OUTPUT VOICE & TEXT LANGSUNG KE PLAYER) -->
+    <!-- TOOL 1: TEXT TO SPEECH / VO DENGAN TAMPILAN DINAMIS -->
     <div class="control-card" style="border: 1px solid #059669; background: #131722;">
       <div style="grid-column: span 2;">
-        <label style="color: #34d399; font-weight: bold; font-size: 0.8rem;">🗣️ Tool Text to Speech -> Teks & Suara Langsung Tampil di Player:</label>
+        <label style="color: #34d399; font-weight: bold; font-size: 0.8rem;">🗣️ Text to Speech / Voice Over (Sinkron Kata per Kata di Player):</label>
         <div style="display:flex; gap:8px; margin-top:4px;">
-          <input type="text" id="ttsTextInput" placeholder="Tulis kalimat..." value="Selamat datang di pembuat video otomatis">
+          <input type="text" id="ttsTextInput" placeholder="Tulis kalimat..." value="Selamat datang di pembuat video otomatis dinamis">
           <select id="ttsVoiceSelect" style="width: 35%;">
             <option value="id-ID">🇮🇩 Bahasa Indonesia</option>
             <option value="en-US">🇺🇸 Bahasa Inggris</option>
           </select>
-          <button class="btn-tts" style="width: 150px;" onclick="speakTTS()">🗣️ Ucapkan di Player</button>
+          <button class="btn-tts" style="width: 160px;" onclick="speakTTSDynamic()">🗣️ Ucapkan VO Dinamis</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOL 2: AI IMAGE GENERATOR -->
+    <div class="control-card" style="border: 1px solid #9333ea; background: #131722;">
+      <div style="grid-column: span 2;">
+        <label style="color: #c084fc; font-weight: bold; font-size: 0.8rem;">🎨 Tool AI Gambar -> Langsung Dipasang di Player:</label>
+        <div style="display:flex; gap:8px; margin-top:4px;">
+          <input type="text" id="aiPromptInput" placeholder="Ketik deskripsi gambar..." value="beautiful nature sunset beach cinematic wallpaper">
+          <button class="btn-ai" style="width: 150px;" onclick="generateAIImage()">🎨 Buat Gambar AI</button>
         </div>
       </div>
     </div>
@@ -304,11 +308,10 @@
         </div>
 
         <div>
-          <label>2. Atau Unggah File MP3 Lagu Full dari HP/Komputer:</label>
+          <label>2. Atau Unggah File MP3 Lagu / VO Full:</label>
           <input type="file" id="uploadSong" accept="audio/*" onchange="handleSongUpload(event)">
         </div>
 
-        <!-- TOOL 3: AUDIO TO TEXT -->
         <div style="grid-column: span 2; background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #2563eb;">
           <label style="color: #60a5fa; font-weight: bold; font-size: 0.8rem; margin-bottom: 6px;">🎙️ Tool Audio to Text -> Transkripsi Suara Langsung Tampil di Player:</label>
           <div style="display:flex; gap:8px; margin-bottom: 8px;">
@@ -345,8 +348,8 @@
       </div>
 
       <div class="setting-group">
-        <label>Ukuran Terjemahan / Lirik Lagu: <b id="valTrans">0.9rem</b></label>
-        <input type="range" id="sizeTrans" min="0.5" max="2.5" step="0.05" value="0.9" oninput="updateTextSettings()">
+        <label>Ukuran Terjemahan / Lirik Lagu: <b id="valTrans">1.1rem</b></label>
+        <input type="range" id="sizeTrans" min="0.5" max="2.5" step="0.05" value="1.1" oninput="updateTextSettings()">
       </div>
     </div>
 
@@ -386,6 +389,7 @@
 
     let currentVerses = [], currentAyatIndex = 0, currentSurahNum = 1;
     let songLyrics = [], currentSongLyricIndex = -1;
+    let activeWords = [], currentActiveWordIndex = -1;
     let isCustomAudio = false;
 
     let mediaRecorder, recordedChunks = [], isRecording = false;
@@ -408,18 +412,72 @@
       initSpeechRecognition();
     };
 
-    function saveApiKey() {
-      const key = document.getElementById('apiKeyInput').value.trim();
-      if (key) {
-        localStorage.setItem('user_ai_api_key', key);
-        alert("API Key berhasil disimpan di memori browser lokal!");
+    /* FITUR VO DINAMIS: SPEECH SYNTHESIS SINKRON KATA PER KATA */
+    function speakTTSDynamic() {
+      const text = document.getElementById('ttsTextInput').value.trim();
+      const lang = document.getElementById('ttsVoiceSelect').value;
+
+      if (!text) return alert("Ketik teks kalimat terlebih dahulu.");
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+        utterance.rate = 0.9;
+
+        // Pecah kalimat menjadi array kata untuk animasi per-kata
+        activeWords = text.split(' ');
+        renderWordSpans(activeWords);
+
+        // Event saat setiap kata diucapkan oleh Voice Over
+        utterance.onboundary = (event) => {
+          if (event.name === 'word') {
+            const charIndex = event.charIndex;
+            let currentLength = 0;
+            for (let i = 0; i < activeWords.length; i++) {
+              currentLength += activeWords[i].length + 1;
+              if (currentLength > charIndex) {
+                highlightWordSpan(i);
+                break;
+              }
+            }
+          }
+        };
+
+        utterance.onend = () => {
+          highlightWordSpan(-1); // Reset
+        };
+
+        window.speechSynthesis.speak(utterance);
       } else {
-        localStorage.removeItem('user_ai_api_key');
-        alert("API Key dikosongkan. Menggunakan server AI bawaan.");
+        alert("Browser Anda tidak mendukung Web Speech Synthesis.");
       }
     }
 
-    /* TOOL 1: AI IMAGE GENERATOR (OUTPUT LANGSUNG DI PLAYER) */
+    function renderWordSpans(wordsArray) {
+      const subContainer = document.getElementById('subDisplay');
+      subContainer.innerHTML = '';
+      wordsArray.forEach((word, index) => {
+        const span = document.createElement('span');
+        span.className = 'word-span';
+        span.id = `wspan-${index}`;
+        span.innerText = word;
+        subContainer.appendChild(span);
+      });
+    }
+
+    function highlightWordSpan(activeIndex) {
+      currentActiveWordIndex = activeIndex;
+      const spans = document.querySelectorAll('.word-span');
+      spans.forEach((s, idx) => {
+        if (idx === activeIndex) {
+          s.classList.add('active');
+        } else {
+          s.classList.remove('active');
+        }
+      });
+    }
+
     function generateAIImage() {
       const prompt = document.getElementById('aiPromptInput').value.trim();
       if (!prompt) return alert("Masukkan deskripsi/prompt gambar terlebih dahulu.");
@@ -438,34 +496,8 @@
         bgImage.src = aiImageUrl;
         switchBgType('image');
         document.getElementById('bgTypeSelect').value = 'image';
-        document.getElementById('subDisplay').innerText = "Gambar AI berhasil ditampilkan di Player!";
+        document.getElementById('subDisplay').innerText = "Gambar AI dipasang!";
       };
-
-      tempImg.onerror = () => {
-        alert("Gagal membuat gambar AI.");
-      };
-    }
-
-    /* TOOL 2: TEXT TO SPEECH / TTS (OUTPUT LANGSUNG KE PLAYER & DAPAT DIBACA PLAYER) */
-    function speakTTS() {
-      const text = document.getElementById('ttsTextInput').value.trim();
-      const lang = document.getElementById('ttsVoiceSelect').value;
-
-      if (!text) return alert("Ketik teks kalimat terlebih dahulu.");
-
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = lang;
-        utterance.rate = 0.9;
-
-        // Output teks ditampilkan langsung ke layar player
-        document.getElementById('subDisplay').innerText = text;
-
-        window.speechSynthesis.speak(utterance);
-      } else {
-        alert("Browser Anda tidak mendukung Web Speech Synthesis.");
-      }
     }
 
     function updateChannelName() {
@@ -556,7 +588,6 @@
       alert("URL MP3 dimuat!");
     }
 
-    /* TOOL 3: SPEECH TO TEXT / AUDIO TO TEXT (TRANSKRIPSI REALT-TIME KE PLAYER) */
     function initSpeechRecognition() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) return;
@@ -581,8 +612,7 @@
           const textarea = document.getElementById('lrcManualInput');
           textarea.value += formattedLine;
 
-          // Hasil transkripsi langsung tampil di layar player
-          document.getElementById('subDisplay').innerText = transcript;
+          renderWordSpans(transcript.split(' '));
           parseLrc(textarea.value);
         }
       };
@@ -626,7 +656,6 @@
           document.getElementById('lrcManualInput').value = data[0].syncedLyrics;
           parseLrc(data[0].syncedLyrics);
           alert(`Lirik berhasil dimuat untuk: ${data[0].trackName}`);
-          document.getElementById('subDisplay').innerText = "Lirik siap dimainkan!";
         } else {
           alert("Lirik tersinkronisasi tidak ditemukan di database.");
         }
@@ -636,9 +665,7 @@
     }
 
     function startPlay() {
-      if (!audio.src) {
-        return alert("Pilih file MP3 atau muat lagu terlebih dahulu!");
-      }
+      if (!audio.src) return alert("Pilih file MP3 atau muat lagu terlebih dahulu!");
 
       if (currentMode === 'song' && document.getElementById('lrcManualInput').value) {
         parseLrc(document.getElementById('lrcManualInput').value);
@@ -647,8 +674,6 @@
       audio.play().then(() => {
         if (bgType === 'video') bgVideo.play().catch(() => {});
         document.getElementById('playingTitle').innerText = "▶ Sedang Memutar...";
-      }).catch(err => {
-        alert("Pilih file MP3 dari galeri HP jika audio streaming terhambat.");
       });
     }
 
@@ -688,7 +713,26 @@
 
           if (activeIndex !== -1 && activeIndex !== currentSongLyricIndex) {
             currentSongLyricIndex = activeIndex;
-            document.getElementById('subDisplay').innerText = songLyrics[currentSongLyricIndex].text;
+            const lineText = songLyrics[currentSongLyricIndex].text;
+            activeWords = lineText.split(' ');
+            renderWordSpans(activeWords);
+
+            // Hitung kecepatan kata dinamis untuk lagu
+            const nextTime = (songLyrics[currentSongLyricIndex + 1]) ? songLyrics[currentSongLyricIndex + 1].time : audio.duration;
+            const lineDuration = nextTime - songLyrics[currentSongLyricIndex].time;
+            const timePerWord = lineDuration / activeWords.length;
+
+            const timeInLine = currentTime - songLyrics[currentSongLyricIndex].time;
+            const activeWordIndex = Math.floor(timeInLine / timePerWord);
+            highlightWordSpan(activeWordIndex);
+          } else if (currentSongLyricIndex !== -1) {
+            const nextTime = (songLyrics[currentSongLyricIndex + 1]) ? songLyrics[currentSongLyricIndex + 1].time : audio.duration;
+            const lineDuration = nextTime - songLyrics[currentSongLyricIndex].time;
+            const timePerWord = lineDuration / activeWords.length;
+
+            const timeInLine = currentTime - songLyrics[currentSongLyricIndex].time;
+            const activeWordIndex = Math.floor(timeInLine / timePerWord);
+            highlightWordSpan(activeWordIndex);
           }
         }
       });
@@ -765,7 +809,7 @@
       }
     }
 
-    /* RENDER CANVAS DENGAN OUTPUT PLAYER PRESISI */
+    /* RENDER CANVAS DENGAN SOROT DINAMIS DISIMPAN KE VIDEO */
     function renderFrameAtTime(timeSec) {
       try {
         if (bgType === 'image') {
@@ -790,20 +834,18 @@
       ctx.textAlign = 'right';
       ctx.fillText(`▶ ${channelName}`, canvas.width - 40, 50);
 
-      let activeText = "";
-      if (currentMode === 'song' && songLyrics.length > 0) {
-        for (let i = 0; i < songLyrics.length; i++) {
-          if (timeSec >= songLyrics[i].time) activeText = songLyrics[i].text;
-          else break;
-        }
-      } else {
-        activeText = document.getElementById('subDisplay').innerText;
-      }
-
       ctx.textAlign = 'center';
-      ctx.font = '24px Inter, sans-serif';
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(activeText, 640, 630);
+      ctx.font = 'bold 26px Inter, sans-serif';
+
+      if (currentMode === 'song' && activeWords.length > 0) {
+        let fullLineText = activeWords.join(' ');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(fullLineText, 640, 630);
+      } else {
+        const plainText = document.getElementById('subDisplay').innerText;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(plainText, 640, 630);
+      }
 
       if (currentMode === 'quran') {
         const arabText = document.getElementById('arabicDisplay').innerText;
@@ -821,7 +863,6 @@
 
         try {
           audio.currentTime = 0;
-
           const canvasStream = canvas.captureStream(30);
 
           if (!audioCtx) {
@@ -833,9 +874,7 @@
           }
 
           const audioTrack = audioDestination.stream.getAudioTracks()[0];
-          if (audioTrack) {
-            canvasStream.addTrack(audioTrack);
-          }
+          if (audioTrack) canvasStream.addTrack(audioTrack);
 
           recordedChunks = [];
           let options = { mimeType: 'video/webm' };
@@ -855,9 +894,9 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Render_Full_Video_${Date.now()}.mp4`;
+            a.download = `Render_Dynamic_VO_${Date.now()}.mp4`;
             a.click();
-            alert("Perekaman Selesai! File MP4 berdurasi penuh berhasil disimpan.");
+            alert("Perekaman Selesai! Video dinamis berhasil disimpan.");
           };
 
           mediaRecorder.start(1000);
