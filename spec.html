@@ -3,180 +3,546 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Audio Spectrum Visualizer</title>
+  <title>Studio Spectrum Video Creator</title>
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-
     body {
-      background-color: #121212;
-      color: #ffffff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0f111a;
+      color: #e0e6ed;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       min-height: 100vh;
       padding: 20px;
     }
-
     h1 {
+      font-size: 1.8rem;
       margin-bottom: 20px;
-      font-weight: 400;
-      letter-spacing: 1px;
+      color: #00d2d3;
+      text-transform: uppercase;
+      letter-spacing: 2px;
     }
-
-    .controls {
-      margin-bottom: 20px;
+    .app-container {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 15px;
-    }
-
-    input[type="file"] {
-      display: none;
-    }
-
-    .file-label {
-      background-color: #00adb5;
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .file-label:hover {
-      background-color: #00888f;
-    }
-
-    audio {
+      gap: 20px;
       width: 100%;
-      max-width: 500px;
-      outline: none;
+      max-width: 1100px;
     }
-
-    .canvas-container {
+    /* 16:9 Aspect Ratio Container */
+    .player-wrapper {
+      position: relative;
       width: 100%;
-      max-width: 800px;
-      background: #1e1e1e;
+      padding-top: 56.25%; /* 16:9 ratio */
+      background: #000;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+      border: 1px solid #1e272e;
     }
-
-    canvas {
-      display: block;
+    canvas#stage {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
-      height: 350px;
+      height: 100%;
+    }
+    /* Controls Area */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 15px;
+      background: #182026;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #222f3e;
+    }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .control-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #8395a7;
+      text-transform: uppercase;
+    }
+    input, select, button {
+      background: #222f3e;
+      border: 1px solid #341f97;
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    input[type="color"] {
+      height: 40px;
+      padding: 2px;
+      cursor: pointer;
+    }
+    select:focus, input:focus {
+      border-color: #00d2d3;
+    }
+    .btn {
+      background: linear-gradient(135deg, #10ac84, #1dd1a1);
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+    .btn:hover {
+      background: linear-gradient(135deg, #1dd1a1, #10ac84);
+      box-shadow: 0 0 10px rgba(29, 209, 161, 0.4);
+    }
+    .btn-record {
+      background: linear-gradient(135deg, #ee5253, #ff6b6b);
+    }
+    .btn-record:hover {
+      background: linear-gradient(135deg, #ff6b6b, #ee5253);
+      box-shadow: 0 0 10px rgba(238, 82, 83, 0.4);
+    }
+    .btn-record.recording {
+      animation: pulse 1s infinite alternate;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      100% { opacity: 0.5; }
+    }
+    audio {
+      width: 100%;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
 
-  <h1>Audio Spectrum Visualizer</h1>
+  <h1>Spectrum Video Creator (16:9)</h1>
 
-  <div class="controls">
-    <label for="audioFile" class="file-label">Pilih File Audio (MP3/WAV)</label>
-    <input type="file" id="audioFile" accept="audio/*">
+  <div class="app-container">
+    <!-- Canvas Player Aspect Ratio 16:9 -->
+    <div class="player-wrapper">
+      <canvas id="stage" width="1280" height="720"></canvas>
+    </div>
+
     <audio id="audioPlayer" controls></audio>
-  </div>
 
-  <div class="canvas-container">
-    <canvas id="visualizer"></canvas>
+    <!-- Controls Panel -->
+    <div class="controls-grid">
+      <!-- Upload Audio -->
+      <div class="control-group">
+        <label>1. Pilih Audio (MP3/WAV)</label>
+        <input type="file" id="audioInput" accept="audio/*">
+      </div>
+
+      <!-- Pilih Template Spectrum (30 Pilihan) -->
+      <div class="control-group">
+        <label>2. Template Spectrum</label>
+        <select id="templateSelect"></select>
+      </div>
+
+      <!-- Background Control -->
+      <div class="control-group">
+        <label>3. Warna Background</label>
+        <input type="color" id="bgColorInput" value="#050510">
+      </div>
+
+      <div class="control-group">
+        <label>Atau Gambar Background</label>
+        <input type="file" id="bgImageInput" accept="image/*">
+      </div>
+
+      <!-- Animasi Efek / Icon -->
+      <div class="control-group">
+        <label>4. Animasi Latar (Overlay)</label>
+        <select id="particleSelect">
+          <option value="none">Tanpa Efek</option>
+          <option value="rain">Efek Hujan</option>
+          <option value="snow">Efek Salju</option>
+          <option value="stars">Bintang Angkasa</option>
+          <option value="floating_icons">Ikon Musik Melayang</option>
+          <option value="pulse_circles">Lingkaran Pulsasi</option>
+        </select>
+      </div>
+
+      <!-- Warna Spektrum -->
+      <div class="control-group">
+        <label>5. Warna Utam Spektrum</label>
+        <input type="color" id="specColor1" value="#00d2d3">
+      </div>
+      <div class="control-group">
+        <label>Warna Kedua Spektrum</label>
+        <input type="color" id="specColor2" value="#ff6b6b">
+      </div>
+
+      <!-- Export / Record -->
+      <div class="control-group" style="grid-column: 1 / -1;">
+        <button id="recordBtn" class="btn btn-record">Mulai Rekam Video Spectrum</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    const audioInput = document.getElementById('audioFile');
-    const audioPlayer = document.getElementById('audioPlayer');
-    const canvas = document.getElementById('visualizer');
+    // --- State & Initializations ---
+    const canvas = document.getElementById('stage');
     const ctx = canvas.getContext('2d');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const audioInput = document.getElementById('audioInput');
+    const templateSelect = document.getElementById('templateSelect');
+    const particleSelect = document.getElementById('particleSelect');
+    const bgColorInput = document.getElementById('bgColorInput');
+    const bgImageInput = document.getElementById('bgImageInput');
+    const specColor1 = document.getElementById('specColor1');
+    const specColor2 = document.getElementById('specColor2');
+    const recordBtn = document.getElementById('recordBtn');
 
-    // Sesuaikan resolusi internal canvas dengan ukuran tampilannya
-    function resizeCanvas() {
-      canvas.width = canvas.parentElement.clientWidth;
-      canvas.height = canvas.parentElement.clientHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    let audioCtx;
-    let analyser;
-    let source;
+    let audioCtx, analyser, source;
     let isInitialized = false;
+    let bgImage = null;
+    let particles = [];
+    let mediaRecorder, recordedChunks = [];
+    let isRecording = false;
+
+    // --- Generate 30 Templates List ---
+    const templateNames = [
+      "Bars Standard", "Bars Bottom Mirror", "Bars Top Down", "Centered Equalizer", 
+      "Line Spectrum", "Line Filled Curve", "Line Double Wave", "Circle Spectrum (Radial)",
+      "Circle Solid Center", "Circle Inward", "Double Circle", "Dot Spectrum Linear",
+      "Dot Spectrum Circle", "Glow Bars", "Split Frequency (Bass/Treble)", "Floating Blocks",
+      "Block Cascade", "Symmetric Pulse", "Oscilloscope Wave", "Circular Pulse Ring",
+      "Triangular Waves", "Hexagon Spectrum", "Starburst Lines", "3D Look Bars",
+      "Pill Dynamic Height", "Mirrored Horizon", "Minimalist Thin Lines", "Neon Duotone Bars",
+      "Centripetal Rays", "Audio DNA Helix"
+    ];
+
+    templateNames.forEach((name, index) => {
+      const option = document.createElement('option');
+      option.value = index;
+      option.textContent = `${index + 1}. ${name}`;
+      templateSelect.appendChild(option);
+    });
+
+    // --- Audio setup ---
+    audioInput.addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        audioPlayer.src = URL.createObjectURL(file);
+        audioPlayer.load();
+      }
+    });
+
+    audioPlayer.addEventListener('play', () => {
+      initAudio();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      draw();
+    });
 
     function initAudio() {
       if (isInitialized) return;
-
-      // Inisialisasi Web Audio API Context
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       analyser = audioCtx.createAnalyser();
-
-      // Menghubungkan elemen HTML Audio ke Web Audio API Analyser
       source = audioCtx.createMediaElementSource(audioPlayer);
       source.connect(analyser);
       analyser.connect(audioCtx.destination);
-
-      // FFT Size menentukan berapa banyak frekuensi yang dianalisis
-      analyser.fftSize = 128; // Coba ubah ke 256 atau 512 untuk jumlah batang yang lebih banyak
-
+      analyser.fftSize = 256; 
       isInitialized = true;
     }
 
-    // Memuat file audio saat dipilih oleh user
-    audioInput.addEventListener('change', function() {
-      const files = this.files;
-      if (files.length === 0) return;
-
-      const file = files[0];
-      audioPlayer.src = URL.createObjectURL(file);
-      audioPlayer.load();
-    });
-
-    // Memulai AudioContext setelah user menekan play
-    audioPlayer.addEventListener('play', () => {
-      initAudio();
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
+    // --- Background Image Input ---
+    bgImageInput.addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        const img = new Image();
+        img.onload = () => { bgImage = img; };
+        img.src = URL.createObjectURL(file);
       }
-      renderFrame();
     });
 
-    function renderFrame() {
-      requestAnimationFrame(renderFrame);
+    // --- Particle Systems ---
+    function initParticles(type) {
+      particles = [];
+      const count = type === 'rain' ? 120 : type === 'snow' ? 80 : 50;
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 4 + 1,
+          speedY: Math.random() * 3 + 1,
+          speedX: (Math.random() - 0.5) * 1.5,
+          icon: ['🎵', '🎶', '✨', '⚡'][Math.floor(Math.random() * 4)]
+        });
+      }
+    }
 
+    particleSelect.addEventListener('change', (e) => {
+      initParticles(e.target.value);
+    });
+
+    function updateAndDrawParticles(type, audioBoost) {
+      if (type === 'none') return;
+
+      ctx.save();
+      particles.forEach(p => {
+        if (type === 'rain') {
+          ctx.strokeStyle = 'rgba(174, 194, 224, 0.6)';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x, p.y + p.size * 5);
+          ctx.stroke();
+          p.y += p.speedY * 3 + audioBoost * 5;
+        } else if (type === 'snow') {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+          p.y += p.speedY * 0.5;
+          p.x += Math.sin(p.y * 0.05);
+        } else if (type === 'stars') {
+          ctx.fillStyle = '#fff';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * (1 + audioBoost), 0, Math.PI * 2);
+          ctx.fill();
+        } else if (type === 'floating_icons') {
+          ctx.font = `${15 + p.size * 3}px sans-serif`;
+          ctx.fillText(p.icon, p.x, p.y);
+          p.y -= p.speedY * 0.5;
+        } else if (type === 'pulse_circles') {
+          ctx.strokeStyle = specColor1.value;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * (1 + audioBoost * 10), 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // Reset particle Position
+        if (p.y > canvas.height) p.y = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.x > canvas.width) p.x = 0;
+      });
+      ctx.restore();
+    }
+
+    // --- Main Rendering Loop ---
+    function draw() {
+      requestAnimationFrame(draw);
       if (!analyser) return;
 
       const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
       analyser.getByteFrequencyData(dataArray);
 
-      // Bersihkan canvas setiap frame
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Hitung Rata-rata Frekuensi (untuk Efek audioBoost)
+      let sum = 0;
+      for(let i = 0; i < bufferLength; i++) sum += dataArray[i];
+      const audioAvg = sum / bufferLength / 255; 
 
-      const barWidth = (canvas.width / bufferLength) * 1.5;
-      let barHeight;
-      let x = 0;
-
-      for (let i = 0; i < bufferLength; i++) {
-        barHeight = (dataArray[i] / 255) * canvas.height;
-
-        // Membuat efek gradasi warna batang
-        const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
-        gradient.addColorStop(0, '#00adb5');
-        gradient.addColorStop(0.5, '#ff2e63');
-        gradient.addColorStop(1, '#f9ed69');
-
-        ctx.fillStyle = gradient;
-        ctx.fillRect(x, canvas.height - barHeight, barWidth - 2, barHeight);
-
-        x += barWidth;
+      // 1. Draw Background
+      if (bgImage) {
+        ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = bgColorInput.value;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
+
+      // 2. Draw Particles
+      updateAndDrawParticles(particleSelect.value, audioAvg);
+
+      // 3. Render Selected Spectrum Template
+      const templateId = parseInt(templateSelect.value);
+      renderTemplate(templateId, dataArray, bufferLength, audioAvg);
     }
+
+    // --- 30 Dynamic Spectrum Templates Rendering Logic ---
+    function renderTemplate(id, data, len, avg) {
+      ctx.save();
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      const c1 = specColor1.value;
+      const c2 = specColor2.value;
+
+      const grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
+      grad.addColorStop(0, c1);
+      grad.addColorStop(1, c2);
+      ctx.fillStyle = grad;
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 3;
+
+      const barWidth = (canvas.width / len) * 1.2;
+
+      switch(id) {
+        case 0: // Bars Standard
+          for (let i = 0; i < len; i++) {
+            let h = (data[i] / 255) * canvas.height * 0.8;
+            ctx.fillRect(i * barWidth, canvas.height - h, barWidth - 2, h);
+          }
+          break;
+
+        case 1: // Bars Bottom Mirror
+          for (let i = 0; i < len; i++) {
+            let h = (data[i] / 255) * (canvas.height / 2);
+            ctx.fillRect(i * barWidth, cy - h, barWidth - 2, h * 2);
+          }
+          break;
+
+        case 2: // Bars Top Down
+          for (let i = 0; i < len; i++) {
+            let h = (data[i] / 255) * canvas.height * 0.8;
+            ctx.fillRect(i * barWidth, 0, barWidth - 2, h);
+          }
+          break;
+
+        case 3: // Centered Equalizer
+          for (let i = 0; i < len; i++) {
+            let h = (data[i] / 255) * canvas.height * 0.7;
+            let x = cx + (i % 2 === 0 ? 1 : -1) * (Math.floor(i/2) * barWidth * 2);
+            ctx.fillRect(x, cy - h/2, barWidth * 1.5, h);
+          }
+          break;
+
+        case 4: // Line Spectrum
+          ctx.beginPath();
+          for (let i = 0; i < len; i++) {
+            let x = i * (canvas.width / len);
+            let y = canvas.height - (data[i] / 255) * canvas.height * 0.8;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+          break;
+
+        case 5: // Line Filled Curve
+          ctx.beginPath();
+          ctx.moveTo(0, canvas.height);
+          for (let i = 0; i < len; i++) {
+            let x = i * (canvas.width / len);
+            let y = canvas.height - (data[i] / 255) * canvas.height * 0.7;
+            ctx.lineTo(x, y);
+          }
+          ctx.lineTo(canvas.width, canvas.height);
+          ctx.closePath();
+          ctx.fill();
+          break;
+
+        case 7: // Circle Spectrum (Radial)
+        case 8: // Circle Solid Center
+        case 9: // Circle Inward
+          const radius = 100 + (id === 8 ? avg * 50 : 0);
+          for (let i = 0; i < len; i++) {
+            let angle = (i / len) * Math.PI * 2;
+            let amp = (data[i] / 255) * 120;
+            let rOut = id === 9 ? radius - amp : radius + amp;
+            let x1 = cx + Math.cos(angle) * radius;
+            let y1 = cy + Math.sin(angle) * radius;
+            let x2 = cx + Math.cos(angle) * rOut;
+            let y2 = cy + Math.sin(angle) * rOut;
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+          }
+          break;
+
+        case 11: // Dot Spectrum Linear
+          for (let i = 0; i < len; i++) {
+            let x = i * (canvas.width / len);
+            let y = canvas.height - (data[i] / 255) * canvas.height * 0.8;
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          break;
+
+        case 13: // Glow Bars
+          ctx.shadowBlur = 20;
+          ctx.shadowColor = c1;
+          for (let i = 0; i < len; i++) {
+            let h = (data[i] / 255) * canvas.height * 0.7;
+            ctx.fillRect(i * barWidth, canvas.height - h, barWidth - 3, h);
+          }
+          break;
+
+        case 18: // Oscilloscope Wave
+          ctx.beginPath();
+          for (let i = 0; i < len; i++) {
+            let x = i * (canvas.width / len);
+            let y = cy + Math.sin(i + Date.now() * 0.005) * (data[i] * 0.8);
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+          break;
+
+        default: // Fallback Custom Patterns (Templates 6, 10, 12, 14-17, 19-29)
+          for (let i = 0; i < len; i++) {
+            let angle = (i / len) * Math.PI * 2;
+            let h = (data[i] / 255) * 150;
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(angle + (id * 0.1));
+            ctx.fillRect(30 + id, 30, 4, h);
+            ctx.restore();
+          }
+          break;
+      }
+      ctx.restore();
+    }
+
+    // --- Video Recorder Feature ---
+    recordBtn.addEventListener('click', () => {
+      if (!isInitialized) {
+        alert("Putar lagu terlebih dahulu untuk memulai perekaman!");
+        return;
+      }
+
+      if (!isRecording) {
+        // Start Recording
+        recordedChunks = [];
+        const canvasStream = canvas.captureStream(60); // 60 FPS
+        
+        // Capture audio context stream
+        const dest = audioCtx.createMediaStreamDestination();
+        source.connect(dest);
+        
+        // Combine video & audio track
+        const combinedStream = new MediaStream([
+          ...canvasStream.getVideoTracks(),
+          ...dest.stream.getAudioTracks()
+        ]);
+
+        mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm' });
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `spectrum_video_${Date.now()}.webm`;
+          a.click();
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+        recordBtn.textContent = "Hentikan & Download Video";
+        recordBtn.classList.add('recording');
+      } else {
+        // Stop Recording
+        mediaRecorder.stop();
+        isRecording = false;
+        recordBtn.textContent = "Mulai Rekam Video Spectrum";
+        recordBtn.classList.remove('recording');
+      }
+    });
   </script>
 </body>
 </html>
