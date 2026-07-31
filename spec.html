@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Video Editor Pro - Fixed Player Engine</title>
+    <title>Web Video Editor Pro - Hybrid Fixed Player</title>
 
-    <!-- External Fonts & Material Design Icons -->
+    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -14,9 +14,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <style>
-        /* ==========================================================================
-           1. THEME VARIABLES (DARK & LIGHT MODE)
-           ========================================================================== */
         :root {
             --bg-main: #121212;
             --bg-surface: #1e1e1e;
@@ -49,12 +46,7 @@
             --canvas-bg: #e0e0e0;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -62,7 +54,6 @@
             color: var(--text-primary);
             overflow: hidden;
             height: 100vh;
-            transition: background-color 0.3s, color 0.3s;
         }
 
         .app-container {
@@ -71,9 +62,7 @@
             height: 100vh;
         }
 
-        /* ==========================================================================
-           2. HEADER BAR
-           ========================================================================== */
+        /* HEADER */
         .top-header {
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
@@ -86,193 +75,86 @@
         }
 
         .brand {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 700;
-            color: var(--primary);
-            font-size: 1.1rem;
+            display: flex; align-items: center; gap: 8px;
+            font-weight: 700; color: var(--primary); font-size: 1.1rem;
         }
 
-        .header-actions {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
+        .header-actions { display: flex; gap: 8px; align-items: center; }
 
         .aspect-select-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--bg-surface-elevated);
-            padding: 4px 10px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            font-size: 0.8rem;
+            display: flex; align-items: center; gap: 6px;
+            background: var(--bg-surface-elevated); padding: 4px 10px;
+            border-radius: 6px; border: 1px solid var(--border); font-size: 0.8rem;
         }
 
         .aspect-select-wrapper select {
-            background: transparent;
-            color: var(--text-primary);
-            border: none;
-            outline: none;
-            font-size: 0.8rem;
-            cursor: pointer;
+            background: transparent; color: var(--text-primary);
+            border: none; outline: none; font-size: 0.8rem; cursor: pointer;
         }
 
         .btn {
-            background: var(--bg-surface-elevated);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
+            background: var(--bg-surface-elevated); color: var(--text-primary);
+            border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px;
+            cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;
         }
 
-        .btn:hover {
-            opacity: 0.85;
-            transform: translateY(-1px);
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: #fff;
-        }
+        .btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
 
         .btn-icon {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 6px;
-            border-radius: 50%;
-            transition: background 0.2s;
+            background: none; border: none; color: var(--text-primary);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            padding: 6px; border-radius: 50%;
         }
 
-        .btn-icon:hover {
-            background: rgba(125,125,125,0.2);
-        }
-
-        /* ==========================================================================
-           3. WORKSPACE & PREVIEW PLAYER
-           ========================================================================== */
-        .workspace {
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            overflow: hidden;
-        }
+        /* WORKSPACE */
+        .workspace { display: grid; grid-template-columns: 320px 1fr; overflow: hidden; }
 
         .sidebar-left {
-            background-color: var(--bg-surface);
-            border-right: 1px solid var(--border);
-            display: flex;
-            overflow: hidden;
+            background-color: var(--bg-surface); border-right: 1px solid var(--border);
+            display: flex; overflow: hidden;
         }
 
         .nav-tabs {
-            width: 72px;
-            background-color: var(--bg-main);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 12px;
+            width: 72px; background-color: var(--bg-main); display: flex;
+            flex-direction: column; align-items: center; padding-top: 12px;
             border-right: 1px solid var(--border);
         }
 
         .nav-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: 9px;
-            margin-bottom: 16px;
-            cursor: pointer;
-            gap: 4px;
-            width: 100%;
-            padding: 6px 0;
-            transition: color 0.2s;
+            background: none; border: none; color: var(--text-secondary);
+            display: flex; flex-direction: column; align-items: center;
+            font-size: 9px; margin-bottom: 16px; cursor: pointer; gap: 4px; width: 100%;
         }
 
-        .nav-btn.active, .nav-btn:hover {
-            color: var(--primary);
-        }
+        .nav-btn.active { color: var(--primary); }
 
-        .tab-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-        }
-
-        .tab-pane {
-            display: none;
-        }
-
-        .tab-pane.active {
-            display: block;
-        }
+        .tab-content { flex: 1; overflow-y: auto; padding: 16px; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
 
         .drop-zone {
-            border: 2px dashed var(--border);
-            border-radius: 8px;
-            padding: 24px 12px;
-            text-align: center;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-            background: rgba(0,0,0,0.05);
-            transition: border-color 0.2s;
+            border: 2px dashed var(--border); border-radius: 8px; padding: 24px 12px;
+            text-align: center; color: var(--text-secondary); background: rgba(0,0,0,0.05);
         }
 
-        .drop-zone:hover {
-            border-color: var(--primary);
-        }
-
-        .asset-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin-top: 12px;
-        }
+        .asset-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px; }
 
         .asset-item {
-            background: var(--bg-surface-elevated);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 8px;
-            font-size: 0.75rem;
-            word-break: break-all;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
+            background: var(--bg-surface-elevated); border: 1px solid var(--border);
+            border-radius: 6px; padding: 8px; font-size: 0.75rem; display: flex;
+            flex-direction: column; align-items: center; gap: 6px; cursor: pointer;
         }
 
+        /* PREVIEW AREA & HYBRID PLAYER CONTAINER */
         .preview-area {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-color: var(--canvas-bg);
-            position: relative;
-            padding: 20px;
-            overflow: hidden;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-color: var(--canvas-bg); position: relative; padding: 20px; overflow: hidden;
         }
 
-        /* Canvas Wrapper dengan shadow & border */
-        .canvas-wrapper {
+        /* Container yang menumpuk HTML5 Video di BAWAH dan Fabric Canvas di ATAS */
+        .player-container {
             position: relative;
-            background-color: #000000;
+            background-color: #000;
             box-shadow: 0 12px 40px rgba(0,0,0,0.7);
             border-radius: 8px;
             overflow: hidden;
@@ -280,312 +162,178 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: width 0.3s ease, height 0.3s ease;
         }
 
-        /* Placeholder jika belum ada video */
-        .canvas-placeholder {
+        /* HTML5 Video Layer (Di Bawah Canvas) */
+        #activeVideo {
             position: absolute;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            pointer-events: none;
-            gap: 8px;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: contain;
+            z-index: 1;
+            background: #000;
+        }
+
+        /* Fabric Overlay Canvas (Di Atas Video) */
+        .canvas-container {
+            position: absolute !important;
+            top: 0; left: 0;
+            z-index: 2 !important;
+        }
+
+        .canvas-placeholder {
+            position: absolute; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; color: var(--text-secondary);
+            font-size: 0.85rem; pointer-events: none; gap: 8px; z-index: 3;
         }
 
         .playback-controls {
-            position: absolute;
-            bottom: 20px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            padding: 6px 20px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            z-index: 50;
+            position: absolute; bottom: 20px; background: var(--glass-bg);
+            backdrop-filter: blur(12px); border: 1px solid var(--glass-border);
+            padding: 6px 20px; border-radius: 30px; display: flex;
+            align-items: center; gap: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 50;
         }
 
-        .time-display {
-            font-family: monospace;
-            font-size: 0.85rem;
-            color: var(--text-primary);
-            letter-spacing: 1px;
-        }
+        .time-display { font-family: monospace; font-size: 0.85rem; color: var(--text-primary); }
 
-        /* ==========================================================================
-           4. TIMELINE MULTITRACK
-           ========================================================================== */
+        /* TIMELINE */
         .timeline-container {
-            background-color: var(--bg-surface);
-            border-top: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            background-color: var(--bg-surface); border-top: 1px solid var(--border);
+            display: flex; flex-direction: column; overflow: hidden;
         }
 
         .timeline-toolbar {
-            height: 40px;
-            border-bottom: 1px solid var(--border);
-            background: var(--bg-main);
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            gap: 12px;
-            justify-content: space-between;
+            height: 40px; border-bottom: 1px solid var(--border);
+            background: var(--bg-main); display: flex; align-items: center;
+            padding: 0 16px; justify-content: space-between;
         }
 
-        .zoom-slider {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
+        .zoom-slider { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-secondary); }
 
-        .zoom-slider input[type="range"] {
-            accent-color: var(--primary);
-            cursor: pointer;
-        }
-
-        .timeline-tracks-wrapper {
-            flex: 1;
-            overflow-x: auto;
-            overflow-y: auto;
-            position: relative;
-            background-color: var(--bg-main);
-        }
+        .timeline-tracks-wrapper { flex: 1; overflow-x: auto; overflow-y: auto; position: relative; background-color: var(--bg-main); }
 
         .playhead {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 120px;
-            width: 2px;
-            background-color: var(--accent-red);
-            z-index: 99;
-            pointer-events: none;
+            position: absolute; top: 0; bottom: 0; left: 120px; width: 2px;
+            background-color: var(--accent-red); z-index: 99; pointer-events: none;
         }
 
-        .playhead::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -5px;
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-top: 8px solid var(--accent-red);
-        }
-
-        .track {
-            display: flex;
-            height: 60px;
-            border-bottom: 1px solid var(--border);
-            position: relative;
-        }
+        .track { display: flex; height: 60px; border-bottom: 1px solid var(--border); position: relative; }
 
         .track-header {
-            width: 120px;
-            min-width: 120px;
-            background-color: var(--bg-surface-elevated);
-            display: flex;
-            align-items: center;
-            padding: 0 10px;
-            gap: 6px;
-            font-size: 0.75rem;
-            z-index: 10;
-            border-right: 1px solid var(--border);
-            color: var(--text-secondary);
-            font-weight: 500;
+            width: 120px; min-width: 120px; background-color: var(--bg-surface-elevated);
+            display: flex; align-items: center; padding: 0 10px; gap: 6px;
+            font-size: 0.75rem; z-index: 10; border-right: 1px solid var(--border);
         }
 
         .track-content {
-            flex: 1;
-            position: relative;
-            min-width: 2000px;
+            flex: 1; position: relative; min-width: 2000px;
             background-image: linear-gradient(90deg, var(--border) 1px, transparent 1px);
             background-size: 50px 100%;
         }
 
         .timeline-clip {
-            position: absolute;
-            top: 6px;
-            height: 46px;
+            position: absolute; top: 6px; height: 46px;
             background: linear-gradient(135deg, var(--primary-variant), var(--primary));
-            border: 1px solid var(--primary);
-            border-radius: 4px;
-            color: #fff;
-            font-size: 0.75rem;
-            padding: 4px 8px;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            cursor: grab;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            border: 1px solid var(--primary); border-radius: 4px; color: #fff;
+            font-size: 0.75rem; padding: 4px 8px; overflow: hidden; cursor: grab;
         }
 
-        .timeline-clip.selected {
-            outline: 2px solid var(--secondary);
-        }
-
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            z-index: 999;
-        }
-
-        .toast {
-            background: var(--bg-surface-elevated);
-            color: var(--text-primary);
-            border-left: 4px solid var(--primary);
-            padding: 10px 16px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            animation: slideIn 0.3s ease-out;
-        }
-
-        .toast-success { border-color: var(--secondary); }
-        .toast-error { border-color: var(--accent-red); }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
+        .toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 999; }
+        .toast { background: var(--bg-surface-elevated); color: var(--text-primary); border-left: 4px solid var(--primary); padding: 10px 16px; border-radius: 4px; font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <!-- ==================== HEADER BAR ==================== -->
+        <!-- HEADER -->
         <header class="top-header">
             <div class="brand">
                 <span class="material-icons-round">video_settings</span>
                 <span>StudioEdit Web</span>
             </div>
 
-            <!-- Aspect Ratio Selector -->
             <div class="aspect-select-wrapper">
                 <span class="material-icons-round" style="font-size: 18px;">aspect_ratio</span>
                 <label for="aspectRatioSelect">Ukuran Canvas:</label>
                 <select id="aspectRatioSelect">
-                    <option value="16:9">16:9 (Landscape - YouTube)</option>
-                    <option value="9:16">9:16 (Portrait - Shorts/Reels/TikTok)</option>
-                    <option value="1:1">1:1 (Square - Instagram Feed)</option>
-                    <option value="4:3">4:3 (Classic Video)</option>
-                    <option value="21:9">21:9 (Cinematic Ultrawide)</option>
+                    <option value="16:9">16:9 (Landscape)</option>
+                    <option value="9:16">9:16 (Portrait / TikTok)</option>
+                    <option value="1:1">1:1 (Square)</option>
+                    <option value="4:3">4:3 (Classic)</option>
                 </select>
             </div>
 
             <div class="header-actions">
-                <button class="btn" id="btnThemeToggle" title="Ganti Tema">
-                    <span class="material-icons-round" id="themeIcon">dark_mode</span>
-                    <span id="themeLabel">Dark Mode</span>
-                </button>
-                <button class="btn" id="btnUndo" title="Undo (Ctrl+Z)"><span class="material-icons-round">undo</span></button>
-                <button class="btn" id="btnRedo" title="Redo (Ctrl+Y)"><span class="material-icons-round">redo</span></button>
+                <button class="btn" id="btnThemeToggle"><span class="material-icons-round" id="themeIcon">dark_mode</span> <span id="themeLabel">Dark Mode</span></button>
                 <button class="btn btn-primary" id="btnExportModal"><span class="material-icons-round">file_download</span> Ekspor</button>
             </div>
         </header>
 
-        <!-- ==================== MAIN WORKSPACE ==================== -->
+        <!-- WORKSPACE -->
         <main class="workspace">
             <aside class="sidebar-left">
                 <nav class="nav-tabs">
-                    <button class="nav-btn active" data-tab="media">
-                        <span class="material-icons-round">perm_media</span>
-                        <span>Media</span>
-                    </button>
-                    <button class="nav-btn" data-tab="text">
-                        <span class="material-icons-round">title</span>
-                        <span>Teks</span>
-                    </button>
-                    <button class="nav-btn" data-tab="effects">
-                        <span class="material-icons-round">auto_fix_high</span>
-                        <span>Efek</span>
-                    </button>
-                    <button class="nav-btn" data-tab="stickers">
-                        <span class="material-icons-round">sentiment_satisfied_alt</span>
-                        <span>Stiker</span>
-                    </button>
+                    <button class="nav-btn active" data-tab="media"><span class="material-icons-round">perm_media</span><span>Media</span></button>
+                    <button class="nav-btn" data-tab="text"><span class="material-icons-round">title</span><span>Teks</span></button>
+                    <button class="nav-btn" data-tab="stickers"><span class="material-icons-round">sentiment_satisfied_alt</span><span>Stiker</span></button>
                 </nav>
 
-                <div class="tab-content" id="tabContent">
+                <div class="tab-content">
                     <div class="tab-pane active" id="pane-media">
                         <h3>Pustaka Media</h3>
                         <div class="drop-zone" id="dropZone">
                             <span class="material-icons-round" style="font-size:36px; color:var(--primary);">cloud_upload</span>
-                            <p style="font-size:0.8rem; margin-top:6px;">Tarik & Lepas Video/Gambar di sini</p>
+                            <p style="font-size:0.8rem; margin-top:6px;">Tarik & Lepas Video di sini</p>
                             <label class="btn btn-primary" style="margin-top: 12px;">
                                 Pilih Berkas
-                                <input type="file" id="mediaInput" multiple accept="video/*,audio/*,image/*" hidden>
+                                <input type="file" id="mediaInput" multiple accept="video/*,image/*" hidden>
                             </label>
                         </div>
                         <div class="asset-grid" id="assetGrid"></div>
                     </div>
 
                     <div class="tab-pane" id="pane-text">
-                        <h3>Tambah Teks</h3>
-                        <div style="display:flex; flex-direction:column; gap:8px;">
-                            <button class="btn btn-primary" id="btnAddTextMain"><span class="material-icons-round">add</span> Judul Utama</button>
-                            <button class="btn" id="btnAddTextSub"><span class="material-icons-round">add</span> Subtitle / Keterangan</button>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane" id="pane-effects">
-                        <h3>Efek Visual</h3>
-                        <button class="btn" id="btnFilterGrayscale" style="width:100%;"><span class="material-icons-round">filter_b_and_w</span> Hitam Putih</button>
+                        <h3>Tambah Teks Overlay</h3>
+                        <button class="btn btn-primary" id="btnAddTextMain" style="width:100%; margin-top:10px;"><span class="material-icons-round">add</span> Judul Teks</button>
                     </div>
 
                     <div class="tab-pane" id="pane-stickers">
-                        <h3>Stiker & Emoji</h3>
+                        <h3>Stiker</h3>
                         <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px;">
                             <button class="btn" onclick="appEditor.addEmoji('🔥')">🔥 Api</button>
                             <button class="btn" onclick="appEditor.addEmoji('⭐')">⭐ Bintang</button>
-                            <button class="btn" onclick="appEditor.addEmoji('🎉')">🎉 Perayaan</button>
-                            <button class="btn" onclick="appEditor.addEmoji('❤️')">❤️ Love</button>
                         </div>
                     </div>
                 </div>
             </aside>
 
-            <!-- Preview Canvas Viewport -->
+            <!-- PREVIEW AREA WITH HYBRID PLAYER -->
             <section class="preview-area">
-                <div class="canvas-wrapper" id="canvasWrapper">
+                <div class="player-container" id="playerContainer">
                     <div class="canvas-placeholder" id="canvasPlaceholder">
                         <span class="material-icons-round" style="font-size:48px;">movie_filter</span>
-                        <span>Impor media untuk menampilkan video di sini</span>
+                        <span>Pilih video untuk ditampilkan</span>
                     </div>
-                    <canvas id="mainCanvas"></canvas>
+                    
+                    <!-- HTML5 NATIVE VIDEO LAYER -->
+                    <video id="activeVideo" playsinline muted preload="auto"></video>
+                    
+                    <!-- FABRIC OVERLAY CANVAS LAYER -->
+                    <canvas id="overlayCanvas"></canvas>
                 </div>
 
                 <div class="playback-controls">
-                    <button class="btn-icon" id="btnStop" title="Stop"><span class="material-icons-round">stop</span></button>
-                    <button class="btn-icon" id="btnPlay" title="Play/Pause"><span class="material-icons-round">play_arrow</span></button>
+                    <button class="btn-icon" id="btnStop"><span class="material-icons-round">stop</span></button>
+                    <button class="btn-icon" id="btnPlay"><span class="material-icons-round">play_arrow</span></button>
                     <span class="time-display" id="timeDisplay">00:00 / 00:00</span>
-                    <button class="btn-icon" id="btnFullscreen" title="Layar Penuh"><span class="material-icons-round">fullscreen</span></button>
                 </div>
             </section>
         </main>
 
-        <!-- ==================== TIMELINE ==================== -->
+        <!-- TIMELINE -->
         <footer class="timeline-container">
             <div class="timeline-toolbar">
-                <div style="display:flex; gap:8px;">
-                    <button class="btn-icon" id="btnDelete" title="Hapus Klip"><span class="material-icons-round">delete</span></button>
-                </div>
-
+                <button class="btn-icon" id="btnDelete"><span class="material-icons-round">delete</span></button>
                 <div class="zoom-slider">
                     <span class="material-icons-round">zoom_out</span>
                     <input type="range" id="timelineZoom" min="10" max="200" value="100">
@@ -595,20 +343,13 @@
 
             <div class="timeline-tracks-wrapper" id="timelineTracks">
                 <div class="playhead" id="playhead"></div>
-
                 <div class="track" data-track-id="v1">
                     <div class="track-header"><span class="material-icons-round">videocam</span> Video 1</div>
                     <div class="track-content" id="track-v1"></div>
                 </div>
-
                 <div class="track" data-track-id="t1">
                     <div class="track-header"><span class="material-icons-round">title</span> Overlay</div>
                     <div class="track-content" id="track-t1"></div>
-                </div>
-
-                <div class="track" data-track-id="a1">
-                    <div class="track-header"><span class="material-icons-round">audiotrack</span> Audio 1</div>
-                    <div class="track-content" id="track-a1"></div>
                 </div>
             </div>
         </footer>
@@ -616,169 +357,67 @@
 
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- ELEMEN VIDEO UTAMA UNTUK DIMAINKAN DAN DI-RENDER DI CANVAS -->
-    <video id="hiddenVideoPlayer" style="display:none;" playsinline muted preload="auto"></video>
-
-    <!-- ==========================================================================
-       5. REFACTORED JAVASCRIPT ENGINE (CORRECT REALTIME RENDERING)
-       ========================================================================== -->
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        function showToast(message, type = "info") {
+        function showToast(msg, type="info") {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
-            toast.innerText = message;
+            toast.innerText = msg;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
         }
 
         class EditorEngine {
-            constructor(canvasId) {
-                this.canvas = new fabric.Canvas(canvasId, {
-                    selection: true,
-                    backgroundColor: '#000000'
-                });
-
-                this.videoElement = document.getElementById('hiddenVideoPlayer');
-                this.fabricVideoObject = null;
-                this.currentAspect = "16:9";
-
+            constructor() {
+                this.videoEl = document.getElementById('activeVideo');
+                this.canvas = new fabric.Canvas('overlayCanvas', { selection: true });
                 this.setAspectRatio("16:9");
-                this.initVideoListeners();
             }
 
-            // Atur Ukuran / Dimensi Aspect Ratio Canvas Player
-            setAspectRatio(aspectStr) {
-                this.currentAspect = aspectStr;
-                const wrapper = document.getElementById('canvasWrapper');
-                const maxHeight = 460;
-                let targetWidth, targetHeight;
+            setAspectRatio(aspect) {
+                const container = document.getElementById('playerContainer');
+                const maxHeight = 440;
+                let w = 720, h = 405;
 
-                switch(aspectStr) {
-                    case "9:16":
-                        targetHeight = maxHeight;
-                        targetWidth = maxHeight * (9 / 16);
-                        break;
-                    case "1:1":
-                        targetHeight = maxHeight;
-                        targetWidth = maxHeight;
-                        break;
-                    case "4:3":
-                        targetHeight = maxHeight;
-                        targetWidth = maxHeight * (4 / 3);
-                        break;
-                    case "21:9":
-                        targetWidth = 720;
-                        targetHeight = 720 * (9 / 21);
-                        break;
-                    case "16:9":
-                    default:
-                        targetWidth = 720;
-                        targetHeight = 720 * (9 / 16);
-                        break;
-                }
+                if (aspect === "9:16") { h = maxHeight; w = maxHeight * (9/16); }
+                else if (aspect === "1:1") { h = maxHeight; w = maxHeight; }
+                else if (aspect === "4:3") { h = maxHeight; w = maxHeight * (4/3); }
+                else { w = 720; h = 720 * (9/16); }
 
-                wrapper.style.width = `${targetWidth}px`;
-                wrapper.style.height = `${targetHeight}px`;
+                container.style.width = `${w}px`;
+                container.style.height = `${h}px`;
 
-                this.canvas.setWidth(targetWidth);
-                this.canvas.setHeight(targetHeight);
-
-                if (this.fabricVideoObject) {
-                    this.scaleVideoToCanvas();
-                }
-
+                this.canvas.setWidth(w);
+                this.canvas.setHeight(h);
                 this.canvas.renderAll();
             }
 
-            // Sinkronkan Event Video untuk Memperbarui Canvas Secara Instan (Mengatasi Bug Gelap)
-            initVideoListeners() {
-                const updateFrame = () => {
-                    if (this.fabricVideoObject) {
-                        this.canvas.renderAll();
-                    }
-                };
-
-                // Menggambar ulang saat video berjalan atau digeser (seek)
-                this.videoElement.addEventListener('timeupdate', updateFrame);
-                this.videoElement.addEventListener('seeked', updateFrame);
-                this.videoElement.addEventListener('play', () => {
-                    const renderLoop = () => {
-                        if (!this.videoElement.paused && !this.videoElement.ended) {
-                            this.canvas.renderAll();
-                            requestAnimationFrame(renderLoop);
-                        }
-                    };
-                    requestAnimationFrame(renderLoop);
-                });
-            }
-
-            // Menampilkan Video di Canvas Player
-            loadVideo(videoUrl) {
+            loadMedia(url, isVideo = true) {
                 document.getElementById('canvasPlaceholder').style.display = 'none';
 
-                this.videoElement.src = videoUrl;
-                this.videoElement.load();
-
-                this.videoElement.onloadeddata = () => {
-                    if (this.fabricVideoObject) {
-                        this.canvas.remove(this.fabricVideoObject);
-                    }
-
-                    // Inisialisasi Objek Fabric Image Menggunakan HTML5 Video Node
-                    this.fabricVideoObject = new fabric.Image(this.videoElement, {
-                        left: 0,
-                        top: 0,
-                        originX: 'left',
-                        originY: 'top',
-                        objectCaching: false
+                if (isVideo) {
+                    this.videoEl.style.display = 'block';
+                    this.videoEl.src = url;
+                    this.videoEl.load();
+                    this.videoEl.play().then(() => {
+                        showToast("Video berhasil dimuat!", "success");
+                    }).catch(err => {
+                        // Unmute fallback jika browser memblokir audio
+                        this.videoEl.muted = true;
+                        this.videoEl.play();
                     });
-
-                    this.scaleVideoToCanvas();
-                    this.canvas.add(this.fabricVideoObject);
-                    this.canvas.sendToBack(this.fabricVideoObject);
-                    this.canvas.renderAll();
-
-                    showToast("Video berhasil dimuat ke Player", "success");
-                };
-            }
-
-            // Skala otomatis video agar sesuai ukuran canvas
-            scaleVideoToCanvas() {
-                if (!this.fabricVideoObject) return;
-                
-                const canvasW = this.canvas.width;
-                const canvasH = this.canvas.height;
-                
-                this.fabricVideoObject.scaleToWidth(canvasW);
-                if (this.fabricVideoObject.getBoundingRect().height < canvasH) {
-                    this.fabricVideoObject.scaleToHeight(canvasH);
                 }
-                
-                this.canvas.centerObject(this.fabricVideoObject);
             }
 
-            displayImageOnCanvas(url) {
-                document.getElementById('canvasPlaceholder').style.display = 'none';
-                fabric.Image.fromURL(url, (img) => {
-                    img.scaleToWidth(this.canvas.width * 0.8);
-                    this.canvas.centerObject(img);
-                    this.canvas.add(img);
-                    this.canvas.setActiveObject(img);
-                    this.canvas.renderAll();
-                });
-            }
-
-            addText(textString = "Teks Baru Pro", fontSize = 36) {
-                const text = new fabric.IText(textString, {
+            addText(str = "Teks Baru Pro") {
+                const text = new fabric.IText(str, {
                     left: this.canvas.width / 4,
                     top: this.canvas.height / 3,
                     fontFamily: 'Inter',
                     fill: '#ffffff',
-                    fontSize: fontSize,
-                    cornerColor: '#bb86fc',
-                    cornerSize: 8,
-                    transparentCorners: false
+                    fontSize: 32,
+                    cornerColor: '#bb86fc'
                 });
                 this.canvas.add(text);
                 this.canvas.setActiveObject(text);
@@ -789,207 +428,98 @@
                 const text = new fabric.Text(emoji, {
                     left: this.canvas.width / 2,
                     top: this.canvas.height / 2,
-                    fontSize: 64
+                    fontSize: 54
                 });
                 this.canvas.add(text);
-                this.canvas.setActiveObject(text);
                 this.canvas.renderAll();
-            }
-
-            applyGrayscale() {
-                const obj = this.canvas.getActiveObject();
-                if (obj && obj.isType('image')) {
-                    obj.filters.push(new fabric.Image.filters.Grayscale());
-                    obj.applyFilters();
-                    this.canvas.renderAll();
-                    showToast("Filter Grayscale diterapkan", "success");
-                } else {
-                    showToast("Pilih objek terlebih dahulu", "error");
-                }
             }
         }
 
-        // Timeline Manager
         class TimelineManager {
-            constructor(editorEngine) {
-                this.editor = editorEngine;
-                this.currentTime = 0;
-                this.zoomLevel = 100;
+            constructor() {
                 this.clips = [];
-                this.selectedClip = null;
-
-                this.initTimelineUI();
-            }
-
-            initTimelineUI() {
-                const tracksWrapper = document.getElementById('timelineTracks');
-                new Sortable(tracksWrapper, { animation: 150, handle: '.track-header' });
-
-                document.getElementById('timelineZoom').addEventListener('input', (e) => {
-                    this.zoomLevel = parseInt(e.target.value);
-                    this.renderClips();
-                });
+                this.zoomLevel = 100;
             }
 
             addClip(trackId, name, duration = 10) {
-                const clip = {
-                    id: 'clip_' + Date.now(),
-                    trackId: trackId,
-                    name: name,
-                    start: 0,
-                    duration: duration
-                };
+                const clip = { id: Date.now(), trackId, name, duration };
                 this.clips.push(clip);
-                this.renderClips();
+                this.render();
             }
 
-            deleteSelectedClip() {
-                if (this.selectedClip) {
-                    this.clips = this.clips.filter(c => c.id !== this.selectedClip.id);
-                    this.selectedClip = null;
-                    this.renderClips();
-                    showToast("Klip dihapus", "info");
-                }
-            }
-
-            renderClips() {
+            render() {
                 document.querySelectorAll('.track-content').forEach(el => el.innerHTML = '');
-
                 this.clips.forEach(clip => {
                     const trackEl = document.getElementById(`track-${clip.trackId}`);
                     if (trackEl) {
-                        const clipNode = document.createElement('div');
-                        clipNode.className = `timeline-clip ${this.selectedClip?.id === clip.id ? 'selected' : ''}`;
-                        clipNode.style.left = `${clip.start * (this.zoomLevel / 10)}px`;
-                        clipNode.style.width = `${clip.duration * (this.zoomLevel / 10)}px`;
-                        clipNode.innerText = clip.name;
-
-                        clipNode.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            this.selectedClip = clip;
-                            this.renderClips();
-                        });
-
-                        trackEl.appendChild(clipNode);
+                        const div = document.createElement('div');
+                        div.className = 'timeline-clip';
+                        div.style.width = `${clip.duration * (this.zoomLevel / 10)}px`;
+                        div.innerText = clip.name;
+                        trackEl.appendChild(div);
                     }
                 });
             }
         }
 
-        // Player Controller
-        class PlayerController {
-            constructor(editor, timeline) {
-                this.editor = editor;
-                this.timeline = timeline;
-                this.isPlaying = false;
-                this.animationFrameId = null;
-
-                this.initControls();
-            }
-
-            initControls() {
-                this.playBtn = document.getElementById('btnPlay');
-                this.playBtn.addEventListener('click', () => this.togglePlay());
-                document.getElementById('btnStop').addEventListener('click', () => this.stop());
-                
-                document.getElementById('btnFullscreen').addEventListener('click', () => {
-                    const wrapper = document.getElementById('canvasWrapper');
-                    if (!document.fullscreenElement) {
-                        wrapper.requestFullscreen().catch(err => alert(err.message));
-                    } else {
-                        document.exitFullscreen();
-                    }
-                });
-            }
-
-            togglePlay() {
-                this.isPlaying = !this.isPlaying;
-                const icon = this.playBtn.querySelector('.material-icons-round');
-                icon.innerText = this.isPlaying ? 'pause' : 'play_arrow';
-
-                if (this.editor.videoElement && this.editor.videoElement.src) {
-                    if (this.isPlaying) {
-                        this.editor.videoElement.play();
-                    } else {
-                        this.editor.videoElement.pause();
-                    }
-                }
-
-                if (this.isPlaying) {
-                    this.playLoop();
-                } else {
-                    cancelAnimationFrame(this.animationFrameId);
-                }
-            }
-
-            stop() {
-                this.isPlaying = false;
-                this.playBtn.querySelector('.material-icons-round').innerText = 'play_arrow';
-                cancelAnimationFrame(this.animationFrameId);
-
-                if (this.editor.videoElement) {
-                    this.editor.videoElement.pause();
-                    this.editor.videoElement.currentTime = 0;
-                }
-
-                this.timeline.currentTime = 0;
-                this.syncPlayhead();
-            }
-
-            playLoop() {
-                if (!this.isPlaying) return;
-
-                if (this.editor.videoElement && this.editor.videoElement.src) {
-                    this.timeline.currentTime = this.editor.videoElement.currentTime;
-                } else {
-                    this.timeline.currentTime += 0.033;
-                }
-
-                this.syncPlayhead();
-                this.animationFrameId = requestAnimationFrame(() => this.playLoop());
-            }
-
-            syncPlayhead() {
-                const playhead = document.getElementById('playhead');
-                const offset = 120 + (this.timeline.currentTime * (this.timeline.zoomLevel / 10));
-                playhead.style.transform = `translateX(${offset - 120}px)`;
-
-                const duration = this.editor.videoElement ? this.editor.videoElement.duration : 0;
-                document.getElementById('timeDisplay').innerText = 
-                    `${this.formatTime(this.timeline.currentTime)} / ${this.formatTime(duration || 0)}`;
-            }
-
-            formatTime(seconds) {
-                const pad = (num) => String(Math.floor(num || 0)).padStart(2, '0');
-                const m = pad((seconds % 3600) / 60);
-                const s = pad(seconds % 60);
-                return `${m}:${s}`;
-            }
-        }
-
-        let appEditor;
+        let appEditor, appTimeline;
 
         document.addEventListener('DOMContentLoaded', () => {
-            const editor = new EditorEngine('mainCanvas');
-            appEditor = editor;
-            const timeline = new TimelineManager(editor);
-            const player = new PlayerController(editor, timeline);
+            appEditor = new EditorEngine();
+            appTimeline = new TimelineManager();
 
-            // Aspect Ratio Change Event
+            const video = document.getElementById('activeVideo');
+            const playBtn = document.getElementById('btnPlay');
+
+            // Play / Pause Synchronizer
+            playBtn.addEventListener('click', () => {
+                if (video.paused) {
+                    video.play();
+                    playBtn.querySelector('.material-icons-round').innerText = 'pause';
+                } else {
+                    video.pause();
+                    playBtn.querySelector('.material-icons-round').innerText = 'play_arrow';
+                }
+            });
+
+            document.getElementById('btnStop').addEventListener('click', () => {
+                video.pause();
+                video.currentTime = 0;
+                playBtn.querySelector('.material-icons-round').innerText = 'play_arrow';
+            });
+
+            video.addEventListener('timeupdate', () => {
+                const cur = video.currentTime || 0;
+                const dur = video.duration || 0;
+                const pad = (n) => String(Math.floor(n)).padStart(2, '0');
+                document.getElementById('timeDisplay').innerText = 
+                    `${pad(cur/60)}:${pad(cur%60)} / ${pad(dur/60)}:${pad(dur%60)}`;
+
+                // Playhead Timeline Follower
+                const playhead = document.getElementById('playhead');
+                playhead.style.transform = `translateX(${cur * 10}px)`;
+            });
+
+            // Aspect Ratio Handler
             document.getElementById('aspectRatioSelect').addEventListener('change', (e) => {
-                editor.setAspectRatio(e.target.value);
+                appEditor.setAspectRatio(e.target.value);
             });
 
-            // Theme Toggle Event
-            document.getElementById('btnThemeToggle').addEventListener('click', () => {
-                const currentTheme = document.documentElement.getAttribute('data-theme');
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                document.documentElement.setAttribute('data-theme', newTheme);
-                document.getElementById('themeIcon').innerText = newTheme === 'dark' ? 'dark_mode' : 'light_mode';
-                document.getElementById('themeLabel').innerText = newTheme === 'dark' ? 'Dark Mode' : 'Light Mode';
+            // File Import
+            const mediaInput = document.getElementById('mediaInput');
+            mediaInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const url = URL.createObjectURL(file);
+                    appEditor.loadMedia(url, true);
+                    appTimeline.addClip('v1', file.name, 10);
+
+                    const grid = document.getElementById('assetGrid');
+                    grid.innerHTML = `<div class="asset-item"><span class="material-icons-round">movie</span><span>${file.name}</span></div>`;
+                }
             });
 
-            // Sidebar Tab Event
+            // Tab Navigation
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -999,53 +529,7 @@
                 });
             });
 
-            // File Import Logic
-            const dropZone = document.getElementById('dropZone');
-            const mediaInput = document.getElementById('mediaInput');
-
-            dropZone.addEventListener('dragover', (e) => e.preventDefault());
-            dropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                handleFileSelect(e.dataTransfer.files);
-            });
-            mediaInput.addEventListener('change', (e) => handleFileSelect(e.target.files));
-
-            function handleFileSelect(files) {
-                if (!files || files.length === 0) return;
-
-                Array.from(files).forEach(file => {
-                    const fileUrl = URL.createObjectURL(file);
-
-                    if (file.type.startsWith('video/')) {
-                        editor.loadVideo(fileUrl);
-                        
-                        // Tambahkan klip ke timeline
-                        setTimeout(() => {
-                            const dur = editor.videoElement.duration || 10;
-                            timeline.addClip('v1', file.name, dur);
-                        }, 500);
-
-                    } else if (file.type.startsWith('image/')) {
-                        editor.displayImageOnCanvas(fileUrl);
-                        timeline.addClip('v1', file.name, 5);
-                    }
-
-                    // Update UI Asset Grid
-                    const grid = document.getElementById('assetGrid');
-                    const item = document.createElement('div');
-                    item.className = 'asset-item';
-                    item.innerHTML = `<span class="material-icons-round">movie</span> <span>${file.name}</span>`;
-                    grid.appendChild(item);
-                });
-            }
-
-            // Controls Bindings
-            document.getElementById('btnAddTextMain').addEventListener('click', () => editor.addText('Judul Utama', 36));
-            document.getElementById('btnAddTextSub').addEventListener('click', () => editor.addText('Subtitle Teks', 24));
-            document.getElementById('btnDelete').addEventListener('click', () => timeline.deleteSelectedClip());
-            document.getElementById('btnFilterGrayscale').addEventListener('click', () => editor.applyGrayscale());
-
-            showToast("Video Editor Siap Digunakan", "success");
+            document.getElementById('btnAddTextMain').addEventListener('click', () => appEditor.addText('Teks Judul'));
         });
     </script>
 </body>
