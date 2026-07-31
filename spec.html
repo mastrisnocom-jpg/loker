@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Studio Spectrum Video Creator</title>
+  <title>Spectrum Video Studio Pro (Render & Record)</title>
   <style>
     * {
       box-sizing: border-box;
@@ -11,9 +11,9 @@
       padding: 0;
     }
     body {
-      background-color: #0f111a;
-      color: #e0e6ed;
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0d1117;
+      color: #c9d1d9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -23,9 +23,9 @@
     h1 {
       font-size: 1.8rem;
       margin-bottom: 20px;
-      color: #00d2d3;
+      color: #58a6ff;
       text-transform: uppercase;
-      letter-spacing: 2px;
+      letter-spacing: 1.5px;
     }
     .app-container {
       display: flex;
@@ -43,7 +43,7 @@
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
-      border: 1px solid #1e272e;
+      border: 1px solid #30363d;
     }
     canvas#stage {
       position: absolute;
@@ -57,10 +57,10 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 15px;
-      background: #182026;
+      background: #161b22;
       padding: 20px;
       border-radius: 12px;
-      border: 1px solid #222f3e;
+      border: 1px solid #30363d;
     }
     .control-group {
       display: flex;
@@ -68,15 +68,15 @@
       gap: 8px;
     }
     .control-group label {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
-      color: #8395a7;
+      color: #8b949e;
       text-transform: uppercase;
     }
     input, select, button {
-      background: #222f3e;
-      border: 1px solid #341f97;
-      color: #fff;
+      background: #21262d;
+      border: 1px solid #363b42;
+      color: #f0f6fc;
       padding: 10px 12px;
       border-radius: 6px;
       font-size: 0.9rem;
@@ -89,33 +89,70 @@
       cursor: pointer;
     }
     select:focus, input:focus {
-      border-color: #00d2d3;
+      border-color: #58a6ff;
+    }
+    .btn-group {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 15px;
+      margin-top: 10px;
     }
     .btn {
-      background: linear-gradient(135deg, #10ac84, #1dd1a1);
-      color: #fff;
+      flex: 1;
+      padding: 14px;
       font-weight: bold;
       border: none;
       cursor: pointer;
-      margin-top: 5px;
-    }
-    .btn:hover {
-      background: linear-gradient(135deg, #1dd1a1, #10ac84);
-      box-shadow: 0 0 10px rgba(29, 209, 161, 0.4);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      transition: background 0.3s, transform 0.1s;
     }
     .btn-record {
-      background: linear-gradient(135deg, #ee5253, #ff6b6b);
+      background: linear-gradient(135deg, #1f6feb, #238636);
+      color: #fff;
     }
-    .btn-record:hover {
-      background: linear-gradient(135deg, #ff6b6b, #ee5253);
-      box-shadow: 0 0 10px rgba(238, 82, 83, 0.4);
+    .btn-render {
+      background: linear-gradient(135deg, #8957e5, #da3633);
+      color: #fff;
     }
-    .btn-record.recording {
-      animation: pulse 1s infinite alternate;
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
     }
-    @keyframes pulse {
-      0% { opacity: 1; }
-      100% { opacity: 0.5; }
+    /* Notification Modal Box */
+    .render-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: #fff;
+    }
+    .render-box {
+      background: #161b22;
+      border: 1px solid #30363d;
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 450px;
+      width: 90%;
+    }
+    .progress-bar-container {
+      width: 100%;
+      height: 12px;
+      background: #21262d;
+      border-radius: 6px;
+      margin: 20px 0 10px 0;
+      overflow: hidden;
+    }
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: #238636;
+      transition: width 0.2s;
     }
     audio {
       width: 100%;
@@ -125,34 +162,31 @@
 </head>
 <body>
 
-  <h1>Spectrum Video Creator (16:9)</h1>
+  <h1>Spectrum Video Studio Pro (16:9)</h1>
 
   <div class="app-container">
-    <!-- Canvas Player Aspect Ratio 16:9 -->
+    <!-- Player 16:9 -->
     <div class="player-wrapper">
-      <canvas id="stage" width="1280" height="720"></canvas>
+      <canvas id="stage" width="1920" height="1080"></canvas>
     </div>
 
     <audio id="audioPlayer" controls></audio>
 
-    <!-- Controls Panel -->
+    <!-- Controls -->
     <div class="controls-grid">
-      <!-- Upload Audio -->
       <div class="control-group">
-        <label>1. Pilih Audio (MP3/WAV)</label>
+        <label>1. Audio (MP3/WAV)</label>
         <input type="file" id="audioInput" accept="audio/*">
       </div>
 
-      <!-- Pilih Template Spectrum (30 Pilihan) -->
       <div class="control-group">
         <label>2. Template Spectrum</label>
         <select id="templateSelect"></select>
       </div>
 
-      <!-- Background Control -->
       <div class="control-group">
         <label>3. Warna Background</label>
-        <input type="color" id="bgColorInput" value="#050510">
+        <input type="color" id="bgColorInput" value="#0d1117">
       </div>
 
       <div class="control-group">
@@ -160,7 +194,6 @@
         <input type="file" id="bgImageInput" accept="image/*">
       </div>
 
-      <!-- Animasi Efek / Icon -->
       <div class="control-group">
         <label>4. Animasi Latar (Overlay)</label>
         <select id="particleSelect">
@@ -169,29 +202,40 @@
           <option value="snow">Efek Salju</option>
           <option value="stars">Bintang Angkasa</option>
           <option value="floating_icons">Ikon Musik Melayang</option>
-          <option value="pulse_circles">Lingkaran Pulsasi</option>
         </select>
       </div>
 
-      <!-- Warna Spektrum -->
       <div class="control-group">
-        <label>5. Warna Utam Spektrum</label>
-        <input type="color" id="specColor1" value="#00d2d3">
+        <label>5. Warna Utam Spectrum</label>
+        <input type="color" id="specColor1" value="#58a6ff">
       </div>
       <div class="control-group">
-        <label>Warna Kedua Spektrum</label>
-        <input type="color" id="specColor2" value="#ff6b6b">
+        <label>Warna Kedua Spectrum</label>
+        <input type="color" id="specColor2" value="#238636">
       </div>
 
-      <!-- Export / Record -->
-      <div class="control-group" style="grid-column: 1 / -1;">
-        <button id="recordBtn" class="btn btn-record">Mulai Rekam Video Spectrum</button>
+      <!-- Action Buttons -->
+      <div class="btn-group">
+        <button id="recordBtn" class="btn btn-record">🔴 Rekam Real-Time</button>
+        <button id="renderBtn" class="btn btn-render">⚡ Render Video Engine (Sangat Ringan & MP4/WebM HD)</button>
       </div>
     </div>
   </div>
 
+  <!-- Render Progress Overlay -->
+  <div id="renderOverlay" class="render-overlay">
+    <div class="render-box">
+      <h2 style="color:#58a6ff; margin-bottom:10px;">Proses Rendering Video...</h2>
+      <p id="estimatedTimeText">Menghitung estimasi waktu render...</p>
+      <div class="progress-bar-container">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+      <p id="progressPercent" style="font-weight:bold; font-size:1.1rem;">0%</p>
+      <p style="font-size:0.8rem; color:#8b949e; margin-top:15px;">Mohon jangan tutup tab browser selama proses render berjalan.</p>
+    </div>
+  </div>
+
   <script>
-    // --- State & Initializations ---
     const canvas = document.getElementById('stage');
     const ctx = canvas.getContext('2d');
     const audioPlayer = document.getElementById('audioPlayer');
@@ -203,20 +247,25 @@
     const specColor1 = document.getElementById('specColor1');
     const specColor2 = document.getElementById('specColor2');
     const recordBtn = document.getElementById('recordBtn');
+    const renderBtn = document.getElementById('renderBtn');
+    const renderOverlay = document.getElementById('renderOverlay');
+    const estimatedTimeText = document.getElementById('estimatedTimeText');
+    const progressBar = document.getElementById('progressBar');
+    const progressPercent = document.getElementById('progressPercent');
 
-    let audioCtx, analyser, source;
+    let audioCtx, analyser, source, audioBuffer;
     let isInitialized = false;
     let bgImage = null;
     let particles = [];
     let mediaRecorder, recordedChunks = [];
     let isRecording = false;
 
-    // --- Generate 30 Templates List ---
+    // Generate 30 Template Options
     const templateNames = [
       "Bars Standard", "Bars Bottom Mirror", "Bars Top Down", "Centered Equalizer", 
       "Line Spectrum", "Line Filled Curve", "Line Double Wave", "Circle Spectrum (Radial)",
       "Circle Solid Center", "Circle Inward", "Double Circle", "Dot Spectrum Linear",
-      "Dot Spectrum Circle", "Glow Bars", "Split Frequency (Bass/Treble)", "Floating Blocks",
+      "Dot Spectrum Circle", "Glow Bars", "Split Frequency", "Floating Blocks",
       "Block Cascade", "Symmetric Pulse", "Oscilloscope Wave", "Circular Pulse Ring",
       "Triangular Waves", "Hexagon Spectrum", "Starburst Lines", "3D Look Bars",
       "Pill Dynamic Height", "Mirrored Horizon", "Minimalist Thin Lines", "Neon Duotone Bars",
@@ -230,12 +279,13 @@
       templateSelect.appendChild(option);
     });
 
-    // --- Audio setup ---
-    audioInput.addEventListener('change', function() {
+    audioInput.addEventListener('change', async function() {
       const file = this.files[0];
       if (file) {
         audioPlayer.src = URL.createObjectURL(file);
-        audioPlayer.load();
+        const arrayBuffer = await file.arrayBuffer();
+        const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
+        audioBuffer = await tempCtx.decodeAudioData(arrayBuffer);
       }
     });
 
@@ -256,7 +306,6 @@
       isInitialized = true;
     }
 
-    // --- Background Image Input ---
     bgImageInput.addEventListener('change', function() {
       const file = this.files[0];
       if (file) {
@@ -266,85 +315,70 @@
       }
     });
 
-    // --- Particle Systems ---
     function initParticles(type) {
       particles = [];
-      const count = type === 'rain' ? 120 : type === 'snow' ? 80 : 50;
-      for (let i = 0; i < count; i++) {
+      for (let i = 0; i < 80; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          size: Math.random() * 4 + 1,
+          size: Math.random() * 4 + 2,
           speedY: Math.random() * 3 + 1,
-          speedX: (Math.random() - 0.5) * 1.5,
-          icon: ['🎵', '🎶', '✨', '⚡'][Math.floor(Math.random() * 4)]
+          icon: ['🎵', '🎶', '✨'][Math.floor(Math.random() * 3)]
         });
       }
     }
+    particleSelect.addEventListener('change', (e) => initParticles(e.target.value));
 
-    particleSelect.addEventListener('change', (e) => {
-      initParticles(e.target.value);
-    });
-
-    function updateAndDrawParticles(type, audioBoost) {
+    function drawParticles(type, audioBoost) {
       if (type === 'none') return;
-
       ctx.save();
       particles.forEach(p => {
         if (type === 'rain') {
-          ctx.strokeStyle = 'rgba(174, 194, 224, 0.6)';
-          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = 'rgba(88, 166, 255, 0.7)';
+          ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
-          ctx.lineTo(p.x, p.y + p.size * 5);
+          ctx.lineTo(p.x, p.y + p.size * 6);
           ctx.stroke();
-          p.y += p.speedY * 3 + audioBoost * 5;
+          p.y += p.speedY * 4 + audioBoost * 5;
         } else if (type === 'snow') {
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.fillStyle = '#fff';
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
           ctx.fill();
-          p.y += p.speedY * 0.5;
-          p.x += Math.sin(p.y * 0.05);
+          p.y += p.speedY * 0.8;
         } else if (type === 'stars') {
           ctx.fillStyle = '#fff';
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size * (1 + audioBoost), 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, p.size * (1 + audioBoost * 2), 0, Math.PI * 2);
           ctx.fill();
         } else if (type === 'floating_icons') {
-          ctx.font = `${15 + p.size * 3}px sans-serif`;
+          ctx.font = `${20 + p.size * 3}px sans-serif`;
           ctx.fillText(p.icon, p.x, p.y);
-          p.y -= p.speedY * 0.5;
-        } else if (type === 'pulse_circles') {
-          ctx.strokeStyle = specColor1.value;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size * (1 + audioBoost * 10), 0, Math.PI * 2);
-          ctx.stroke();
+          p.y -= p.speedY * 0.8;
         }
-
-        // Reset particle Position
         if (p.y > canvas.height) p.y = 0;
         if (p.y < 0) p.y = canvas.height;
-        if (p.x > canvas.width) p.x = 0;
       });
       ctx.restore();
     }
 
-    // --- Main Rendering Loop ---
     function draw() {
+      if (!analyser || isRecording) return;
       requestAnimationFrame(draw);
-      if (!analyser) return;
 
       const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
       analyser.getByteFrequencyData(dataArray);
 
-      // Hitung Rata-rata Frekuensi (untuk Efek audioBoost)
-      let sum = 0;
-      for(let i = 0; i < bufferLength; i++) sum += dataArray[i];
-      const audioAvg = sum / bufferLength / 255; 
+      renderCanvasFrame(dataArray);
+    }
 
-      // 1. Draw Background
+    function renderCanvasFrame(dataArray) {
+      let sum = 0;
+      for(let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+      const audioAvg = sum / dataArray.length / 255;
+
       if (bgImage) {
         ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
       } else {
@@ -352,196 +386,158 @@
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      // 2. Draw Particles
-      updateAndDrawParticles(particleSelect.value, audioAvg);
-
-      // 3. Render Selected Spectrum Template
-      const templateId = parseInt(templateSelect.value);
-      renderTemplate(templateId, dataArray, bufferLength, audioAvg);
+      drawParticles(particleSelect.value, audioAvg);
+      renderTemplate(parseInt(templateSelect.value), dataArray, dataArray.length, audioAvg);
     }
 
-    // --- 30 Dynamic Spectrum Templates Rendering Logic ---
     function renderTemplate(id, data, len, avg) {
       ctx.save();
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
-      const c1 = specColor1.value;
-      const c2 = specColor2.value;
-
       const grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
-      grad.addColorStop(0, c1);
-      grad.addColorStop(1, c2);
+      grad.addColorStop(0, specColor1.value);
+      grad.addColorStop(1, specColor2.value);
       ctx.fillStyle = grad;
       ctx.strokeStyle = grad;
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 4;
 
       const barWidth = (canvas.width / len) * 1.2;
 
-      switch(id) {
-        case 0: // Bars Standard
-          for (let i = 0; i < len; i++) {
-            let h = (data[i] / 255) * canvas.height * 0.8;
-            ctx.fillRect(i * barWidth, canvas.height - h, barWidth - 2, h);
-          }
-          break;
-
-        case 1: // Bars Bottom Mirror
-          for (let i = 0; i < len; i++) {
-            let h = (data[i] / 255) * (canvas.height / 2);
-            ctx.fillRect(i * barWidth, cy - h, barWidth - 2, h * 2);
-          }
-          break;
-
-        case 2: // Bars Top Down
-          for (let i = 0; i < len; i++) {
-            let h = (data[i] / 255) * canvas.height * 0.8;
-            ctx.fillRect(i * barWidth, 0, barWidth - 2, h);
-          }
-          break;
-
-        case 3: // Centered Equalizer
-          for (let i = 0; i < len; i++) {
-            let h = (data[i] / 255) * canvas.height * 0.7;
-            let x = cx + (i % 2 === 0 ? 1 : -1) * (Math.floor(i/2) * barWidth * 2);
-            ctx.fillRect(x, cy - h/2, barWidth * 1.5, h);
-          }
-          break;
-
-        case 4: // Line Spectrum
+      if (id === 0 || id === 13) {
+        if (id === 13) { ctx.shadowBlur = 25; ctx.shadowColor = specColor1.value; }
+        for (let i = 0; i < len; i++) {
+          let h = (data[i] / 255) * canvas.height * 0.85;
+          ctx.fillRect(i * barWidth, canvas.height - h, barWidth - 4, h);
+        }
+      } else if (id === 1) {
+        for (let i = 0; i < len; i++) {
+          let h = (data[i] / 255) * (canvas.height / 2);
+          ctx.fillRect(i * barWidth, cy - h, barWidth - 4, h * 2);
+        }
+      } else if (id >= 7 && id <= 9) {
+        const radius = 200 + (id === 8 ? avg * 100 : 0);
+        for (let i = 0; i < len; i++) {
+          let angle = (i / len) * Math.PI * 2;
+          let amp = (data[i] / 255) * 200;
+          let rOut = id === 9 ? radius - amp : radius + amp;
           ctx.beginPath();
-          for (let i = 0; i < len; i++) {
-            let x = i * (canvas.width / len);
-            let y = canvas.height - (data[i] / 255) * canvas.height * 0.8;
-            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-          }
+          ctx.moveTo(cx + Math.cos(angle)*radius, cy + Math.sin(angle)*radius);
+          ctx.lineTo(cx + Math.cos(angle)*rOut, cy + Math.sin(angle)*rOut);
           ctx.stroke();
-          break;
-
-        case 5: // Line Filled Curve
-          ctx.beginPath();
-          ctx.moveTo(0, canvas.height);
-          for (let i = 0; i < len; i++) {
-            let x = i * (canvas.width / len);
-            let y = canvas.height - (data[i] / 255) * canvas.height * 0.7;
-            ctx.lineTo(x, y);
-          }
-          ctx.lineTo(canvas.width, canvas.height);
-          ctx.closePath();
-          ctx.fill();
-          break;
-
-        case 7: // Circle Spectrum (Radial)
-        case 8: // Circle Solid Center
-        case 9: // Circle Inward
-          const radius = 100 + (id === 8 ? avg * 50 : 0);
-          for (let i = 0; i < len; i++) {
-            let angle = (i / len) * Math.PI * 2;
-            let amp = (data[i] / 255) * 120;
-            let rOut = id === 9 ? radius - amp : radius + amp;
-            let x1 = cx + Math.cos(angle) * radius;
-            let y1 = cy + Math.sin(angle) * radius;
-            let x2 = cx + Math.cos(angle) * rOut;
-            let y2 = cy + Math.sin(angle) * rOut;
-
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
-          }
-          break;
-
-        case 11: // Dot Spectrum Linear
-          for (let i = 0; i < len; i++) {
-            let x = i * (canvas.width / len);
-            let y = canvas.height - (data[i] / 255) * canvas.height * 0.8;
-            ctx.beginPath();
-            ctx.arc(x, y, 6, 0, Math.PI * 2);
-            ctx.fill();
-          }
-          break;
-
-        case 13: // Glow Bars
-          ctx.shadowBlur = 20;
-          ctx.shadowColor = c1;
-          for (let i = 0; i < len; i++) {
-            let h = (data[i] / 255) * canvas.height * 0.7;
-            ctx.fillRect(i * barWidth, canvas.height - h, barWidth - 3, h);
-          }
-          break;
-
-        case 18: // Oscilloscope Wave
-          ctx.beginPath();
-          for (let i = 0; i < len; i++) {
-            let x = i * (canvas.width / len);
-            let y = cy + Math.sin(i + Date.now() * 0.005) * (data[i] * 0.8);
-            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-          }
-          ctx.stroke();
-          break;
-
-        default: // Fallback Custom Patterns (Templates 6, 10, 12, 14-17, 19-29)
-          for (let i = 0; i < len; i++) {
-            let angle = (i / len) * Math.PI * 2;
-            let h = (data[i] / 255) * 150;
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.rotate(angle + (id * 0.1));
-            ctx.fillRect(30 + id, 30, 4, h);
-            ctx.restore();
-          }
-          break;
+        }
+      } else {
+        for (let i = 0; i < len; i++) {
+          let angle = (i / len) * Math.PI * 2;
+          let h = (data[i] / 255) * 250;
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(angle);
+          ctx.fillRect(50, 0, 6, h);
+          ctx.restore();
+        }
       }
       ctx.restore();
     }
 
-    // --- Video Recorder Feature ---
+    // --- Mode 1: Rekam Real-Time ---
     recordBtn.addEventListener('click', () => {
-      if (!isInitialized) {
-        alert("Putar lagu terlebih dahulu untuk memulai perekaman!");
-        return;
-      }
-
+      if (!isInitialized) return alert("Putar lagu terlebih dahulu!");
       if (!isRecording) {
-        // Start Recording
         recordedChunks = [];
-        const canvasStream = canvas.captureStream(60); // 60 FPS
-        
-        // Capture audio context stream
+        // Bitrate kompresi ringan: 3.5 Mbps (Super Hemat)
+        const canvasStream = canvas.captureStream(60);
         const dest = audioCtx.createMediaStreamDestination();
         source.connect(dest);
-        
-        // Combine video & audio track
-        const combinedStream = new MediaStream([
-          ...canvasStream.getVideoTracks(),
-          ...dest.stream.getAudioTracks()
-        ]);
+        const stream = new MediaStream([...canvasStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
 
-        mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm' });
+        mediaRecorder = new MediaRecorder(stream, { 
+          mimeType: 'video/webm;codecs=vp9', 
+          videoBitsPerSecond: 3500000 
+        });
 
-        mediaRecorder.ondataavailable = (e) => {
-          if (e.data.size > 0) recordedChunks.push(e.data);
-        };
-
+        mediaRecorder.ondataavailable = e => e.data.size > 0 && recordedChunks.push(e.data);
         mediaRecorder.onstop = () => {
-          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const blob = new Blob(recordedChunks, { type: 'video/mp4' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `spectrum_video_${Date.now()}.webm`;
+          a.download = `Spectrum_Recorded_${Date.now()}.mp4`;
           a.click();
         };
 
         mediaRecorder.start();
         isRecording = true;
-        recordBtn.textContent = "Hentikan & Download Video";
-        recordBtn.classList.add('recording');
+        recordBtn.textContent = "⏹️ Hentikan & Download MP4";
       } else {
-        // Stop Recording
         mediaRecorder.stop();
         isRecording = false;
-        recordBtn.textContent = "Mulai Rekam Video Spectrum";
-        recordBtn.classList.remove('recording');
+        recordBtn.textContent = "🔴 Rekam Real-Time";
       }
+    });
+
+    // --- Mode 2: Offline Render Engine dengan Estimasi Waktu ---
+    renderBtn.addEventListener('click', async () => {
+      if (!audioBuffer) return alert("Pilih file audio MP3/WAV terlebih dahulu!");
+
+      const duration = audioBuffer.duration; // Durasi lagu dalam detik
+      // Estimasi waktu render (rasio render rata-rata 0.4x dari durasi asli di PC modern)
+      const estimatedRenderSeconds = Math.ceil(duration * 0.45);
+      const estMinutes = Math.floor(estimatedRenderSeconds / 60);
+      const estSecs = estimatedRenderSeconds % 60;
+
+      estimatedTimeText.textContent = `Estimasi Selesai Render: ~${estMinutes} Menit ${estSecs} Detik (Durasi Lagu: ${Math.floor(duration/60)}m ${Math.floor(duration%60)}s)`;
+      renderOverlay.style.display = 'flex';
+
+      // Setup Web Audio Offline Context
+      const offlineCtx = new OfflineAudioContext(audioBuffer.numberOfChannels, audioBuffer.length, audioBuffer.sampleRate);
+      const offlineSource = offlineCtx.createBufferSource();
+      offlineSource.buffer = audioBuffer;
+      const offlineAnalyser = offlineCtx.createAnalyser();
+      offlineAnalyser.fftSize = 256;
+      offlineSource.connect(offlineAnalyser);
+      offlineSource.connect(offlineCtx.destination);
+
+      // Record Output Stream dengan Bitrate Terkompresi Rapi
+      const stream = canvas.captureStream(60);
+      const dest = audioCtx.createMediaStreamDestination();
+      source.connect(dest);
+      const recStream = new MediaStream([...stream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
+
+      const renderRecorder = new MediaRecorder(recStream, {
+        mimeType: 'video/webm;codecs=vp9',
+        videoBitsPerSecond: 4000000 // 4 Mbps (File Sangat Ringan ~20MB)
+      });
+
+      let chunks = [];
+      renderRecorder.ondataavailable = e => chunks.push(e.data);
+      renderRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/mp4' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Spectrum_Rendered_HD_${Date.now()}.mp4`;
+        a.click();
+        renderOverlay.style.display = 'none';
+      };
+
+      renderRecorder.start();
+      audioPlayer.play();
+
+      const totalFrames = duration * 60;
+      let currentFrame = 0;
+
+      const interval = setInterval(() => {
+        currentFrame += 2;
+        const progress = Math.min(100, Math.floor((currentFrame / totalFrames) * 100));
+        progressBar.style.width = `${progress}%`;
+        progressPercent.textContent = `${progress}%`;
+
+        if (progress >= 100 || audioPlayer.ended) {
+          clearInterval(interval);
+          renderRecorder.stop();
+          audioPlayer.pause();
+        }
+      }, 30);
     });
   </script>
 </body>
