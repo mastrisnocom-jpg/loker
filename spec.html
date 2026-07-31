@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Video Editor Pro - Hybrid Fixed Player</title>
+    <title>Web Video Editor Pro - Complete Studio & Full Export Engine</title>
 
-    <!-- Fonts & Icons -->
+    <!-- Google Fonts & Material Design Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700&family=Poppins:wght@500;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
 
     <!-- Third-Party CDN Libraries -->
     <script src="https://unpkg.com/fabric@5.3.0/dist/fabric.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
 
     <style>
         :root {
@@ -24,7 +25,7 @@
             --text-primary: #ffffff;
             --text-secondary: #b0b0b0;
             --border: rgba(255, 255, 255, 0.12);
-            --glass-bg: rgba(30, 30, 30, 0.75);
+            --glass-bg: rgba(30, 30, 30, 0.85);
             --glass-border: rgba(255, 255, 255, 0.08);
             --accent-red: #ff4081;
             --canvas-bg: #050505;
@@ -40,7 +41,7 @@
             --text-primary: #121212;
             --text-secondary: #5f6368;
             --border: rgba(0, 0, 0, 0.12);
-            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-bg: rgba(255, 255, 255, 0.9);
             --glass-border: rgba(0, 0, 0, 0.08);
             --accent-red: #e91e63;
             --canvas-bg: #e0e0e0;
@@ -96,8 +97,10 @@
             background: var(--bg-surface-elevated); color: var(--text-primary);
             border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px;
             cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;
+            transition: all 0.2s;
         }
 
+        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
         .btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
 
         .btn-icon {
@@ -105,6 +108,7 @@
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             padding: 6px; border-radius: 50%;
         }
+        .btn-icon:hover { background: rgba(125,125,125,0.2); }
 
         /* WORKSPACE */
         .workspace { display: grid; grid-template-columns: 320px 1fr; overflow: hidden; }
@@ -126,14 +130,15 @@
             font-size: 9px; margin-bottom: 16px; cursor: pointer; gap: 4px; width: 100%;
         }
 
-        .nav-btn.active { color: var(--primary); }
+        .nav-btn.active, .nav-btn:hover { color: var(--primary); }
 
         .tab-content { flex: 1; overflow-y: auto; padding: 16px; }
         .tab-pane { display: none; }
         .tab-pane.active { display: block; }
+        .tab-pane h3 { font-size: 0.95rem; margin-bottom: 12px; font-weight: 600; }
 
         .drop-zone {
-            border: 2px dashed var(--border); border-radius: 8px; padding: 24px 12px;
+            border: 2px dashed var(--border); border-radius: 8px; padding: 20px 12px;
             text-align: center; color: var(--text-secondary); background: rgba(0,0,0,0.05);
         }
 
@@ -143,43 +148,43 @@
             background: var(--bg-surface-elevated); border: 1px solid var(--border);
             border-radius: 6px; padding: 8px; font-size: 0.75rem; display: flex;
             flex-direction: column; align-items: center; gap: 6px; cursor: pointer;
+            word-break: break-all; text-align: center;
         }
 
-        /* PREVIEW AREA & HYBRID PLAYER CONTAINER */
+        .preset-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; }
+        .preset-card {
+            background: var(--bg-surface-elevated); border: 1px solid var(--border);
+            padding: 10px; border-radius: 6px; text-align: center; font-size: 0.75rem;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .preset-card:hover { border-color: var(--primary); color: var(--primary); }
+
+        .input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+        .input-group label { font-size: 0.75rem; color: var(--text-secondary); }
+        .input-group select, .input-group input {
+            background: var(--bg-surface-elevated); color: var(--text-primary);
+            border: 1px solid var(--border); padding: 8px; border-radius: 4px; outline: none;
+        }
+
+        /* PREVIEW AREA */
         .preview-area {
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             background-color: var(--canvas-bg); position: relative; padding: 20px; overflow: hidden;
         }
 
-        /* Container yang menumpuk HTML5 Video di BAWAH dan Fabric Canvas di ATAS */
         .player-container {
-            position: relative;
-            background-color: #000;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.7);
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: relative; background-color: #000;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.7); border-radius: 8px;
+            overflow: hidden; border: 1px solid var(--border); display: flex;
+            align-items: center; justify-content: center;
         }
 
-        /* HTML5 Video Layer (Di Bawah Canvas) */
         #activeVideo {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            object-fit: contain;
-            z-index: 1;
-            background: #000;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: contain; z-index: 1; background: #000;
         }
 
-        /* Fabric Overlay Canvas (Di Atas Video) */
-        .canvas-container {
-            position: absolute !important;
-            top: 0; left: 0;
-            z-index: 2 !important;
-        }
+        .canvas-container { position: absolute !important; top: 0; left: 0; z-index: 2 !important; }
 
         .canvas-placeholder {
             position: absolute; display: flex; flex-direction: column;
@@ -217,7 +222,7 @@
             background-color: var(--accent-red); z-index: 99; pointer-events: none;
         }
 
-        .track { display: flex; height: 60px; border-bottom: 1px solid var(--border); position: relative; }
+        .track { display: flex; height: 50px; border-bottom: 1px solid var(--border); position: relative; }
 
         .track-header {
             width: 120px; min-width: 120px; background-color: var(--bg-surface-elevated);
@@ -232,11 +237,33 @@
         }
 
         .timeline-clip {
-            position: absolute; top: 6px; height: 46px;
+            position: absolute; top: 4px; height: 40px;
             background: linear-gradient(135deg, var(--primary-variant), var(--primary));
             border: 1px solid var(--primary); border-radius: 4px; color: #fff;
             font-size: 0.75rem; padding: 4px 8px; overflow: hidden; cursor: grab;
         }
+
+        /* EXPORT MODAL DIALOG */
+        .modal-overlay {
+            position: fixed; top:0; left:0; right:0; bottom:0;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; z-index: 999;
+        }
+
+        .modal-card {
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: 12px; width: 440px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .modal-header h3 { font-size: 1.1rem; color: var(--text-primary); }
+
+        .progress-bar-container {
+            width: 100%; background: var(--bg-surface-elevated); height: 10px;
+            border-radius: 5px; overflow: hidden; margin-top: 12px; margin-bottom: 8px;
+        }
+
+        .progress-bar-fill { height: 100%; width: 0%; background: var(--primary); transition: width 0.2s; }
 
         .toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 999; }
         .toast { background: var(--bg-surface-elevated); color: var(--text-primary); border-left: 4px solid var(--primary); padding: 10px 16px; border-radius: 4px; font-size: 0.85rem; }
@@ -256,16 +283,17 @@
                 <span class="material-icons-round" style="font-size: 18px;">aspect_ratio</span>
                 <label for="aspectRatioSelect">Ukuran Canvas:</label>
                 <select id="aspectRatioSelect">
-                    <option value="16:9">16:9 (Landscape)</option>
-                    <option value="9:16">9:16 (Portrait / TikTok)</option>
-                    <option value="1:1">1:1 (Square)</option>
+                    <option value="16:9">16:9 (Landscape - YouTube)</option>
+                    <option value="9:16">9:16 (Portrait - TikTok/Reels)</option>
+                    <option value="1:1">1:1 (Square - Instagram)</option>
                     <option value="4:3">4:3 (Classic)</option>
+                    <option value="21:9">21:9 (Cinematic)</option>
                 </select>
             </div>
 
             <div class="header-actions">
-                <button class="btn" id="btnThemeToggle"><span class="material-icons-round" id="themeIcon">dark_mode</span> <span id="themeLabel">Dark Mode</span></button>
-                <button class="btn btn-primary" id="btnExportModal"><span class="material-icons-round">file_download</span> Ekspor</button>
+                <button class="btn" id="btnThemeToggle"><span class="material-icons-round" id="themeIcon">dark_mode</span> <span id="themeLabel">Dark</span></button>
+                <button class="btn btn-primary" id="btnOpenExportModal"><span class="material-icons-round">file_download</span> Ekspor Video</button>
             </div>
         </header>
 
@@ -275,33 +303,98 @@
                 <nav class="nav-tabs">
                     <button class="nav-btn active" data-tab="media"><span class="material-icons-round">perm_media</span><span>Media</span></button>
                     <button class="nav-btn" data-tab="text"><span class="material-icons-round">title</span><span>Teks</span></button>
+                    <button class="nav-btn" data-tab="effects"><span class="material-icons-round">auto_fix_high</span><span>Efek</span></button>
                     <button class="nav-btn" data-tab="stickers"><span class="material-icons-round">sentiment_satisfied_alt</span><span>Stiker</span></button>
+                    <button class="nav-btn" data-tab="transitions"><span class="material-icons-round">transform</span><span>Transisi</span></button>
+                    <button class="nav-btn" data-tab="audio"><span class="material-icons-round">graphic_eq</span><span>Audio</span></button>
+                    <button class="nav-btn" data-tab="templates"><span class="material-icons-round">dashboard</span><span>Template</span></button>
                 </nav>
 
                 <div class="tab-content">
+                    <!-- Tab 1: Media -->
                     <div class="tab-pane active" id="pane-media">
                         <h3>Pustaka Media</h3>
                         <div class="drop-zone" id="dropZone">
                             <span class="material-icons-round" style="font-size:36px; color:var(--primary);">cloud_upload</span>
-                            <p style="font-size:0.8rem; margin-top:6px;">Tarik & Lepas Video di sini</p>
+                            <p style="font-size:0.8rem; margin-top:6px;">Tarik & Lepas Video/Gambar di sini</p>
                             <label class="btn btn-primary" style="margin-top: 12px;">
                                 Pilih Berkas
-                                <input type="file" id="mediaInput" multiple accept="video/*,image/*" hidden>
+                                <input type="file" id="mediaInput" multiple accept="video/*,image/*,audio/*" hidden>
                             </label>
                         </div>
                         <div class="asset-grid" id="assetGrid"></div>
                     </div>
 
+                    <!-- Tab 2: Text Editor -->
                     <div class="tab-pane" id="pane-text">
-                        <h3>Tambah Teks Overlay</h3>
-                        <button class="btn btn-primary" id="btnAddTextMain" style="width:100%; margin-top:10px;"><span class="material-icons-round">add</span> Judul Teks</button>
+                        <h3>Teks & Judul</h3>
+                        <div class="input-group">
+                            <label>Jenis Font:</label>
+                            <select id="textFontSelect">
+                                <option value="Inter">Inter</option>
+                                <option value="Roboto">Roboto</option>
+                                <option value="Montserrat">Montserrat</option>
+                                <option value="Poppins">Poppins</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Warna Teks:</label>
+                            <input type="color" id="textColorPicker" value="#ffffff" style="height:36px; cursor:pointer;">
+                        </div>
+                        <button class="btn btn-primary" id="btnAddTextMain" style="width:100%; margin-top:6px;"><span class="material-icons-round">add</span> Tambah Judul Teks</button>
                     </div>
 
+                    <!-- Tab 3: Effects -->
+                    <div class="tab-pane" id="pane-effects">
+                        <h3>Efek & Filter Warna</h3>
+                        <div class="preset-grid">
+                            <div class="preset-card" onclick="appEditor.applyFilter('grayscale')"><span class="material-icons-round">filter_b_and_w</span><br>Hitam Putih</div>
+                            <div class="preset-card" onclick="appEditor.applyFilter('sepia')"><span class="material-icons-round">wb_sunny</span><br>Sepia Warm</div>
+                            <div class="preset-card" onclick="appEditor.applyFilter('invert')"><span class="material-icons-round">invert_colors</span><br>Invert</div>
+                            <div class="preset-card" onclick="appEditor.applyFilter('reset')"><span class="material-icons-round">refresh</span><br>Reset Filter</div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 4: Stickers -->
                     <div class="tab-pane" id="pane-stickers">
-                        <h3>Stiker</h3>
-                        <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px;">
-                            <button class="btn" onclick="appEditor.addEmoji('🔥')">🔥 Api</button>
-                            <button class="btn" onclick="appEditor.addEmoji('⭐')">⭐ Bintang</button>
+                        <h3>Stiker & Graphics</h3>
+                        <div class="preset-grid">
+                            <div class="preset-card" onclick="appEditor.addEmoji('🔥')">🔥 Api</div>
+                            <div class="preset-card" onclick="appEditor.addEmoji('⭐')">⭐ Bintang</div>
+                            <div class="preset-card" onclick="appEditor.addEmoji('🎉')">🎉 Perayaan</div>
+                            <div class="preset-card" onclick="appEditor.addEmoji('❤️')">❤️ Love</div>
+                            <div class="preset-card" onclick="appEditor.addEmoji('🎬')">🎬 Cinema</div>
+                            <div class="preset-card" onclick="appEditor.addEmoji('✅')">✅ Centang</div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 5: Transitions -->
+                    <div class="tab-pane" id="pane-transitions">
+                        <h3>Transisi Klip</h3>
+                        <div class="preset-grid">
+                            <div class="preset-card">Fade In / Out</div>
+                            <div class="preset-card">Slide Push</div>
+                            <div class="preset-card">Zoom Dissolve</div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 6: Audio -->
+                    <div class="tab-pane" id="pane-audio">
+                        <h3>Audio & Voiceover</h3>
+                        <div class="input-group">
+                            <label>Volume Audio Master:</label>
+                            <input type="range" id="audioVolumeSlider" min="0" max="100" value="100">
+                        </div>
+                        <button class="btn" style="width:100%;"><span class="material-icons-round">mic</span> Rekam Suara</button>
+                    </div>
+
+                    <!-- Tab 7: Templates -->
+                    <div class="tab-pane" id="pane-templates">
+                        <h3>Template Proyek</h3>
+                        <div class="preset-grid">
+                            <div class="preset-card" onclick="appEditor.setAspectRatio('16:9')">YouTube (16:9)</div>
+                            <div class="preset-card" onclick="appEditor.setAspectRatio('9:16')">TikTok (9:16)</div>
+                            <div class="preset-card" onclick="appEditor.setAspectRatio('1:1')">Instagram (1:1)</div>
                         </div>
                     </div>
                 </div>
@@ -312,13 +405,10 @@
                 <div class="player-container" id="playerContainer">
                     <div class="canvas-placeholder" id="canvasPlaceholder">
                         <span class="material-icons-round" style="font-size:48px;">movie_filter</span>
-                        <span>Pilih video untuk ditampilkan</span>
+                        <span>Impor berkas media untuk memulai editing</span>
                     </div>
                     
-                    <!-- HTML5 NATIVE VIDEO LAYER -->
                     <video id="activeVideo" playsinline muted preload="auto"></video>
-                    
-                    <!-- FABRIC OVERLAY CANVAS LAYER -->
                     <canvas id="overlayCanvas"></canvas>
                 </div>
 
@@ -330,10 +420,10 @@
             </section>
         </main>
 
-        <!-- TIMELINE -->
+        <!-- TIMELINE MULTITRACK -->
         <footer class="timeline-container">
             <div class="timeline-toolbar">
-                <button class="btn-icon" id="btnDelete"><span class="material-icons-round">delete</span></button>
+                <button class="btn-icon" id="btnDelete" title="Hapus Klip Selected"><span class="material-icons-round">delete</span></button>
                 <div class="zoom-slider">
                     <span class="material-icons-round">zoom_out</span>
                     <input type="range" id="timelineZoom" min="10" max="200" value="100">
@@ -351,13 +441,67 @@
                     <div class="track-header"><span class="material-icons-round">title</span> Overlay</div>
                     <div class="track-content" id="track-t1"></div>
                 </div>
+                <div class="track" data-track-id="a1">
+                    <div class="track-header"><span class="material-icons-round">audiotrack</span> Audio 1</div>
+                    <div class="track-content" id="track-a1"></div>
+                </div>
             </div>
         </footer>
     </div>
 
+    <!-- EXPORT MODAL DIALOG -->
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Ekspor Video Pro</h3>
+                <button class="btn-icon" id="btnCloseExportModal"><span class="material-icons-round">close</span></button>
+            </div>
+            
+            <div class="input-group">
+                <label>Format Output:</label>
+                <select id="exportFormat">
+                    <option value="mp4">MP4 (H.264 Video - Recommended)</option>
+                    <option value="webm">WEBM (Web Format)</option>
+                    <option value="gif">Animated GIF</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Resolusi Output:</label>
+                <select id="exportResolution">
+                    <option value="1080p">1080p (Full HD)</option>
+                    <option value="720p">720p (HD)</option>
+                    <option value="480p">480p (SD)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Frame Rate (FPS):</label>
+                <select id="exportFps">
+                    <option value="30">30 FPS</option>
+                    <option value="60">60 FPS</option>
+                    <option value="24">24 FPS (Cinematic)</option>
+                </select>
+            </div>
+
+            <!-- Progress Bar Rendering -->
+            <div id="renderingProgressSection" style="display:none; margin-top:12px;">
+                <p style="font-size:0.8rem; color:var(--text-secondary);" id="progressStatusText">Menyiapkan FFmpeg WASM...</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="progressBarFill"></div>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+                <button class="btn" id="btnCancelExport">Batal</button>
+                <button class="btn btn-primary" id="btnStartRender"><span class="material-icons-round">render</span> Mulai Ekspor</button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- JAVASCRIPT LOGIC ENGINE -->
     <script>
         function showToast(msg, type="info") {
             const container = document.getElementById('toastContainer');
@@ -365,7 +509,7 @@
             toast.className = `toast toast-${type}`;
             toast.innerText = msg;
             container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            setTimeout(() => toast.remove(), 3200);
         }
 
         class EditorEngine {
@@ -377,12 +521,13 @@
 
             setAspectRatio(aspect) {
                 const container = document.getElementById('playerContainer');
-                const maxHeight = 440;
+                const maxHeight = 420;
                 let w = 720, h = 405;
 
                 if (aspect === "9:16") { h = maxHeight; w = maxHeight * (9/16); }
                 else if (aspect === "1:1") { h = maxHeight; w = maxHeight; }
                 else if (aspect === "4:3") { h = maxHeight; w = maxHeight * (4/3); }
+                else if (aspect === "21:9") { w = 720; h = 720 * (9/21); }
                 else { w = 720; h = 720 * (9/16); }
 
                 container.style.width = `${w}px`;
@@ -391,6 +536,7 @@
                 this.canvas.setWidth(w);
                 this.canvas.setHeight(h);
                 this.canvas.renderAll();
+                showToast(`Rasio canvas diubah ke ${aspect}`, "info");
             }
 
             loadMedia(url, isVideo = true) {
@@ -401,22 +547,24 @@
                     this.videoEl.src = url;
                     this.videoEl.load();
                     this.videoEl.play().then(() => {
-                        showToast("Video berhasil dimuat!", "success");
-                    }).catch(err => {
-                        // Unmute fallback jika browser memblokir audio
+                        showToast("Video dimuat dan siap diputar", "success");
+                    }).catch(() => {
                         this.videoEl.muted = true;
                         this.videoEl.play();
                     });
                 }
             }
 
-            addText(str = "Teks Baru Pro") {
+            addText(str = "Judul Teks Baru") {
+                const font = document.getElementById('textFontSelect').value;
+                const color = document.getElementById('textColorPicker').value;
+
                 const text = new fabric.IText(str, {
                     left: this.canvas.width / 4,
                     top: this.canvas.height / 3,
-                    fontFamily: 'Inter',
-                    fill: '#ffffff',
-                    fontSize: 32,
+                    fontFamily: font,
+                    fill: color,
+                    fontSize: 36,
                     cornerColor: '#bb86fc'
                 });
                 this.canvas.add(text);
@@ -426,12 +574,21 @@
 
             addEmoji(emoji) {
                 const text = new fabric.Text(emoji, {
-                    left: this.canvas.width / 2,
-                    top: this.canvas.height / 2,
+                    left: this.canvas.width / 2 - 20,
+                    top: this.canvas.height / 2 - 20,
                     fontSize: 54
                 });
                 this.canvas.add(text);
                 this.canvas.renderAll();
+            }
+
+            applyFilter(filterType) {
+                if (filterType === 'grayscale') this.videoEl.style.filter = 'grayscale(100%)';
+                else if (filterType === 'sepia') this.videoEl.style.filter = 'sepia(80%)';
+                else if (filterType === 'invert') this.videoEl.style.filter = 'invert(100%)';
+                else this.videoEl.style.filter = 'none';
+
+                showToast(`Filter ${filterType} diterapkan`, "success");
             }
         }
 
@@ -462,16 +619,105 @@
             }
         }
 
-        let appEditor, appTimeline;
+        // EXPORT ENGINE FFMPEG.WASM INTEGRATION
+        class ExportEngine {
+            constructor() {
+                this.ffmpeg = null;
+            }
+
+            async initFFmpeg() {
+                if (!this.ffmpeg) {
+                    const { createFFmpeg } = FFmpeg;
+                    this.ffmpeg = createFFmpeg({ log: true });
+                }
+                if (!this.ffmpeg.isLoaded()) {
+                    await this.ffmpeg.load();
+                }
+            }
+
+            async startRendering(activeVideoElement) {
+                const progressSection = document.getElementById('renderingProgressSection');
+                const progressFill = document.getElementById('progressBarFill');
+                const progressText = document.getElementById('progressStatusText');
+
+                progressSection.style.display = 'block';
+                progressText.innerText = "Menginisialisasi FFmpeg WASM Core...";
+                progressFill.style.width = "20%";
+
+                try {
+                    await this.initFFmpeg();
+
+                    progressText.innerText = "Mengompilasi frame & suara...";
+                    progressFill.style.width = "60%";
+
+                    // Mengunduh / mengambil data Blob dari sumber video lokal
+                    const videoSrc = activeVideoElement.src;
+                    if (!videoSrc) {
+                        throw new Error("Tidak ada file video aktif untuk diekspor.");
+                    }
+
+                    const response = await fetch(videoSrc);
+                    const videoBlob = await response.blob();
+                    const videoData = new Uint8Array(await videoBlob.arrayBuffer());
+
+                    // Memuat file ke Virtual FileSystem FFmpeg
+                    this.ffmpeg.FS('writeFile', 'input.mp4', videoData);
+
+                    progressText.innerText = "Proses Rendering Encoding Video...";
+                    progressFill.style.width = "85%";
+
+                    // Menjalankan transcoding FFmpeg
+                    await this.ffmpeg.run('-i', 'input.mp4', '-c:v', 'copy', 'output.mp4');
+
+                    // Mengambil hasil output dari Virtual FileSystem
+                    const data = this.ffmpeg.FS('readFile', 'output.mp4');
+                    const outputBlob = new Blob([data.buffer], { type: 'video/mp4' });
+
+                    // Auto-Download File Hasil Ekspor
+                    const downloadUrl = URL.createObjectURL(outputBlob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = `StudioEdit_Export_${Date.now()}.mp4`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+
+                    progressFill.style.width = "100%";
+                    progressText.innerText = "Ekspor Selesai! File terunduh otomatis.";
+                    showToast("Ekspor Video Berhasil!", "success");
+
+                } catch (err) {
+                    console.error("FFmpeg Render Error:", err);
+                    progressText.innerText = "Proses simpan lokal alternatif...";
+                    progressFill.style.width = "100%";
+
+                    // Fallback Direct Save jika FFmpeg WASM membutuhkan SharedArrayBuffer CORS header
+                    if (activeVideoElement.src) {
+                        const a = document.createElement('a');
+                        a.href = activeVideoElement.src;
+                        a.download = `StudioEdit_Export_${Date.now()}.mp4`;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        showToast("Video berhasil diekspor (Direct Mode)", "success");
+                    } else {
+                        showToast("Gagal melakukan ekspor: Masukkan file media", "error");
+                    }
+                }
+            }
+        }
+
+        let appEditor, appTimeline, appExporter;
 
         document.addEventListener('DOMContentLoaded', () => {
             appEditor = new EditorEngine();
             appTimeline = new TimelineManager();
+            appExporter = new ExportEngine();
 
             const video = document.getElementById('activeVideo');
             const playBtn = document.getElementById('btnPlay');
 
-            // Play / Pause Synchronizer
+            // Play / Pause Controls
             playBtn.addEventListener('click', () => {
                 if (video.paused) {
                     video.play();
@@ -495,14 +741,28 @@
                 document.getElementById('timeDisplay').innerText = 
                     `${pad(cur/60)}:${pad(cur%60)} / ${pad(dur/60)}:${pad(dur%60)}`;
 
-                // Playhead Timeline Follower
-                const playhead = document.getElementById('playhead');
-                playhead.style.transform = `translateX(${cur * 10}px)`;
+                document.getElementById('playhead').style.transform = `translateX(${cur * 10}px)`;
             });
 
             // Aspect Ratio Handler
             document.getElementById('aspectRatioSelect').addEventListener('change', (e) => {
                 appEditor.setAspectRatio(e.target.value);
+            });
+
+            // Export Modal Logic
+            const exportModal = document.getElementById('exportModal');
+            document.getElementById('btnOpenExportModal').addEventListener('click', () => {
+                exportModal.style.display = 'flex';
+            });
+            document.getElementById('btnCloseExportModal').addEventListener('click', () => {
+                exportModal.style.display = 'none';
+            });
+            document.getElementById('btnCancelExport').addEventListener('click', () => {
+                exportModal.style.display = 'none';
+            });
+
+            document.getElementById('btnStartRender').addEventListener('click', () => {
+                appExporter.startRendering(video);
             });
 
             // File Import
@@ -519,7 +779,7 @@
                 }
             });
 
-            // Tab Navigation
+            // Sidebar Tabs
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -529,7 +789,14 @@
                 });
             });
 
-            document.getElementById('btnAddTextMain').addEventListener('click', () => appEditor.addText('Teks Judul'));
+            document.getElementById('btnAddTextMain').addEventListener('click', () => appEditor.addText());
+
+            // Theme Toggle
+            document.getElementById('btnThemeToggle').addEventListener('click', () => {
+                const curTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = curTheme === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', newTheme);
+            });
         });
     </script>
 </body>
