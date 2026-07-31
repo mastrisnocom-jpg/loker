@@ -2,686 +2,429 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CapCut Spectrum Studio Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>KineMaster Style Video Editor</title>
   <style>
-    /* Variable Theme Modern Dark CapCut */
-    :root {
-      --bg-main: #0a0c10;
-      --panel-bg: rgba(22, 27, 34, 0.85);
-      --panel-border: rgba(255, 255, 255, 0.08);
-      --input-bg: #161b22;
-      --text-main: #f0f6fc;
-      --text-muted: #8b949e;
-      --accent: #2f81f7;
-      --accent-gradient: linear-gradient(135deg, #2f81f7, #9333ea);
-      --accent-hover: #58a6ff;
-      --danger: #f85149;
-    }
-
-    body.light-mode {
-      --bg-main: #f3f4f6;
-      --panel-bg: rgba(255, 255, 255, 0.9);
-      --panel-border: rgba(0, 0, 0, 0.08);
-      --input-bg: #f6f8fa;
-      --text-main: #1f2328;
-      --text-muted: #656d76;
-      --accent: #0969da;
-      --accent-gradient: linear-gradient(135deg, #0969da, #8250df);
-      --accent-hover: #1f6feb;
-    }
-
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
     }
 
     body {
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      min-height: 100vh;
+      background-color: #000000;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
     }
 
-    /* --- TOP NAVBAR --- */
-    header {
-      height: 56px;
-      background: var(--panel-bg);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--panel-border);
+    /* Main Container (Top Split: Left Toolbar + Preview + Right Wheel) */
+    .editor-top {
+      display: flex;
+      flex: 1;
+      height: 65%;
+      position: relative;
+    }
+
+    /* Left Vertical Toolbar */
+    .left-toolbar {
+      width: 50px;
+      background-color: #121212;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 10px;
+      gap: 15px;
+      z-index: 10;
+    }
+
+    .tool-btn {
+      width: 32px;
+      height: 32px;
+      background: none;
+      border: none;
+      color: #888888;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .tool-btn:hover {
+      color: #ffffff;
+    }
+
+    /* Center Video Preview Area */
+    .preview-container {
+      flex: 1;
+      background-color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    canvas#videoPreview {
+      max-width: 100%;
+      max-height: 100%;
+      background: #111;
+      object-fit: contain;
+    }
+
+    /* Right Control Panel (Wheel Menu) */
+    .right-panel {
+      width: 240px;
+      background-color: #121212;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .export-top-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      background: #222;
+      border-radius: 50%;
+      border: 1px solid #333;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* Circular Control Wheel */
+    .wheel-container {
+      width: 170px;
+      height: 170px;
+      background-color: #1a1a1a;
+      border-radius: 50%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+
+    .center-ai-btn {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff2a7a, #9e00ff);
+      color: white;
+      border: none;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(255, 42, 122, 0.4);
+      z-index: 5;
+    }
+
+    .wheel-item {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 10px;
+      cursor: pointer;
+    }
+
+    .wheel-item svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    /* Radial Positions */
+    .wheel-item.media { top: 10px; }
+    .wheel-item.audio { right: 12px; }
+    .wheel-item.rec { bottom: 10px; }
+    .wheel-item.layer { left: 10px; }
+
+    .bottom-right-controls {
+      position: absolute;
+      bottom: 12px;
+      width: 100%;
+      padding: 0 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .store-btn, .play-btn {
+      width: 36px;
+      height: 36px;
+      background: #222;
+      border-radius: 50%;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Bottom Timeline Section */
+    .timeline-section {
+      height: 35%;
+      background-color: #181818;
+      border-top: 1px solid #2a2a2a;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .time-header {
+      height: 24px;
+      background-color: #121212;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      padding: 0 10px;
+      font-family: monospace;
+      font-size: 11px;
     }
 
-    .brand {
-      font-weight: 800;
-      font-size: 1.1rem;
-      background: var(--accent-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .nav-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    /* --- BUTTONS --- */
-    .btn {
-      background: var(--accent-gradient);
+    .time-badge {
+      background: #ff3b30;
       color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(47, 129, 247, 0.2);
+      padding: 2px 6px;
+      border-radius: 3px;
     }
 
-    .btn:hover {
-      transform: translateY(-1px);
-      opacity: 0.95;
-    }
-
-    .btn-secondary {
-      background: var(--input-bg);
-      color: var(--text-main);
-      border: 1px solid var(--panel-border);
-      box-shadow: none;
-    }
-
-    /* --- MAIN RESPONSIVE GRID LAYOUT --- */
-    .app-workspace {
-      display: grid;
-      grid-template-columns: 320px 1fr 280px;
-      grid-template-rows: calc(100vh - 56px - 140px) 140px;
-      grid-template-areas:
-        "sidebar preview inspector"
-        "timeline timeline timeline";
+    .timeline-body {
       flex: 1;
-      height: calc(100vh - 56px);
-    }
-
-    /* --- SIDEBAR LEFT (TOOLS) --- */
-    .sidebar {
-      grid-area: sidebar;
-      background: var(--panel-bg);
-      border-right: 1px solid var(--panel-border);
       display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      overflow-x: auto;
+      position: relative;
+      padding: 10px 0;
     }
 
-    .tabs {
-      display: flex;
-      border-bottom: 1px solid var(--panel-border);
-      background: rgba(0,0,0,0.1);
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 12px 8px;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 0.8rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .tab-btn.active {
-      color: var(--accent);
-      border-bottom: 2px solid var(--accent);
-      background: var(--input-bg);
-    }
-
-    .tab-content {
-      padding: 16px;
-      overflow-y: auto;
-      flex: 1;
-      display: none;
-    }
-
-    .tab-content.active { display: block; }
-
-    .control-group {
-      margin-bottom: 16px;
-    }
-
-    .control-group label {
-      display: block;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      margin-bottom: 6px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-
-    input[type="text"], select, textarea, input[type="file"] {
-      width: 100%;
-      background: var(--input-bg);
-      border: 1px solid var(--panel-border);
-      color: var(--text-main);
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      outline: none;
-      transition: border 0.2s;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--accent);
-    }
-
-    textarea { height: 90px; resize: none; }
-
-    /* --- PREVIEW AREA (CENTER) --- */
-    .preview-area {
-      grid-area: preview;
-      background: var(--bg-main);
+    .thumbnail-card {
+      width: 80px;
+      height: 100%;
+      background: #222;
+      border: 1px solid #333;
+      border-radius: 6px;
+      margin-left: 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 16px;
-      position: relative;
+      font-size: 10px;
+      color: #888;
+      flex-shrink: 0;
     }
 
-    .canvas-wrapper {
-      width: 100%;
-      max-width: 900px;
-      aspect-ratio: 16/9;
-      background: #000;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-      position: relative;
-      border: 1px solid var(--panel-border);
-    }
-
-    canvas#stage {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    .player-bar {
-      margin-top: 14px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: var(--panel-bg);
-      padding: 8px 18px;
-      border-radius: 30px;
-      border: 1px solid var(--panel-border);
-      backdrop-filter: blur(10px);
-    }
-
-    .time-code {
-      font-family: monospace;
-      font-size: 0.85rem;
-      color: var(--accent);
-      font-weight: bold;
-    }
-
-    /* --- INSPECTOR RIGHT --- */
-    .inspector {
-      grid-area: inspector;
-      background: var(--panel-bg);
-      border-left: 1px solid var(--panel-border);
-      padding: 16px;
-      overflow-y: auto;
-    }
-
-    .color-picker-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    input[type="color"] {
-      border: none;
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      cursor: pointer;
-      background: none;
-    }
-
-    /* --- TIMELINE EDITOR (BOTTOM) --- */
-    .timeline {
-      grid-area: timeline;
-      background: var(--panel-bg);
-      border-top: 1px solid var(--panel-border);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .timeline-ruler {
-      height: 28px;
-      border-bottom: 1px solid var(--panel-border);
-      display: flex;
-      align-items: center;
-      padding: 0 16px;
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      background: rgba(0,0,0,0.2);
-    }
-
-    .timeline-tracks {
+    .tracks-container {
       flex: 1;
-      padding: 10px 16px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      overflow-y: auto;
+      gap: 6px;
+      padding: 0 20px;
+      position: relative;
+    }
+
+    /* Playhead Red Line */
+    .playhead {
+      position: absolute;
+      left: 120px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background-color: #ff3b30;
+      z-index: 20;
     }
 
     .track {
-      height: 36px;
-      background: var(--input-bg);
-      border-radius: 6px;
-      border: 1px solid var(--panel-border);
+      height: 40px;
+      border-radius: 4px;
       display: flex;
       align-items: center;
       padding: 0 8px;
+      font-size: 11px;
+      overflow: hidden;
+      white-space: nowrap;
     }
 
-    .track-clip {
-      height: 80%;
-      background: var(--accent-gradient);
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      padding: 0 12px;
-      color: white;
-      font-size: 0.75rem;
-      font-weight: 700;
-      width: 100%;
+    .track.video-track {
+      background: #2d3748;
+      border: 1px solid #4a5568;
     }
 
-    /* --- RESPONSIVE BREAKPOINTS --- */
-    @media (max-width: 1024px) {
-      .app-workspace {
-        grid-template-columns: 280px 1fr;
-        grid-template-rows: auto auto 120px;
-        grid-template-areas:
-          "preview preview"
-          "sidebar inspector"
-          "timeline timeline";
-        height: auto;
-        overflow-y: auto;
-      }
-      body { overflow-y: auto; }
+    .track.audio-track {
+      background: #00897b;
+      color: #ffffff;
     }
 
-    @media (max-width: 640px) {
-      .app-workspace {
-        grid-template-columns: 1fr;
-        grid-template-areas:
-          "preview"
-          "sidebar"
-          "inspector"
-          "timeline";
-      }
-      .header-bar { padding: 0 10px; }
-      .brand { font-size: 0.95rem; }
-      .btn { padding: 6px 12px; font-size: 0.78rem; }
-    }
-
-    /* Modal Overlay */
-    .modal {
+    /* Inputs Hidden */
+    input[type="file"] {
       display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.85);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-    .modal-box {
-      background: var(--input-bg);
-      border: 1px solid var(--panel-border);
-      padding: 24px;
-      border-radius: 12px;
-      text-align: center;
-      width: 90%; max-width: 380px;
-    }
-    .progress-bar-bg {
-      width: 100%; height: 8px;
-      background: var(--panel-bg);
-      border-radius: 4px;
-      margin: 16px 0; overflow: hidden;
-    }
-    .progress-bar-fill {
-      width: 0%; height: 100%;
-      background: var(--accent-gradient);
-      transition: width 0.2s;
     }
   </style>
 </head>
 <body>
 
-  <!-- TOP NAVBAR -->
-  <header>
-    <div class="brand">🎬 CapCut Spectrum Studio</div>
-    <div class="nav-actions">
-      <button id="themeToggle" class="btn btn-secondary">🌙 Mode</button>
-      <button id="recordBtn" class="btn btn-secondary">🔴 Rekam</button>
-      <button id="renderBtn" class="btn">⚡ Render Video</button>
-    </div>
-  </header>
-
-  <!-- APP WORKSPACE -->
-  <div class="app-workspace">
-    
-    <!-- 1. SIDEBAR TOOLS (LEFT) -->
-    <div class="sidebar">
-      <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('media')">Media</button>
-        <button class="tab-btn" onclick="switchTab('preset')">Preset Spectrum</button>
-        <button class="tab-btn" onclick="switchTab('text')">Lirik & Watermark</button>
-      </div>
-
-      <!-- Tab Media -->
-      <div id="tab-media" class="tab-content active">
-        <div class="control-group">
-          <label>Import File Audio (MP3/WAV)</label>
-          <input type="file" id="audioInput" accept="audio/*">
-        </div>
-        <div class="control-group">
-          <label>Import Gambar Background</label>
-          <input type="file" id="bgImageInput" accept="image/*">
-        </div>
-      </div>
-
-      <!-- Tab Preset Spectrum -->
-      <div id="tab-preset" class="tab-content">
-        <div class="control-group">
-          <label>Pilih Style Spectrum</label>
-          <select id="templateSelect"></select>
-        </div>
-        <div class="control-group">
-          <label>Efek Latar Overlay</label>
-          <select id="particleSelect">
-            <option value="none">Tanpa Efek</option>
-            <option value="rain">Hujan Salju</option>
-            <option value="stars">Bintang Angkasa</option>
-            <option value="icons">Melayang Ikon Musik</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Tab Text & Lirik -->
-      <div id="tab-text" class="tab-content">
-        <div class="control-group">
-          <label>Teks Watermark</label>
-          <input type="text" id="watermarkText" value="© CapCut Spectrum Studio">
-        </div>
-        <div class="control-group">
-          <label>Posisi Watermark</label>
-          <select id="watermarkPos">
-            <option value="top-right">Kanan Atas</option>
-            <option value="top-left">Kiri Atas</option>
-            <option value="bottom-right">Kanan Bawah</option>
-            <option value="bottom-left">Kiri Bawah</option>
-          </select>
-        </div>
-        <div class="control-group">
-          <label>Lirik Otomatis (Format: Detik|Lirik)</label>
-          <textarea id="lyricsInput" placeholder="0|Intro Musik&#10;5|Lirik lagu baris pertama..."></textarea>
-        </div>
-      </div>
+  <!-- Top Area -->
+  <div class="editor-top">
+    <!-- Left Toolbar -->
+    <div class="left-toolbar">
+      <button class="tool-btn">❮</button>
+      <button class="tool-btn">↶</button>
+      <button class="tool-btn">↷</button>
+      <button class="tool-btn">⛶</button>
+      <button class="tool-btn">⚙</button>
     </div>
 
-    <!-- 2. PREVIEW CANVAS (CENTER) -->
-    <div class="preview-area">
-      <div class="canvas-wrapper">
-        <canvas id="stage" width="1280" height="720"></canvas>
-      </div>
-
-      <div class="player-bar">
-        <button id="playBtn" class="btn btn-secondary">▶ Play</button>
-        <button id="stopBtn" class="btn btn-secondary">⏹ Stop</button>
-        <span id="timeDisplay" class="time-code">00:00 / 00:00</span>
-      </div>
+    <!-- Center Canvas Preview -->
+    <div class="preview-container">
+      <canvas id="videoPreview" width="854" height="480"></canvas>
     </div>
 
-    <!-- 3. INSPECTOR PANEL (RIGHT) -->
-    <div class="inspector">
-      <h3 style="font-size: 0.85rem; margin-bottom: 16px; color: var(--accent); text-transform: uppercase;">Pengaturan Warna</h3>
-      <div class="control-group">
-        <label>Warna Background</label>
-        <div class="color-picker-wrapper">
-          <input type="color" id="bgColorInput" value="#0a0c10">
-          <span style="font-size: 0.8rem;">Background Solid</span>
-        </div>
-      </div>
-      <div class="control-group">
-        <label>Warna Utama Spectrum</label>
-        <div class="color-picker-wrapper">
-          <input type="color" id="specColor1" value="#2f81f7">
-          <span style="font-size: 0.8rem;">Warna Bawah</span>
-        </div>
-      </div>
-      <div class="control-group">
-        <label>Warna Keduanya Spectrum</label>
-        <div class="color-picker-wrapper">
-          <input type="color" id="specColor2" value="#9333ea">
-          <span style="font-size: 0.8rem;">Warna Atas</span>
-        </div>
-      </div>
-    </div>
+    <!-- Right Control Wheel -->
+    <div class="right-panel">
+      <button class="export-top-btn" onclick="exportVideo()">⤓</button>
 
-    <!-- 4. TIMELINE TRACKS (BOTTOM) -->
-    <div class="timeline">
-      <div class="timeline-ruler">
-        <span>00:00</span>
-        <span style="margin-left: 150px;">00:30</span>
-        <span style="margin-left: 150px;">01:00</span>
-        <span style="margin-left: 150px;">01:30</span>
-      </div>
-      <div class="timeline-tracks">
-        <div class="track">
-          <div class="track-clip" id="audioClip">🎵 Track Audio: Belum Ada Audio</div>
-        </div>
-        <div class="track">
-          <div class="track-clip" style="background: linear-gradient(135deg, #10b981, #059669);">📊 Track Spectrum Visualizer</div>
-        </div>
-      </div>
-    </div>
+      <div class="wheel-container">
+        <button class="center-ai-btn">✨ AI</button>
 
-  </div>
+        <button class="wheel-item media" onclick="document.getElementById('mediaInput').click()">
+          <span>📁</span>
+          <span>Media</span>
+        </button>
 
-  <!-- RENDER MODAL OVERLAY -->
-  <div id="renderModal" class="modal">
-    <div class="modal-box">
-      <h3 style="margin-bottom: 8px;">Proses Render Video...</h3>
-      <p id="estimatedTimeText" style="font-size: 0.8rem; color: var(--text-muted);">Mengkalkulasi waktu...</p>
-      <div class="progress-bar-bg">
-        <div id="progressFill" class="progress-bar-fill"></div>
+        <button class="wheel-item audio" onclick="document.getElementById('audioInput').click()">
+          <span>🎵</span>
+          <span>Audio</span>
+        </button>
+
+        <button class="wheel-item rec">
+          <span>🎙️</span>
+          <span>REC</span>
+        </button>
+
+        <button class="wheel-item layer">
+          <span>📑</span>
+          <span>Lapisan</span>
+        </button>
       </div>
-      <span id="progressPercent" style="font-weight: bold; font-size: 1rem;">0%</span>
+
+      <div class="bottom-right-controls">
+        <button class="store-btn">🏪</button>
+        <button class="play-btn" id="playBtn">▶</button>
+      </div>
     </div>
   </div>
+
+  <!-- Bottom Timeline Area -->
+  <div class="timeline-section">
+    <div class="time-header">
+      <span class="time-badge">00:00:00.000</span>
+      <span style="color: #666;">00:04</span>
+      <span style="color: #888;">00:06:04.680</span>
+    </div>
+
+    <div class="timeline-body">
+      <div class="playhead"></div>
+
+      <div class="thumbnail-card">
+        ✏️
+        <span style="margin-top: 4px;">Thumbnail</span>
+      </div>
+
+      <div class="tracks-container">
+        <!-- Video Track -->
+        <div class="track video-track" id="videoTrackClip">
+          🎬 0.25x 20260211_131546.mp4
+        </div>
+        <!-- Audio Track -->
+        <div class="track audio-track" id="audioTrackClip">
+          🎵 1.0x Dalane mudik.mp3
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Inputs -->
+  <input type="file" id="mediaInput" accept="video/*,image/*">
+  <input type="file" id="audioInput" accept="audio/*">
 
   <script>
-    // --- APP CORE & INITIALIZATION ---
-    const canvas = document.getElementById('stage');
-    const ctx = canvas.getContext('2d');
+    const mediaInput = document.getElementById('mediaInput');
     const audioInput = document.getElementById('audioInput');
     const playBtn = document.getElementById('playBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const timeDisplay = document.getElementById('timeDisplay');
-    const templateSelect = document.getElementById('templateSelect');
-    const particleSelect = document.getElementById('particleSelect');
-    const watermarkText = document.getElementById('watermarkText');
-    const watermarkPos = document.getElementById('watermarkPos');
-    const lyricsInput = document.getElementById('lyricsInput');
-    const bgColorInput = document.getElementById('bgColorInput');
-    const bgImageInput = document.getElementById('bgImageInput');
-    const specColor1 = document.getElementById('specColor1');
-    const specColor2 = document.getElementById('specColor2');
+    const canvas = document.getElementById('videoPreview');
+    const ctx = canvas.getContext('2d');
 
-    let audio = new Audio();
-    let audioCtx, analyser, source;
-    let isInitialized = false;
-    let bgImage = null;
-    let parsedLyrics = [];
+    let videoElement = document.createElement('video');
+    let audioElement = new Audio();
+    let isPlaying = false;
 
-    // Populate 30 Preset Options
-    for(let i=1; i<=30; i++) {
-      const opt = document.createElement('option');
-      opt.value = i - 1; opt.textContent = `Preset Spectrum ${i}`;
-      templateSelect.appendChild(opt);
-    }
-
-    // Tab Navigation
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      event.target.classList.add('active');
-      document.getElementById(`tab-${tabId}`).classList.add('active');
-    }
-
-    // Theme Switcher
-    document.getElementById('themeToggle').addEventListener('click', function() {
-      document.body.classList.toggle('light-mode');
-      this.textContent = document.body.classList.contains('light-mode') ? '☀️ Light' : '🌙 Dark';
-    });
-
-    // Audio Loader
-    audioInput.addEventListener('change', function() {
-      const file = this.files[0];
+    // Handle Media Import
+    mediaInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
       if (file) {
-        audio.src = URL.createObjectURL(file);
-        document.getElementById('audioClip').textContent = `🎵 ${file.name}`;
+        document.getElementById('videoTrackClip').innerText = `🎬 ${file.name}`;
+        videoElement.src = URL.createObjectURL(file);
+        videoElement.load();
+        videoElement.onloadeddata = () => {
+          ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+        };
       }
     });
 
-    // Background Image Loader
-    bgImageInput.addEventListener('change', function() {
-      const file = this.files[0];
+    // Handle Audio Import
+    audioInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
       if (file) {
-        const img = new Image();
-        img.onload = () => { bgImage = img; };
-        img.src = URL.createObjectURL(file);
+        document.getElementById('audioTrackClip').innerText = `🎵 ${file.name}`;
+        audioElement.src = URL.createObjectURL(file);
       }
     });
 
-    // Player Controls
+    // Toggle Play / Pause
     playBtn.addEventListener('click', () => {
-      if (!audio.src) return alert("Pilih file Audio terlebih dahulu!");
-      initAudioContext();
-      if (audio.paused) {
-        audio.play(); playBtn.textContent = "⏸ Pause";
+      if (!isPlaying) {
+        if (videoElement.src) videoElement.play();
+        if (audioElement.src) audioElement.play();
+        playBtn.innerText = '❚❚';
+        isPlaying = true;
+        renderLoop();
       } else {
-        audio.pause(); playBtn.textContent = "▶ Play";
+        if (videoElement.src) videoElement.pause();
+        if (audioElement.src) audioElement.pause();
+        playBtn.innerText = '▶';
+        isPlaying = false;
       }
     });
 
-    stopBtn.addEventListener('click', () => {
-      audio.pause(); audio.currentTime = 0; playBtn.textContent = "▶ Play";
-    });
-
-    audio.addEventListener('timeupdate', () => {
-      if(!audio.duration) return;
-      timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
-    });
-
-    function formatTime(s) {
-      const m = Math.floor(s/60); const sec = Math.floor(s%60);
-      return `${m<10?'0':''}${m}:${sec<10?'0':''}${sec}`;
-    }
-
-    function initAudioContext() {
-      if (isInitialized) return;
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = audioCtx.createAnalyser();
-      source = audioCtx.createMediaElementSource(audio);
-      source.connect(analyser); analyser.connect(audioCtx.destination);
-      analyser.fftSize = 256;
-      isInitialized = true;
-      requestAnimationFrame(renderLoop);
-    }
-
-    // Lyrics Reader
-    lyricsInput.addEventListener('input', () => {
-      parsedLyrics = [];
-      lyricsInput.value.split('\n').forEach(line => {
-        const p = line.split('|');
-        if (p.length >= 2) parsedLyrics.push({ time: parseFloat(p[0]), text: p[1].trim() });
-      });
-      parsedLyrics.sort((a,b) => a.time - b.time);
-    });
-
-    // Engine Render Loop
     function renderLoop() {
-      requestAnimationFrame(renderLoop);
-      if (!analyser) return;
-
-      const bufferLen = analyser.frequencyBinCount;
-      const data = new Uint8Array(bufferLen);
-      analyser.getByteFrequencyData(data);
-
-      // Render Background
-      if (bgImage) {
-        ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
-      } else {
-        ctx.fillStyle = bgColorInput.value;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-
-      // Render Spectrum Visualizer
-      const barWidth = (canvas.width / bufferLen) * 1.2;
-      const grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
-      grad.addColorStop(0, specColor1.value); grad.addColorStop(1, specColor2.value);
-      ctx.fillStyle = grad;
-
-      for (let i = 0; i < bufferLen; i++) {
-        let h = (data[i] / 255) * canvas.height * 0.7;
-        ctx.fillRect(i * barWidth, canvas.height - h, barWidth - 3, h);
-      }
-
-      // Render Watermark
-      if (watermarkText.value) {
-        ctx.save(); ctx.font = "bold 32px sans-serif"; ctx.fillStyle = "rgba(255,255,255,0.75)";
-        let x = 40, y = 60;
-        if (watermarkPos.value.includes('right')) x = canvas.width - ctx.measureText(watermarkText.value).width - 40;
-        if (watermarkPos.value.includes('bottom')) y = canvas.height - 40;
-        ctx.fillText(watermarkText.value, x, y); ctx.restore();
-      }
-
-      // Render Lyrics Text
-      if (parsedLyrics.length > 0) {
-        let text = "";
-        for (let l of parsedLyrics) { if (audio.currentTime >= l.time) text = l.text; else break; }
-        if (text) {
-          ctx.save(); ctx.font = "bold 42px sans-serif"; ctx.textAlign = "center";
-          ctx.fillStyle = "#ffffff"; ctx.shadowColor = "#000000"; ctx.shadowBlur = 12;
-          ctx.fillText(text, canvas.width / 2, canvas.height - 100); ctx.restore();
+      if (isPlaying) {
+        if (!videoElement.paused && !videoElement.ended) {
+          ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
         }
+        requestAnimationFrame(renderLoop);
       }
+    }
+
+    function exportVideo() {
+      alert("Proses Export Video KineMaster Dimulai...");
     }
   </script>
 </body>
