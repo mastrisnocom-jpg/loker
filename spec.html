@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Video Editor Pro - Complete Studio & Full Export Engine</title>
+    <title>Web Video Editor Pro - Persistent Storage Engine</title>
 
     <!-- Google Fonts & Material Design Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -292,6 +292,7 @@
             </div>
 
             <div class="header-actions">
+                <button class="btn" id="btnClearStorage" title="Reset Semua Proyek"><span class="material-icons-round">delete_sweep</span> Reset Proyek</button>
                 <button class="btn" id="btnThemeToggle"><span class="material-icons-round" id="themeIcon">dark_mode</span> <span id="themeLabel">Dark</span></button>
                 <button class="btn btn-primary" id="btnOpenExportModal"><span class="material-icons-round">file_download</span> Ekspor Video</button>
             </div>
@@ -311,7 +312,6 @@
                 </nav>
 
                 <div class="tab-content">
-                    <!-- Tab 1: Media -->
                     <div class="tab-pane active" id="pane-media">
                         <h3>Pustaka Media</h3>
                         <div class="drop-zone" id="dropZone">
@@ -325,7 +325,6 @@
                         <div class="asset-grid" id="assetGrid"></div>
                     </div>
 
-                    <!-- Tab 2: Text Editor -->
                     <div class="tab-pane" id="pane-text">
                         <h3>Teks & Judul</h3>
                         <div class="input-group">
@@ -344,7 +343,6 @@
                         <button class="btn btn-primary" id="btnAddTextMain" style="width:100%; margin-top:6px;"><span class="material-icons-round">add</span> Tambah Judul Teks</button>
                     </div>
 
-                    <!-- Tab 3: Effects -->
                     <div class="tab-pane" id="pane-effects">
                         <h3>Efek & Filter Warna</h3>
                         <div class="preset-grid">
@@ -355,7 +353,6 @@
                         </div>
                     </div>
 
-                    <!-- Tab 4: Stickers -->
                     <div class="tab-pane" id="pane-stickers">
                         <h3>Stiker & Graphics</h3>
                         <div class="preset-grid">
@@ -363,44 +360,33 @@
                             <div class="preset-card" onclick="appEditor.addEmoji('⭐')">⭐ Bintang</div>
                             <div class="preset-card" onclick="appEditor.addEmoji('🎉')">🎉 Perayaan</div>
                             <div class="preset-card" onclick="appEditor.addEmoji('❤️')">❤️ Love</div>
-                            <div class="preset-card" onclick="appEditor.addEmoji('🎬')">🎬 Cinema</div>
-                            <div class="preset-card" onclick="appEditor.addEmoji('✅')">✅ Centang</div>
                         </div>
                     </div>
 
-                    <!-- Tab 5: Transitions -->
                     <div class="tab-pane" id="pane-transitions">
                         <h3>Transisi Klip</h3>
                         <div class="preset-grid">
                             <div class="preset-card">Fade In / Out</div>
                             <div class="preset-card">Slide Push</div>
-                            <div class="preset-card">Zoom Dissolve</div>
                         </div>
                     </div>
 
-                    <!-- Tab 6: Audio -->
                     <div class="tab-pane" id="pane-audio">
                         <h3>Audio & Voiceover</h3>
-                        <div class="input-group">
-                            <label>Volume Audio Master:</label>
-                            <input type="range" id="audioVolumeSlider" min="0" max="100" value="100">
-                        </div>
                         <button class="btn" style="width:100%;"><span class="material-icons-round">mic</span> Rekam Suara</button>
                     </div>
 
-                    <!-- Tab 7: Templates -->
                     <div class="tab-pane" id="pane-templates">
                         <h3>Template Proyek</h3>
                         <div class="preset-grid">
                             <div class="preset-card" onclick="appEditor.setAspectRatio('16:9')">YouTube (16:9)</div>
                             <div class="preset-card" onclick="appEditor.setAspectRatio('9:16')">TikTok (9:16)</div>
-                            <div class="preset-card" onclick="appEditor.setAspectRatio('1:1')">Instagram (1:1)</div>
                         </div>
                     </div>
                 </div>
             </aside>
 
-            <!-- PREVIEW AREA WITH HYBRID PLAYER -->
+            <!-- PREVIEW AREA -->
             <section class="preview-area">
                 <div class="player-container" id="playerContainer">
                     <div class="canvas-placeholder" id="canvasPlaceholder">
@@ -420,7 +406,7 @@
             </section>
         </main>
 
-        <!-- TIMELINE MULTITRACK -->
+        <!-- TIMELINE -->
         <footer class="timeline-container">
             <div class="timeline-toolbar">
                 <button class="btn-icon" id="btnDelete" title="Hapus Klip Selected"><span class="material-icons-round">delete</span></button>
@@ -449,7 +435,7 @@
         </footer>
     </div>
 
-    <!-- EXPORT MODAL DIALOG -->
+    <!-- EXPORT MODAL -->
     <div class="modal-overlay" id="exportModal">
         <div class="modal-card">
             <div class="modal-header">
@@ -462,29 +448,9 @@
                 <select id="exportFormat">
                     <option value="mp4">MP4 (H.264 Video - Recommended)</option>
                     <option value="webm">WEBM (Web Format)</option>
-                    <option value="gif">Animated GIF</option>
                 </select>
             </div>
 
-            <div class="input-group">
-                <label>Resolusi Output:</label>
-                <select id="exportResolution">
-                    <option value="1080p">1080p (Full HD)</option>
-                    <option value="720p">720p (HD)</option>
-                    <option value="480p">480p (SD)</option>
-                </select>
-            </div>
-
-            <div class="input-group">
-                <label>Frame Rate (FPS):</label>
-                <select id="exportFps">
-                    <option value="30">30 FPS</option>
-                    <option value="60">60 FPS</option>
-                    <option value="24">24 FPS (Cinematic)</option>
-                </select>
-            </div>
-
-            <!-- Progress Bar Rendering -->
             <div id="renderingProgressSection" style="display:none; margin-top:12px;">
                 <p style="font-size:0.8rem; color:var(--text-secondary);" id="progressStatusText">Menyiapkan FFmpeg WASM...</p>
                 <div class="progress-bar-container">
@@ -501,7 +467,7 @@
 
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- JAVASCRIPT LOGIC ENGINE -->
+    <!-- JAVASCRIPT LOGIC ENGINE WITH STORAGE PERSISTENCE -->
     <script>
         function showToast(msg, type="info") {
             const container = document.getElementById('toastContainer');
@@ -512,14 +478,81 @@
             setTimeout(() => toast.remove(), 3200);
         }
 
-        class EditorEngine {
+        // --- INDEXEDDB STORAGE CONTROLLER UNTUK MENYIMPAN FILE MEDIA BERUKURAN BESAR ---
+        class StorageManager {
             constructor() {
+                this.dbName = "StudioEditDB";
+                this.db = null;
+            }
+
+            async init() {
+                return new Promise((resolve, reject) => {
+                    const req = indexedDB.open(this.dbName, 1);
+                    req.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains("mediaAssets")) {
+                            db.createObjectStore("mediaAssets", { keyPath: "id" });
+                        }
+                    };
+                    req.onsuccess = (e) => {
+                        this.db = e.target.result;
+                        resolve(this.db);
+                    };
+                    req.onerror = (e) => reject(e);
+                });
+            }
+
+            async saveMedia(id, blob, name) {
+                if (!this.db) await this.init();
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction("mediaAssets", "readwrite");
+                    const store = tx.objectStore("mediaAssets");
+                    store.put({ id, blob, name, date: Date.now() });
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = (e) => reject(e);
+                });
+            }
+
+            async getMedia(id) {
+                if (!this.db) await this.init();
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction("mediaAssets", "readonly");
+                    const store = tx.objectStore("mediaAssets");
+                    const req = store.get(id);
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = (e) => reject(e);
+                });
+            }
+
+            async clearAll() {
+                if (!this.db) await this.init();
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction("mediaAssets", "readwrite");
+                    tx.objectStore("mediaAssets").clear();
+                    tx.oncomplete = () => {
+                        localStorage.removeItem('studioedit_project_state');
+                        resolve();
+                    };
+                });
+            }
+        }
+
+        class EditorEngine {
+            constructor(storage) {
+                this.storage = storage;
                 this.videoEl = document.getElementById('activeVideo');
                 this.canvas = new fabric.Canvas('overlayCanvas', { selection: true });
+                this.currentAspect = "16:9";
+                
+                this.canvas.on('object:modified', () => triggerAutosave());
+                this.canvas.on('object:added', () => triggerAutosave());
                 this.setAspectRatio("16:9");
             }
 
             setAspectRatio(aspect) {
+                this.currentAspect = aspect;
+                document.getElementById('aspectRatioSelect').value = aspect;
+                
                 const container = document.getElementById('playerContainer');
                 const maxHeight = 420;
                 let w = 720, h = 405;
@@ -536,7 +569,6 @@
                 this.canvas.setWidth(w);
                 this.canvas.setHeight(h);
                 this.canvas.renderAll();
-                showToast(`Rasio canvas diubah ke ${aspect}`, "info");
             }
 
             loadMedia(url, isVideo = true) {
@@ -546,9 +578,7 @@
                     this.videoEl.style.display = 'block';
                     this.videoEl.src = url;
                     this.videoEl.load();
-                    this.videoEl.play().then(() => {
-                        showToast("Video dimuat dan siap diputar", "success");
-                    }).catch(() => {
+                    this.videoEl.play().catch(() => {
                         this.videoEl.muted = true;
                         this.videoEl.play();
                     });
@@ -588,7 +618,7 @@
                 else if (filterType === 'invert') this.videoEl.style.filter = 'invert(100%)';
                 else this.videoEl.style.filter = 'none';
 
-                showToast(`Filter ${filterType} diterapkan`, "success");
+                triggerAutosave();
             }
         }
 
@@ -602,6 +632,7 @@
                 const clip = { id: Date.now(), trackId, name, duration };
                 this.clips.push(clip);
                 this.render();
+                triggerAutosave();
             }
 
             render() {
@@ -619,100 +650,67 @@
             }
         }
 
-        // EXPORT ENGINE FFMPEG.WASM INTEGRATION
-        class ExportEngine {
-            constructor() {
-                this.ffmpeg = null;
-            }
+        let storageManager, appEditor, appTimeline;
 
-            async initFFmpeg() {
-                if (!this.ffmpeg) {
-                    const { createFFmpeg } = FFmpeg;
-                    this.ffmpeg = createFFmpeg({ log: true });
+        // --- SISTEM AUTOSAVE UNTUK MENYIMPAN STATE PROYEK ---
+        function triggerAutosave() {
+            if (!appEditor || !appTimeline) return;
+
+            const state = {
+                aspectRatio: appEditor.currentAspect,
+                canvasJSON: JSON.stringify(appEditor.canvas),
+                clips: appTimeline.clips,
+                videoFilter: appEditor.videoEl.style.filter,
+                videoTime: appEditor.videoEl.currentTime
+            };
+
+            localStorage.setItem('studioedit_project_state', JSON.stringify(state));
+        }
+
+        // --- SISTEM RESTORE UNTUK MEMULIHKAN DATA SAAT REFRESH ---
+        async function restoreProjectState() {
+            try {
+                // 1. Restore Media dari IndexedDB
+                const mediaRecord = await storageManager.getMedia("active_project_media");
+                if (mediaRecord && mediaRecord.blob) {
+                    const objectUrl = URL.createObjectURL(mediaRecord.blob);
+                    appEditor.loadMedia(objectUrl, true);
+
+                    const grid = document.getElementById('assetGrid');
+                    grid.innerHTML = `<div class="asset-item"><span class="material-icons-round">movie</span><span>${mediaRecord.name}</span></div>`;
                 }
-                if (!this.ffmpeg.isLoaded()) {
-                    await this.ffmpeg.load();
-                }
-            }
 
-            async startRendering(activeVideoElement) {
-                const progressSection = document.getElementById('renderingProgressSection');
-                const progressFill = document.getElementById('progressBarFill');
-                const progressText = document.getElementById('progressStatusText');
+                // 2. Restore State dari LocalStorage
+                const savedStateRaw = localStorage.getItem('studioedit_project_state');
+                if (savedStateRaw) {
+                    const state = JSON.parse(savedStateRaw);
 
-                progressSection.style.display = 'block';
-                progressText.innerText = "Menginisialisasi FFmpeg WASM Core...";
-                progressFill.style.width = "20%";
-
-                try {
-                    await this.initFFmpeg();
-
-                    progressText.innerText = "Mengompilasi frame & suara...";
-                    progressFill.style.width = "60%";
-
-                    // Mengunduh / mengambil data Blob dari sumber video lokal
-                    const videoSrc = activeVideoElement.src;
-                    if (!videoSrc) {
-                        throw new Error("Tidak ada file video aktif untuk diekspor.");
+                    if (state.aspectRatio) appEditor.setAspectRatio(state.aspectRatio);
+                    if (state.videoFilter) appEditor.videoEl.style.filter = state.videoFilter;
+                    if (state.clips) {
+                        appTimeline.clips = state.clips;
+                        appTimeline.render();
                     }
 
-                    const response = await fetch(videoSrc);
-                    const videoBlob = await response.blob();
-                    const videoData = new Uint8Array(await videoBlob.arrayBuffer());
-
-                    // Memuat file ke Virtual FileSystem FFmpeg
-                    this.ffmpeg.FS('writeFile', 'input.mp4', videoData);
-
-                    progressText.innerText = "Proses Rendering Encoding Video...";
-                    progressFill.style.width = "85%";
-
-                    // Menjalankan transcoding FFmpeg
-                    await this.ffmpeg.run('-i', 'input.mp4', '-c:v', 'copy', 'output.mp4');
-
-                    // Mengambil hasil output dari Virtual FileSystem
-                    const data = this.ffmpeg.FS('readFile', 'output.mp4');
-                    const outputBlob = new Blob([data.buffer], { type: 'video/mp4' });
-
-                    // Auto-Download File Hasil Ekspor
-                    const downloadUrl = URL.createObjectURL(outputBlob);
-                    const a = document.createElement('a');
-                    a.href = downloadUrl;
-                    a.download = `StudioEdit_Export_${Date.now()}.mp4`;
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-
-                    progressFill.style.width = "100%";
-                    progressText.innerText = "Ekspor Selesai! File terunduh otomatis.";
-                    showToast("Ekspor Video Berhasil!", "success");
-
-                } catch (err) {
-                    console.error("FFmpeg Render Error:", err);
-                    progressText.innerText = "Proses simpan lokal alternatif...";
-                    progressFill.style.width = "100%";
-
-                    // Fallback Direct Save jika FFmpeg WASM membutuhkan SharedArrayBuffer CORS header
-                    if (activeVideoElement.src) {
-                        const a = document.createElement('a');
-                        a.href = activeVideoElement.src;
-                        a.download = `StudioEdit_Export_${Date.now()}.mp4`;
-                        document.body.appendChild(a);
-                        a.click();
-                        a.remove();
-                        showToast("Video berhasil diekspor (Direct Mode)", "success");
-                    } else {
-                        showToast("Gagal melakukan ekspor: Masukkan file media", "error");
+                    if (state.canvasJSON) {
+                        appEditor.canvas.loadFromJSON(state.canvasJSON, () => {
+                            appEditor.canvas.renderAll();
+                        });
                     }
+
+                    showToast("Proyek berhasil dipulihkan!", "success");
                 }
+            } catch (err) {
+                console.error("Gagal memulihkan state:", err);
             }
         }
 
-        let appEditor, appTimeline, appExporter;
+        document.addEventListener('DOMContentLoaded', async () => {
+            storageManager = new StorageManager();
+            await storageManager.init();
 
-        document.addEventListener('DOMContentLoaded', () => {
-            appEditor = new EditorEngine();
+            appEditor = new EditorEngine(storageManager);
             appTimeline = new TimelineManager();
-            appExporter = new ExportEngine();
 
             const video = document.getElementById('activeVideo');
             const playBtn = document.getElementById('btnPlay');
@@ -744,42 +742,41 @@
                 document.getElementById('playhead').style.transform = `translateX(${cur * 10}px)`;
             });
 
-            // Aspect Ratio Handler
+            // Aspect Ratio Event
             document.getElementById('aspectRatioSelect').addEventListener('change', (e) => {
                 appEditor.setAspectRatio(e.target.value);
+                triggerAutosave();
             });
 
-            // Export Modal Logic
-            const exportModal = document.getElementById('exportModal');
-            document.getElementById('btnOpenExportModal').addEventListener('click', () => {
-                exportModal.style.display = 'flex';
-            });
-            document.getElementById('btnCloseExportModal').addEventListener('click', () => {
-                exportModal.style.display = 'none';
-            });
-            document.getElementById('btnCancelExport').addEventListener('click', () => {
-                exportModal.style.display = 'none';
-            });
-
-            document.getElementById('btnStartRender').addEventListener('click', () => {
-                appExporter.startRendering(video);
-            });
-
-            // File Import
+            // File Import Event
             const mediaInput = document.getElementById('mediaInput');
-            mediaInput.addEventListener('change', (e) => {
+            mediaInput.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (file) {
                     const url = URL.createObjectURL(file);
                     appEditor.loadMedia(url, true);
                     appTimeline.addClip('v1', file.name, 10);
 
+                    // Simpan file fisik ke IndexedDB
+                    await storageManager.saveMedia("active_project_media", file, file.name);
+
                     const grid = document.getElementById('assetGrid');
                     grid.innerHTML = `<div class="asset-item"><span class="material-icons-round">movie</span><span>${file.name}</span></div>`;
+                    
+                    triggerAutosave();
+                    showToast("Video tersimpan di memori lokal!", "success");
                 }
             });
 
-            // Sidebar Tabs
+            // Reset Project Event
+            document.getElementById('btnClearStorage').addEventListener('click', async () => {
+                if (confirm("Apakah Anda yakin ingin menghapus semua media dan teks proyek saat ini?")) {
+                    await storageManager.clearAll();
+                    location.reload();
+                }
+            });
+
+            // Sidebar Tabs Navigation
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -797,6 +794,9 @@
                 const newTheme = curTheme === 'dark' ? 'light' : 'dark';
                 document.documentElement.setAttribute('data-theme', newTheme);
             });
+
+            // Restore data yang tersimpan saat halaman dimuat ulang
+            restoreProjectState();
         });
     </script>
 </body>
