@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Spectrum Visualizer</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-weight: 400;
+      letter-spacing: 1px;
+    }
+
+    .controls {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .file-label {
+      background-color: #00adb5;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .file-label:hover {
+      background-color: #00888f;
+    }
+
+    audio {
+      width: 100%;
+      max-width: 500px;
+      outline: none;
+    }
+
+    .canvas-container {
+      width: 100%;
+      max-width: 800px;
+      background: #1e1e1e;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 350px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Audio Spectrum Visualizer</h1>
+
+  <div class="controls">
+    <label for="audioFile" class="file-label">Pilih File Audio (MP3/WAV)</label>
+    <input type="file" id="audioFile" accept="audio/*">
+    <audio id="audioPlayer" controls></audio>
+  </div>
+
+  <div class="canvas-container">
+    <canvas id="visualizer"></canvas>
+  </div>
+
+  <script>
+    const audioInput = document.getElementById('audioFile');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
+
+    // Sesuaikan resolusi internal canvas dengan ukuran tampilannya
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    let audioCtx;
+    let analyser;
+    let source;
+    let isInitialized = false;
+
+    function initAudio() {
+      if (isInitialized) return;
+
+      // Inisialisasi Web Audio API Context
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+
+      // Menghubungkan elemen HTML Audio ke Web Audio API Analyser
+      source = audioCtx.createMediaElementSource(audioPlayer);
+      source.connect(analyser);
+      analyser.connect(audioCtx.destination);
+
+      // FFT Size menentukan berapa banyak frekuensi yang dianalisis
+      analyser.fftSize = 128; // Coba ubah ke 256 atau 512 untuk jumlah batang yang lebih banyak
+
+      isInitialized = true;
+    }
+
+    // Memuat file audio saat dipilih oleh user
+    audioInput.addEventListener('change', function() {
+      const files = this.files;
+      if (files.length === 0) return;
+
+      const file = files[0];
+      audioPlayer.src = URL.createObjectURL(file);
+      audioPlayer.load();
+    });
+
+    // Memulai AudioContext setelah user menekan play
+    audioPlayer.addEventListener('play', () => {
+      initAudio();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      renderFrame();
+    });
+
+    function renderFrame() {
+      requestAnimationFrame(renderFrame);
+
+      if (!analyser) return;
+
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      analyser.getByteFrequencyData(dataArray);
+
+      // Bersihkan canvas setiap frame
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const barWidth = (canvas.width / bufferLength) * 1.5;
+      let barHeight;
+      let x = 0;
+
+      for (let i = 0; i < bufferLength; i++) {
+        barHeight = (dataArray[i] / 255) * canvas.height;
+
+        // Membuat efek gradasi warna batang
+        const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+        gradient.addColorStop(0, '#00adb5');
+        gradient.addColorStop(0.5, '#ff2e63');
+        gradient.addColorStop(1, '#f9ed69');
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x, canvas.height - barHeight, barWidth - 2, barHeight);
+
+        x += barWidth;
+      }
+    }
+  </script>
+</body>
+</html>
