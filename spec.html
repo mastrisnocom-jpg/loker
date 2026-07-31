@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Video Editor Pro - All-in-One Studio</title>
+    <title>Web Video Editor Pro - Aspect Ratio & Fixed Player Engine</title>
 
     <!-- External Fonts & Material Design Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -73,7 +73,7 @@
         }
 
         /* ==========================================================================
-           2. HEADER BAR & MENU
+           2. HEADER BAR & CONTROLS
            ========================================================================== */
         .top-header {
             background: var(--glass-bg);
@@ -95,22 +95,32 @@
             font-size: 1.1rem;
         }
 
-        .project-title {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            background: rgba(125,125,125,0.1);
-            padding: 4px 12px;
-            border-radius: 4px;
-            border: 1px solid var(--glass-border);
-        }
-
         .header-actions {
             display: flex;
             gap: 8px;
             align-items: center;
         }
 
-        /* Buttons */
+        .aspect-select-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-surface-elevated);
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 0.8rem;
+        }
+
+        .aspect-select-wrapper select {
+            background: transparent;
+            color: var(--text-primary);
+            border: none;
+            outline: none;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
         .btn {
             background: var(--bg-surface-elevated);
             color: var(--text-primary);
@@ -154,7 +164,7 @@
         }
 
         /* ==========================================================================
-           3. WORKSPACE (SIDEBAR & PREVIEW)
+           3. WORKSPACE & PREVIEW AREA
            ========================================================================== */
         .workspace {
             display: grid;
@@ -162,7 +172,6 @@
             overflow: hidden;
         }
 
-        /* Sidebar Left */
         .sidebar-left {
             background-color: var(--bg-surface);
             border-right: 1px solid var(--border);
@@ -214,12 +223,6 @@
             display: block;
         }
 
-        .tab-pane h3 {
-            font-size: 0.95rem;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
-
         .preset-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -243,7 +246,6 @@
             color: var(--primary);
         }
 
-        /* Drop Zone */
         .drop-zone {
             border: 2px dashed var(--border);
             border-radius: 8px;
@@ -257,12 +259,6 @@
 
         .drop-zone:hover {
             border-color: var(--primary);
-        }
-
-        .drop-zone span {
-            font-size: 32px;
-            margin-bottom: 6px;
-            color: var(--primary);
         }
 
         .asset-grid {
@@ -286,11 +282,6 @@
             gap: 6px;
         }
 
-        .asset-item:hover {
-            border-color: var(--primary);
-        }
-
-        /* Preview Area */
         .preview-area {
             display: flex;
             flex-direction: column;
@@ -299,23 +290,23 @@
             background-color: var(--canvas-bg);
             position: relative;
             padding: 20px;
+            overflow: hidden;
         }
 
+        /* Dynamically Scaled Canvas Container */
         .canvas-wrapper {
-            width: 100%;
-            max-width: 960px;
-            aspect-ratio: 16/9;
+            position: relative;
             background-color: #000000;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: width 0.3s ease, height 0.3s ease;
         }
 
-        /* Playback Bar Controls */
         .playback-controls {
             position: absolute;
             bottom: 24px;
@@ -328,6 +319,7 @@
             align-items: center;
             gap: 16px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            z-index: 50;
         }
 
         .time-display {
@@ -338,7 +330,7 @@
         }
 
         /* ==========================================================================
-           4. MULTITRACK TIMELINE
+           4. TIMELINE MULTITRACK
            ========================================================================== */
         .timeline-container {
             background-color: var(--bg-surface);
@@ -357,12 +349,6 @@
             padding: 0 16px;
             gap: 12px;
             justify-content: space-between;
-        }
-
-        .toolbar-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .zoom-slider {
@@ -461,7 +447,6 @@
             outline: 2px solid var(--secondary);
         }
 
-        /* Notifications & Toasts */
         .toast-container {
             position: fixed;
             bottom: 20px;
@@ -501,9 +486,21 @@
                 <span class="material-icons-round">video_settings</span>
                 <span>StudioEdit Web</span>
             </div>
-            <div class="project-title" id="projectTitle">Proyek Video Tanpa Judul</div>
+
+            <!-- Aspect Ratio Selector -->
+            <div class="aspect-select-wrapper">
+                <span class="material-icons-round" style="font-size: 18px;">aspect_ratio</span>
+                <label for="aspectRatioSelect">Ukuran Video:</label>
+                <select id="aspectRatioSelect">
+                    <option value="16:9">16:9 (Landscape - YouTube)</option>
+                    <option value="9:16">9:16 (Portrait - Shorts/Reels/TikTok)</option>
+                    <option value="1:1">1:1 (Square - Instagram Feed)</option>
+                    <option value="4:3">4:3 (Classic Video)</option>
+                    <option value="21:9">21:9 (Cinematic Ultrawide)</option>
+                </select>
+            </div>
+
             <div class="header-actions">
-                <!-- Dark Mode Toggle Button -->
                 <button class="btn" id="btnThemeToggle" title="Ganti Tema">
                     <span class="material-icons-round" id="themeIcon">dark_mode</span>
                     <span id="themeLabel">Dark Mode</span>
@@ -516,7 +513,7 @@
 
         <!-- ==================== MAIN WORKSPACE ==================== -->
         <main class="workspace">
-            <!-- Left Sidebar Navigation -->
+            <!-- Sidebar Navigation -->
             <aside class="sidebar-left">
                 <nav class="nav-tabs">
                     <button class="nav-btn active" data-tab="media">
@@ -543,20 +540,14 @@
                         <span class="material-icons-round">graphic_eq</span>
                         <span>Audio</span>
                     </button>
-                    <button class="nav-btn" data-tab="templates">
-                        <span class="material-icons-round">dashboard</span>
-                        <span>Template</span>
-                    </button>
                 </nav>
 
                 <div class="tab-content" id="tabContent">
-                    <!-- Tab 1: Media Import -->
                     <div class="tab-pane active" id="pane-media">
                         <h3>Pustaka Media</h3>
                         <div class="drop-zone" id="dropZone">
-                            <span class="material-icons-round">cloud_upload</span>
-                            <p>Tarik & Lepas file di sini</p>
-                            <p style="font-size: 0.7rem; margin-top: 4px; color: var(--text-secondary);">Otomatis diputar saat dimasukkan</p>
+                            <span class="material-icons-round" style="font-size:36px; color:var(--primary);">cloud_upload</span>
+                            <p style="font-size:0.8rem; margin-top:6px;">Tarik & Lepas file di sini</p>
                             <label class="btn btn-primary" style="margin-top: 12px;">
                                 Pilih Berkas
                                 <input type="file" id="mediaInput" multiple accept="video/*,audio/*,image/*" hidden>
@@ -565,27 +556,22 @@
                         <div class="asset-grid" id="assetGrid"></div>
                     </div>
 
-                    <!-- Tab 2: Text Editor -->
                     <div class="tab-pane" id="pane-text">
                         <h3>Tambah Teks</h3>
                         <div style="display:flex; flex-direction:column; gap:8px;">
-                            <button class="btn btn-primary" id="btnAddTextMain"><span class="material-icons-round">add</span> Judul Utamas</button>
+                            <button class="btn btn-primary" id="btnAddTextMain"><span class="material-icons-round">add</span> Judul Utama</button>
                             <button class="btn" id="btnAddTextSub"><span class="material-icons-round">add</span> Subtitle / Keterangan</button>
                         </div>
                     </div>
 
-                    <!-- Tab 3: Effects -->
                     <div class="tab-pane" id="pane-effects">
                         <h3>Efek Visual</h3>
                         <div class="preset-grid">
                             <div class="preset-card" id="btnFilterGrayscale"><span class="material-icons-round">filter_b_and_w</span><br>Hitam Putih</div>
-                            <div class="preset-card" id="btnFilterSepia"><span class="material-icons-round">wb_sunny</span><br>Sepia / Vintage</div>
-                            <div class="preset-card" id="btnFilterInvert"><span class="material-icons-round">invert_colors</span><br>Invert Warna</div>
-                            <div class="preset-card" id="btnFilterBlur"><span class="material-icons-round">blur_on</span><br>Blur Effect</div>
+                            <div class="preset-card" id="btnFilterSepia"><span class="material-icons-round">wb_sunny</span><br>Sepia</div>
                         </div>
                     </div>
 
-                    <!-- Tab 4: Stickers -->
                     <div class="tab-pane" id="pane-stickers">
                         <h3>Stiker & Emoji</h3>
                         <div class="preset-grid">
@@ -596,58 +582,41 @@
                         </div>
                     </div>
 
-                    <!-- Tab 5: Transitions -->
                     <div class="tab-pane" id="pane-transitions">
                         <h3>Transisi Video</h3>
                         <div class="preset-grid">
-                            <div class="preset-card">Fade in / Out</div>
-                            <div class="preset-card">Slide Left</div>
-                            <div class="preset-card">Zoom Push</div>
-                            <div class="preset-card">Dissolve</div>
+                            <div class="preset-card">Fade in/out</div>
+                            <div class="preset-card">Slide Push</div>
                         </div>
                     </div>
 
-                    <!-- Tab 6: Audio -->
                     <div class="tab-pane" id="pane-audio">
-                        <h3>Efek Suara & Musik</h3>
-                        <div style="display:flex; flex-direction:column; gap:8px;">
-                            <button class="btn"><span class="material-icons-round">library_music</span> Tambah Backsound</button>
-                            <button class="btn"><span class="material-icons-round">mic</span> Rekam Suara (Voiceover)</button>
-                        </div>
-                    </div>
-
-                    <!-- Tab 7: Templates -->
-                    <div class="tab-pane" id="pane-templates">
-                        <h3>Template Proyek</h3>
-                        <div class="preset-grid">
-                            <div class="preset-card">YouTube Intro (16:9)</div>
-                            <div class="preset-card">TikTok / Reels (9:16)</div>
-                        </div>
+                        <h3>Suara & Musik</h3>
+                        <button class="btn" style="width:100%;"><span class="material-icons-round">library_music</span> Tambah Backsound</button>
                     </div>
                 </div>
             </aside>
 
-            <!-- Preview Viewport -->
+            <!-- Preview Canvas Viewport -->
             <section class="preview-area">
-                <div class="canvas-wrapper">
+                <div class="canvas-wrapper" id="canvasWrapper">
                     <canvas id="mainCanvas"></canvas>
                 </div>
 
-                <!-- Floating Playback Controls -->
                 <div class="playback-controls">
                     <button class="btn-icon" id="btnStop" title="Stop"><span class="material-icons-round">stop</span></button>
                     <button class="btn-icon" id="btnPlay" title="Play/Pause"><span class="material-icons-round">play_arrow</span></button>
-                    <span class="time-display" id="timeDisplay">00:00:00 / 00:00:00</span>
+                    <span class="time-display" id="timeDisplay">00:00 / 00:00</span>
                     <button class="btn-icon" id="btnFullscreen" title="Layar Penuh"><span class="material-icons-round">fullscreen</span></button>
                 </div>
             </section>
         </main>
 
-        <!-- ==================== MULTITRACK TIMELINE ==================== -->
+        <!-- ==================== TIMELINE ==================== -->
         <footer class="timeline-container">
             <div class="timeline-toolbar">
-                <div class="toolbar-group">
-                    <button class="btn-icon" id="btnSplit" title="Potong Klip (Split)"><span class="material-icons-round">content_cut</span></button>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-icon" id="btnSplit" title="Potong Klip"><span class="material-icons-round">content_cut</span></button>
                     <button class="btn-icon" id="btnDelete" title="Hapus Klip"><span class="material-icons-round">delete</span></button>
                 </div>
 
@@ -661,17 +630,17 @@
             <div class="timeline-tracks-wrapper" id="timelineTracks">
                 <div class="playhead" id="playhead"></div>
 
-                <div class="track" data-track-type="video" data-track-id="v1">
+                <div class="track" data-track-id="v1">
                     <div class="track-header"><span class="material-icons-round">videocam</span> Video 1</div>
                     <div class="track-content" id="track-v1"></div>
                 </div>
 
-                <div class="track" data-track-type="text" data-track-id="t1">
+                <div class="track" data-track-id="t1">
                     <div class="track-header"><span class="material-icons-round">title</span> Overlay</div>
                     <div class="track-content" id="track-t1"></div>
                 </div>
 
-                <div class="track" data-track-type="audio" data-track-id="a1">
+                <div class="track" data-track-id="a1">
                     <div class="track-header"><span class="material-icons-round">audiotrack</span> Audio 1</div>
                     <div class="track-content" id="track-a1"></div>
                 </div>
@@ -679,17 +648,15 @@
         </footer>
     </div>
 
-    <!-- Notification Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Hidden HTML5 Video Element for Active Stream Media -->
-    <video id="hiddenVideoPlayer" style="display:none;" playsinline></video>
+    <!-- Hidden Video HTML5 Element for Streaming Realtime Rendering -->
+    <video id="hiddenVideoPlayer" style="display:none;" crossorigin="anonymous" playsinline muted></video>
 
     <!-- ==========================================================================
-       5. INTEGRATED JAVASCRIPT ENGINE
-       ========================================================================== -->
+       5. JAVASCRIPT ENGINE WITH PLAYER BUG FIX & ASPECT RATIO CONTROL
+       ========================================================================== */ -->
     <script>
-        // Toast Notification System
         function showToast(message, type = "info") {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
@@ -699,81 +666,83 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
-        // Fabric.js Canvas Engine
+        // --- FABRIC.JS ENGINE WITH ASPECT RATIO & REAL-TIME STREAM FIX ---
         class EditorEngine {
             constructor(canvasId) {
                 this.canvas = new fabric.Canvas(canvasId, {
-                    width: 960,
-                    height: 540,
-                    backgroundColor: '#000000',
-                    selection: true
+                    selection: true,
+                    backgroundColor: '#000000'
                 });
 
-                this.history = [];
-                this.historyStep = -1;
-                this.activeVideoElement = null;
+                this.activeVideoElement = document.getElementById('hiddenVideoPlayer');
                 this.fabricVideoObject = null;
+                this.currentAspect = "16:9";
 
-                this.initEvents();
-                this.saveState();
+                this.setAspectRatio("16:9");
+                this.startCanvasRenderLoop();
             }
 
-            initEvents() {
-                this.canvas.on('object:modified', () => this.saveState());
-            }
+            // Fungsi Mengubah Ukuran Video Canvas (Aspect Ratio)
+            setAspectRatio(aspectStr) {
+                this.currentAspect = aspectStr;
+                const wrapper = document.getElementById('canvasWrapper');
+                
+                // Max dimensions di workspace
+                const maxHeight = 480; 
+                let targetWidth, targetHeight;
 
-            saveState() {
-                if (this.historyStep < this.history.length - 1) {
-                    this.history = this.history.slice(0, this.historyStep + 1);
+                switch(aspectStr) {
+                    case "9:16":
+                        targetHeight = maxHeight;
+                        targetWidth = maxHeight * (9 / 16);
+                        break;
+                    case "1:1":
+                        targetHeight = maxHeight;
+                        targetWidth = maxHeight;
+                        break;
+                    case "4:3":
+                        targetHeight = maxHeight;
+                        targetWidth = maxHeight * (4 / 3);
+                        break;
+                    case "21:9":
+                        targetWidth = 720;
+                        targetHeight = 720 * (9 / 21);
+                        break;
+                    case "16:9":
+                    default:
+                        targetWidth = 720;
+                        targetHeight = 720 * (9 / 16);
+                        break;
                 }
-                this.history.push(JSON.stringify(this.canvas));
-                this.historyStep++;
-            }
 
-            undo() {
-                if (this.historyStep > 0) {
-                    this.historyStep--;
-                    this.canvas.loadFromJSON(this.history[this.historyStep], () => this.canvas.renderAll());
-                    showToast("Undo berhasil", "info");
+                wrapper.style.width = `${targetWidth}px`;
+                wrapper.style.height = `${targetHeight}px`;
+
+                this.canvas.setWidth(targetWidth);
+                this.canvas.setHeight(targetHeight);
+
+                // Auto-center objek video jika ada
+                if (this.fabricVideoObject) {
+                    this.fabricVideoObject.scaleToWidth(targetWidth);
+                    this.canvas.centerObject(this.fabricVideoObject);
                 }
-            }
 
-            redo() {
-                if (this.historyStep < this.history.length - 1) {
-                    this.historyStep++;
-                    this.canvas.loadFromJSON(this.history[this.historyStep], () => this.canvas.renderAll());
-                    showToast("Redo berhasil", "info");
-                }
-            }
-
-            addText(textString = "Teks Baru Pro", fontSize = 42) {
-                const text = new fabric.IText(textString, {
-                    left: 350,
-                    top: 230,
-                    fontFamily: 'Inter',
-                    fill: '#ffffff',
-                    fontSize: fontSize,
-                    cornerColor: '#bb86fc',
-                    cornerSize: 10,
-                    transparentCorners: false
-                });
-                this.canvas.add(text);
-                this.canvas.setActiveObject(text);
                 this.canvas.renderAll();
+                showToast(`Ukuran video diubah ke ${aspectStr}`, "info");
             }
 
-            addEmoji(emoji) {
-                const text = new fabric.Text(emoji, {
-                    left: 450,
-                    top: 220,
-                    fontSize: 72
-                });
-                this.canvas.add(text);
-                this.canvas.setActiveObject(text);
-                this.canvas.renderAll();
+            // Loop Terus-menerus Menggunakan RequestAnimationFrame untuk Menjamin Tampilan
+            startCanvasRenderLoop() {
+                const render = () => {
+                    if (this.activeVideoElement && !this.activeVideoElement.paused && !this.activeVideoElement.ended) {
+                        this.canvas.renderAll();
+                    }
+                    requestAnimationFrame(render);
+                };
+                requestAnimationFrame(render);
             }
 
-            // Langsung tampilkan gambar di canvas
+            // Tampilkan Gambar di Player Canvas
             displayImageOnCanvas(url) {
                 fabric.Image.fromURL(url, (img) => {
                     img.scaleToWidth(this.canvas.width * 0.8);
@@ -784,14 +753,13 @@
                 });
             }
 
-            // Langsung tampilkan video di canvas dan render frame-by-frame
-            displayVideoOnCanvas(videoElement) {
-                this.activeVideoElement = videoElement;
+            // Tampilkan Video di Player Canvas (Pasti Muncul)
+            displayVideoOnCanvas() {
                 if (this.fabricVideoObject) {
                     this.canvas.remove(this.fabricVideoObject);
                 }
 
-                this.fabricVideoObject = new fabric.Image(videoElement, {
+                this.fabricVideoObject = new fabric.Image(this.activeVideoElement, {
                     left: 0,
                     top: 0,
                     originX: 'left',
@@ -799,20 +767,38 @@
                     objectCaching: false
                 });
 
-                // Sesuaikan skala video agar fit di canvas 16:9
                 this.fabricVideoObject.scaleToWidth(this.canvas.width);
                 this.canvas.centerObject(this.fabricVideoObject);
                 this.canvas.add(this.fabricVideoObject);
+                this.canvas.sendToBack(this.fabricVideoObject);
                 this.canvas.renderAll();
+            }
 
-                // Loop rendering canvas saat video diputar
-                const renderLoop = () => {
-                    if (this.activeVideoElement && !this.activeVideoElement.paused) {
-                        this.canvas.renderAll();
-                    }
-                    fabric.util.requestAnimFrame(renderLoop);
-                };
-                fabric.util.requestAnimFrame(renderLoop);
+            addText(textString = "Teks Baru Pro", fontSize = 36) {
+                const text = new fabric.IText(textString, {
+                    left: this.canvas.width / 4,
+                    top: this.canvas.height / 3,
+                    fontFamily: 'Inter',
+                    fill: '#ffffff',
+                    fontSize: fontSize,
+                    cornerColor: '#bb86fc',
+                    cornerSize: 8,
+                    transparentCorners: false
+                });
+                this.canvas.add(text);
+                this.canvas.setActiveObject(text);
+                this.canvas.renderAll();
+            }
+
+            addEmoji(emoji) {
+                const text = new fabric.Text(emoji, {
+                    left: this.canvas.width / 2,
+                    top: this.canvas.height / 2,
+                    fontSize: 64
+                });
+                this.canvas.add(text);
+                this.canvas.setActiveObject(text);
+                this.canvas.renderAll();
             }
 
             applyGrayscale() {
@@ -823,7 +809,7 @@
                     this.canvas.renderAll();
                     showToast("Filter Grayscale diterapkan", "success");
                 } else {
-                    showToast("Pilih media di canvas terlebih dahulu", "error");
+                    showToast("Pilih objek di player terlebih dahulu", "error");
                 }
             }
         }
@@ -912,7 +898,7 @@
                 document.getElementById('btnStop').addEventListener('click', () => this.stop());
                 
                 document.getElementById('btnFullscreen').addEventListener('click', () => {
-                    const wrapper = document.querySelector('.canvas-wrapper');
+                    const wrapper = document.getElementById('canvasWrapper');
                     if (!document.fullscreenElement) {
                         wrapper.requestFullscreen().catch(err => alert(err.message));
                     } else {
@@ -926,7 +912,7 @@
                 const icon = this.playBtn.querySelector('.material-icons-round');
                 icon.innerText = this.isPlaying ? 'pause' : 'play_arrow';
 
-                if (this.editor.activeVideoElement) {
+                if (this.editor.activeVideoElement && this.editor.activeVideoElement.src) {
                     if (this.isPlaying) {
                         this.editor.activeVideoElement.play();
                     } else {
@@ -945,7 +931,7 @@
                 this.isPlaying = false;
                 this.playBtn.querySelector('.material-icons-round').innerText = 'play_arrow';
                 cancelAnimationFrame(this.animationFrameId);
-                
+
                 if (this.editor.activeVideoElement) {
                     this.editor.activeVideoElement.pause();
                     this.editor.activeVideoElement.currentTime = 0;
@@ -958,7 +944,7 @@
             playLoop() {
                 if (!this.isPlaying) return;
 
-                if (this.editor.activeVideoElement) {
+                if (this.editor.activeVideoElement && this.editor.activeVideoElement.src) {
                     this.timeline.currentTime = this.editor.activeVideoElement.currentTime;
                 } else {
                     this.timeline.currentTime += 0.033;
@@ -986,33 +972,31 @@
             }
         }
 
-        // Global Editor Instance
         let appEditor;
 
-        // Initialization Logic
         document.addEventListener('DOMContentLoaded', () => {
             const editor = new EditorEngine('mainCanvas');
             appEditor = editor;
             const timeline = new TimelineManager(editor);
             const player = new PlayerController(editor, timeline);
 
-            // Dark Mode / Light Mode Toggle Logic
-            const btnThemeToggle = document.getElementById('btnThemeToggle');
-            const themeIcon = document.getElementById('themeIcon');
-            const themeLabel = document.getElementById('themeLabel');
+            // Listener Aspect Ratio Selection Change
+            const aspectSelect = document.getElementById('aspectRatioSelect');
+            aspectSelect.addEventListener('change', (e) => {
+                editor.setAspectRatio(e.target.value);
+            });
 
+            // Theme Toggle
+            const btnThemeToggle = document.getElementById('btnThemeToggle');
             btnThemeToggle.addEventListener('click', () => {
                 const currentTheme = document.documentElement.getAttribute('data-theme');
                 const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                
                 document.documentElement.setAttribute('data-theme', newTheme);
-                themeIcon.innerText = newTheme === 'dark' ? 'dark_mode' : 'light_mode';
-                themeLabel.innerText = newTheme === 'dark' ? 'Dark Mode' : 'Light Mode';
-                
-                showToast(`Tema diubah ke ${newTheme.toUpperCase()} mode`, "info");
+                document.getElementById('themeIcon').innerText = newTheme === 'dark' ? 'dark_mode' : 'light_mode';
+                document.getElementById('themeLabel').innerText = newTheme === 'dark' ? 'Dark Mode' : 'Light Mode';
             });
 
-            // Tab Navigation
+            // Sidebar Tabs
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -1022,7 +1006,7 @@
                 });
             });
 
-            // Media File Import & Immediate Display Control
+            // File Import Logic (FIXED PLAYER DISPLAY)
             const dropZone = document.getElementById('dropZone');
             const mediaInput = document.getElementById('mediaInput');
             const videoPlayerNode = document.getElementById('hiddenVideoPlayer');
@@ -1039,32 +1023,34 @@
 
                 Array.from(files).forEach(file => {
                     const fileUrl = URL.createObjectURL(file);
-                    
-                    // 1. Jika File adalah VIDEO
+
+                    // 1. Apabila Input adalah File Video
                     if (file.type.startsWith('video/')) {
                         videoPlayerNode.src = fileUrl;
-                        videoPlayerNode.onloadedmetadata = () => {
-                            editor.displayVideoOnCanvas(videoPlayerNode);
+                        videoPlayerNode.load();
+                        
+                        videoPlayerNode.onloadeddata = () => {
+                            editor.displayVideoOnCanvas();
                             timeline.addClip('v1', file.name, videoPlayerNode.duration);
-                            player.togglePlay(); // Otomatis putar di Player
-                            showToast(`Memutar Video: ${file.name}`, "success");
+                            player.togglePlay();
+                            showToast(`Video dimuat: ${file.name}`, "success");
                         };
                     } 
-                    // 2. Jika File adalah GAMBAR
+                    // 2. Apabila Input adalah File Gambar
                     else if (file.type.startsWith('image/')) {
                         editor.displayImageOnCanvas(fileUrl);
                         timeline.addClip('v1', file.name, 5);
-                        showToast(`Menampilkan Gambar: ${file.name}`, "success");
+                        showToast(`Gambar dimuat: ${file.name}`, "success");
                     }
-                    // 3. Jika File adalah AUDIO
+                    // 3. Apabila Input adalah File Audio
                     else if (file.type.startsWith('audio/')) {
                         videoPlayerNode.src = fileUrl;
                         timeline.addClip('a1', file.name, 30);
                         player.togglePlay();
-                        showToast(`Memutar Audio: ${file.name}`, "success");
+                        showToast(`Audio dimuat: ${file.name}`, "success");
                     }
 
-                    // Tambahkan ke daftar pustaka media sidebar
+                    // Tambahkan item ke list pustaka media
                     const grid = document.getElementById('assetGrid');
                     const item = document.createElement('div');
                     item.className = 'asset-item';
@@ -1073,13 +1059,9 @@
                 });
             }
 
-            // Text Add Actions
-            document.getElementById('btnAddTextMain').addEventListener('click', () => editor.addText('Judul Utama Pro', 48));
-            document.getElementById('btnAddTextSub').addEventListener('click', () => editor.addText('Subtitle / Keterangan', 28));
-
-            // Controls Bindings
-            document.getElementById('btnUndo').addEventListener('click', () => editor.undo());
-            document.getElementById('btnRedo').addEventListener('click', () => editor.redo());
+            // Actions Bindings
+            document.getElementById('btnAddTextMain').addEventListener('click', () => editor.addText('Judul Utama', 40));
+            document.getElementById('btnAddTextSub').addEventListener('click', () => editor.addText('Subtitle Teks', 24));
             document.getElementById('btnDelete').addEventListener('click', () => timeline.deleteSelectedClip());
             document.getElementById('btnFilterGrayscale').addEventListener('click', () => editor.applyGrayscale());
 
