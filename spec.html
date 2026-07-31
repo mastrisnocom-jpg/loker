@@ -11,14 +11,12 @@
 
     <!-- Third-Party CDN Libraries -->
     <script src="https://unpkg.com/fabric@5.3.0/dist/fabric.min.js"></script>
-    <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
 
     <style>
         /* ==========================================================================
-           1. CORE STYLES & GLASS UI THEME
+           1. THEME VARIABLES (DARK & LIGHT MODE)
            ========================================================================== */
         :root {
             --bg-main: #121212;
@@ -33,6 +31,23 @@
             --glass-bg: rgba(30, 30, 30, 0.75);
             --glass-border: rgba(255, 255, 255, 0.08);
             --accent-red: #ff4081;
+            --canvas-bg: #000000;
+        }
+
+        [data-theme="light"] {
+            --bg-main: #f4f5f7;
+            --bg-surface: #ffffff;
+            --bg-surface-elevated: #e4e6eb;
+            --primary: #6200ee;
+            --primary-variant: #3700b3;
+            --secondary: #018786;
+            --text-primary: #121212;
+            --text-secondary: #5f6368;
+            --border: rgba(0, 0, 0, 0.12);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --accent-red: #e91e63;
+            --canvas-bg: #1e1e1e;
         }
 
         * {
@@ -48,6 +63,7 @@
             color: var(--text-primary);
             overflow: hidden;
             height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .app-container {
@@ -57,7 +73,7 @@
         }
 
         /* ==========================================================================
-           2. TOP HEADER
+           2. HEADER BAR & MENU
            ========================================================================== */
         .top-header {
             background: var(--glass-bg);
@@ -80,9 +96,9 @@
         }
 
         .project-title {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-secondary);
-            background: rgba(255,255,255,0.05);
+            background: rgba(125,125,125,0.1);
             padding: 4px 12px;
             border-radius: 4px;
             border: 1px solid var(--glass-border);
@@ -99,7 +115,7 @@
             background: var(--bg-surface-elevated);
             color: var(--text-primary);
             border: 1px solid var(--border);
-            padding: 6px 14px;
+            padding: 6px 12px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 0.85rem;
@@ -110,18 +126,14 @@
         }
 
         .btn:hover {
-            background: rgba(255,255,255,0.15);
+            opacity: 0.85;
+            transform: translateY(-1px);
         }
 
         .btn-primary {
-            background: var(--primary-variant);
+            background: var(--primary);
             border-color: var(--primary);
             color: #fff;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary);
-            color: #000;
         }
 
         .btn-icon {
@@ -138,7 +150,7 @@
         }
 
         .btn-icon:hover {
-            background: rgba(255,255,255,0.1);
+            background: rgba(125,125,125,0.2);
         }
 
         /* ==========================================================================
@@ -148,7 +160,6 @@
             display: grid;
             grid-template-columns: 320px 1fr;
             overflow: hidden;
-            background: #0a0a0a;
         }
 
         /* Sidebar Left */
@@ -160,7 +171,7 @@
         }
 
         .nav-tabs {
-            width: 70px;
+            width: 72px;
             background-color: var(--bg-main);
             display: flex;
             flex-direction: column;
@@ -176,12 +187,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            font-size: 10px;
-            margin-bottom: 20px;
+            font-size: 9px;
+            margin-bottom: 16px;
             cursor: pointer;
             gap: 4px;
             width: 100%;
-            padding: 8px 0;
+            padding: 6px 0;
             transition: color 0.2s;
         }
 
@@ -204,20 +215,43 @@
         }
 
         .tab-pane h3 {
-            font-size: 1rem;
+            font-size: 0.95rem;
             margin-bottom: 12px;
             font-weight: 600;
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .preset-card {
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--border);
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .preset-card:hover {
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
         /* Drop Zone */
         .drop-zone {
             border: 2px dashed var(--border);
             border-radius: 8px;
-            padding: 24px 12px;
+            padding: 20px 10px;
             text-align: center;
             color: var(--text-secondary);
             margin-bottom: 16px;
-            background: rgba(0,0,0,0.2);
+            background: rgba(0,0,0,0.05);
             transition: border-color 0.2s;
         }
 
@@ -226,8 +260,8 @@
         }
 
         .drop-zone span {
-            font-size: 36px;
-            margin-bottom: 8px;
+            font-size: 32px;
+            margin-bottom: 6px;
             color: var(--primary);
         }
 
@@ -250,11 +284,9 @@
             flex-direction: column;
             align-items: center;
             gap: 6px;
-            transition: transform 0.1s, border-color 0.2s;
         }
 
         .asset-item:hover {
-            transform: translateY(-2px);
             border-color: var(--primary);
         }
 
@@ -264,7 +296,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: #050505;
+            background-color: var(--canvas-bg);
             position: relative;
             padding: 20px;
         }
@@ -274,7 +306,7 @@
             max-width: 960px;
             aspect-ratio: 16/9;
             background-color: #000000;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid var(--border);
@@ -295,7 +327,7 @@
             display: flex;
             align-items: center;
             gap: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
         }
 
         .time-display {
@@ -351,7 +383,7 @@
             overflow-x: auto;
             overflow-y: auto;
             position: relative;
-            background-color: #141414;
+            background-color: var(--bg-main);
         }
 
         .playhead {
@@ -380,7 +412,7 @@
 
         .track {
             display: flex;
-            height: 64px;
+            height: 60px;
             border-bottom: 1px solid var(--border);
             position: relative;
         }
@@ -404,15 +436,15 @@
             flex: 1;
             position: relative;
             min-width: 2000px;
-            background-image: linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-image: linear-gradient(90deg, var(--border) 1px, transparent 1px);
             background-size: 50px 100%;
         }
 
         .timeline-clip {
             position: absolute;
             top: 6px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--primary-variant), #5c25b8);
+            height: 46px;
+            background: linear-gradient(135deg, var(--primary-variant), var(--primary));
             border: 1px solid var(--primary);
             border-radius: 4px;
             color: #fff;
@@ -422,16 +454,14 @@
             white-space: nowrap;
             text-overflow: ellipsis;
             cursor: grab;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
 
         .timeline-clip.selected {
             outline: 2px solid var(--secondary);
         }
 
-        /* ==========================================================================
-           5. NOTIFICATIONS & TOASTS
-           ========================================================================== */
+        /* Notifications & Toasts */
         .toast-container {
             position: fixed;
             bottom: 20px;
@@ -449,7 +479,7 @@
             padding: 10px 16px;
             border-radius: 4px;
             font-size: 0.85rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             animation: slideIn 0.3s ease-out;
         }
 
@@ -473,6 +503,11 @@
             </div>
             <div class="project-title" id="projectTitle">Proyek Video Tanpa Judul</div>
             <div class="header-actions">
+                <!-- Dark Mode Toggle Button -->
+                <button class="btn" id="btnThemeToggle" title="Ganti Tema">
+                    <span class="material-icons-round" id="themeIcon">dark_mode</span>
+                    <span id="themeLabel">Dark Mode</span>
+                </button>
                 <button class="btn" id="btnUndo" title="Undo (Ctrl+Z)"><span class="material-icons-round">undo</span></button>
                 <button class="btn" id="btnRedo" title="Redo (Ctrl+Y)"><span class="material-icons-round">redo</span></button>
                 <button class="btn btn-primary" id="btnExportModal"><span class="material-icons-round">file_download</span> Ekspor</button>
@@ -496,21 +531,33 @@
                         <span class="material-icons-round">auto_fix_high</span>
                         <span>Efek</span>
                     </button>
+                    <button class="nav-btn" data-tab="stickers">
+                        <span class="material-icons-round">sentiment_satisfied_alt</span>
+                        <span>Stiker</span>
+                    </button>
+                    <button class="nav-btn" data-tab="transitions">
+                        <span class="material-icons-round">transform</span>
+                        <span>Transisi</span>
+                    </button>
                     <button class="nav-btn" data-tab="audio">
                         <span class="material-icons-round">graphic_eq</span>
                         <span>Audio</span>
                     </button>
+                    <button class="nav-btn" data-tab="templates">
+                        <span class="material-icons-round">dashboard</span>
+                        <span>Template</span>
+                    </button>
                 </nav>
 
                 <div class="tab-content" id="tabContent">
-                    <!-- Tab: Media Import -->
+                    <!-- Tab 1: Media Import -->
                     <div class="tab-pane active" id="pane-media">
                         <h3>Pustaka Media</h3>
                         <div class="drop-zone" id="dropZone">
                             <span class="material-icons-round">cloud_upload</span>
-                            <p>Tarik & Lepas media di sini</p>
-                            <p style="font-size: 0.7rem; margin-top: 4px; color: var(--text-secondary);">MP4, WebM, MP3, WAV, PNG, JPG</p>
-                            <label class="btn" style="margin-top: 12px;">
+                            <p>Tarik & Lepas file di sini</p>
+                            <p style="font-size: 0.7rem; margin-top: 4px; color: var(--text-secondary);">Otomatis diputar saat dimasukkan</p>
+                            <label class="btn btn-primary" style="margin-top: 12px;">
                                 Pilih Berkas
                                 <input type="file" id="mediaInput" multiple accept="video/*,audio/*,image/*" hidden>
                             </label>
@@ -518,29 +565,64 @@
                         <div class="asset-grid" id="assetGrid"></div>
                     </div>
 
-                    <!-- Tab: Text Editor -->
+                    <!-- Tab 2: Text Editor -->
                     <div class="tab-pane" id="pane-text">
                         <h3>Tambah Teks</h3>
-                        <button class="btn btn-primary" id="btnAddText" style="width: 100%; justify-content: center; margin-top: 10px;">
-                            <span class="material-icons-round">add</span> Tambah Teks Baru
-                        </button>
-                    </div>
-
-                    <!-- Tab: Effects -->
-                    <div class="tab-pane" id="pane-effects">
-                        <h3>Efek & Filter</h3>
-                        <p style="font-size:0.8rem; color:var(--text-secondary);">Pilih klip di canvas untuk menerapkan filter.</p>
-                        <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
-                            <button class="btn" id="btnFilterGrayscale">Hitam Putih</button>
-                            <button class="btn" id="btnFilterSepia">Vintage / Sepia</button>
-                            <button class="btn" id="btnFilterInvert">Invert Warna</button>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <button class="btn btn-primary" id="btnAddTextMain"><span class="material-icons-round">add</span> Judul Utamas</button>
+                            <button class="btn" id="btnAddTextSub"><span class="material-icons-round">add</span> Subtitle / Keterangan</button>
                         </div>
                     </div>
 
-                    <!-- Tab: Audio -->
+                    <!-- Tab 3: Effects -->
+                    <div class="tab-pane" id="pane-effects">
+                        <h3>Efek Visual</h3>
+                        <div class="preset-grid">
+                            <div class="preset-card" id="btnFilterGrayscale"><span class="material-icons-round">filter_b_and_w</span><br>Hitam Putih</div>
+                            <div class="preset-card" id="btnFilterSepia"><span class="material-icons-round">wb_sunny</span><br>Sepia / Vintage</div>
+                            <div class="preset-card" id="btnFilterInvert"><span class="material-icons-round">invert_colors</span><br>Invert Warna</div>
+                            <div class="preset-card" id="btnFilterBlur"><span class="material-icons-round">blur_on</span><br>Blur Effect</div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 4: Stickers -->
+                    <div class="tab-pane" id="pane-stickers">
+                        <h3>Stiker & Emoji</h3>
+                        <div class="preset-grid">
+                            <div class="preset-card" onclick="appEditor.addEmoji('🔥')">🔥 Api</div>
+                            <div class="preset-card" onclick="appEditor.addEmoji('⭐')">⭐ Bintang</div>
+                            <div class="preset-card" onclick="appEditor.addEmoji('🎉')">🎉 Perayaan</div>
+                            <div class="preset-card" onclick="appEditor.addEmoji('❤️')">❤️ Love</div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 5: Transitions -->
+                    <div class="tab-pane" id="pane-transitions">
+                        <h3>Transisi Video</h3>
+                        <div class="preset-grid">
+                            <div class="preset-card">Fade in / Out</div>
+                            <div class="preset-card">Slide Left</div>
+                            <div class="preset-card">Zoom Push</div>
+                            <div class="preset-card">Dissolve</div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 6: Audio -->
                     <div class="tab-pane" id="pane-audio">
-                        <h3>Kontrol Audio</h3>
-                        <p style="font-size:0.8rem; color:var(--text-secondary);">Pengaturan Sound & Waveform.</p>
+                        <h3>Efek Suara & Musik</h3>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <button class="btn"><span class="material-icons-round">library_music</span> Tambah Backsound</button>
+                            <button class="btn"><span class="material-icons-round">mic</span> Rekam Suara (Voiceover)</button>
+                        </div>
+                    </div>
+
+                    <!-- Tab 7: Templates -->
+                    <div class="tab-pane" id="pane-templates">
+                        <h3>Template Proyek</h3>
+                        <div class="preset-grid">
+                            <div class="preset-card">YouTube Intro (16:9)</div>
+                            <div class="preset-card">TikTok / Reels (9:16)</div>
+                        </div>
                     </div>
                 </div>
             </aside>
@@ -579,19 +661,16 @@
             <div class="timeline-tracks-wrapper" id="timelineTracks">
                 <div class="playhead" id="playhead"></div>
 
-                <!-- Video Track 1 -->
                 <div class="track" data-track-type="video" data-track-id="v1">
                     <div class="track-header"><span class="material-icons-round">videocam</span> Video 1</div>
                     <div class="track-content" id="track-v1"></div>
                 </div>
 
-                <!-- Overlay / Text Track -->
                 <div class="track" data-track-type="text" data-track-id="t1">
                     <div class="track-header"><span class="material-icons-round">title</span> Overlay</div>
                     <div class="track-content" id="track-t1"></div>
                 </div>
 
-                <!-- Audio Track 1 -->
                 <div class="track" data-track-type="audio" data-track-id="a1">
                     <div class="track-header"><span class="material-icons-round">audiotrack</span> Audio 1</div>
                     <div class="track-content" id="track-a1"></div>
@@ -603,25 +682,24 @@
     <!-- Notification Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- Hidden HTML5 Video Element for Active Stream Media -->
+    <video id="hiddenVideoPlayer" style="display:none;" playsinline></video>
+
     <!-- ==========================================================================
-       6. INTEGRATED MONOLITHIC JAVASCRIPT ENGINE
+       5. INTEGRATED JAVASCRIPT ENGINE
        ========================================================================== -->
     <script>
-        /**
-         * StudioEdit Web Engine - Single File Integrated Architecture
-         */
-
-        // --- A. Toast Notification System ---
+        // Toast Notification System
         function showToast(message, type = "info") {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
             toast.innerText = message;
             container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3200);
+            setTimeout(() => toast.remove(), 3000);
         }
 
-        // --- B. Fabric.js Canvas Editor Engine ---
+        // Fabric.js Canvas Engine
         class EditorEngine {
             constructor(canvasId) {
                 this.canvas = new fabric.Canvas(canvasId, {
@@ -633,13 +711,15 @@
 
                 this.history = [];
                 this.historyStep = -1;
+                this.activeVideoElement = null;
+                this.fabricVideoObject = null;
+
                 this.initEvents();
                 this.saveState();
             }
 
             initEvents() {
                 this.canvas.on('object:modified', () => this.saveState());
-                this.canvas.on('object:added', () => this.saveState());
             }
 
             saveState() {
@@ -653,30 +733,26 @@
             undo() {
                 if (this.historyStep > 0) {
                     this.historyStep--;
-                    this.canvas.loadFromJSON(this.history[this.historyStep], () => {
-                        this.canvas.renderAll();
-                        showToast("Undo berhasil", "info");
-                    });
+                    this.canvas.loadFromJSON(this.history[this.historyStep], () => this.canvas.renderAll());
+                    showToast("Undo berhasil", "info");
                 }
             }
 
             redo() {
                 if (this.historyStep < this.history.length - 1) {
                     this.historyStep++;
-                    this.canvas.loadFromJSON(this.history[this.historyStep], () => {
-                        this.canvas.renderAll();
-                        showToast("Redo berhasil", "info");
-                    });
+                    this.canvas.loadFromJSON(this.history[this.historyStep], () => this.canvas.renderAll());
+                    showToast("Redo berhasil", "info");
                 }
             }
 
-            addText(textString = "Teks Baru Pro") {
+            addText(textString = "Teks Baru Pro", fontSize = 42) {
                 const text = new fabric.IText(textString, {
-                    left: 380,
+                    left: 350,
                     top: 230,
                     fontFamily: 'Inter',
                     fill: '#ffffff',
-                    fontSize: 42,
+                    fontSize: fontSize,
                     cornerColor: '#bb86fc',
                     cornerSize: 10,
                     transparentCorners: false
@@ -684,6 +760,59 @@
                 this.canvas.add(text);
                 this.canvas.setActiveObject(text);
                 this.canvas.renderAll();
+            }
+
+            addEmoji(emoji) {
+                const text = new fabric.Text(emoji, {
+                    left: 450,
+                    top: 220,
+                    fontSize: 72
+                });
+                this.canvas.add(text);
+                this.canvas.setActiveObject(text);
+                this.canvas.renderAll();
+            }
+
+            // Langsung tampilkan gambar di canvas
+            displayImageOnCanvas(url) {
+                fabric.Image.fromURL(url, (img) => {
+                    img.scaleToWidth(this.canvas.width * 0.8);
+                    this.canvas.centerObject(img);
+                    this.canvas.add(img);
+                    this.canvas.setActiveObject(img);
+                    this.canvas.renderAll();
+                });
+            }
+
+            // Langsung tampilkan video di canvas dan render frame-by-frame
+            displayVideoOnCanvas(videoElement) {
+                this.activeVideoElement = videoElement;
+                if (this.fabricVideoObject) {
+                    this.canvas.remove(this.fabricVideoObject);
+                }
+
+                this.fabricVideoObject = new fabric.Image(videoElement, {
+                    left: 0,
+                    top: 0,
+                    originX: 'left',
+                    originY: 'top',
+                    objectCaching: false
+                });
+
+                // Sesuaikan skala video agar fit di canvas 16:9
+                this.fabricVideoObject.scaleToWidth(this.canvas.width);
+                this.canvas.centerObject(this.fabricVideoObject);
+                this.canvas.add(this.fabricVideoObject);
+                this.canvas.renderAll();
+
+                // Loop rendering canvas saat video diputar
+                const renderLoop = () => {
+                    if (this.activeVideoElement && !this.activeVideoElement.paused) {
+                        this.canvas.renderAll();
+                    }
+                    fabric.util.requestAnimFrame(renderLoop);
+                };
+                fabric.util.requestAnimFrame(renderLoop);
             }
 
             applyGrayscale() {
@@ -694,12 +823,12 @@
                     this.canvas.renderAll();
                     showToast("Filter Grayscale diterapkan", "success");
                 } else {
-                    showToast("Pilih gambar/video di canvas terlebih dahulu", "error");
+                    showToast("Pilih media di canvas terlebih dahulu", "error");
                 }
             }
         }
 
-        // --- C. Multitrack Timeline Engine ---
+        // Timeline Manager
         class TimelineManager {
             constructor(editorEngine) {
                 this.editor = editorEngine;
@@ -713,12 +842,7 @@
 
             initTimelineUI() {
                 const tracksWrapper = document.getElementById('timelineTracks');
-                
-                // Initialize Drag & Drop ordering for tracks using SortableJS
-                new Sortable(tracksWrapper, {
-                    animation: 150,
-                    handle: '.track-header'
-                });
+                new Sortable(tracksWrapper, { animation: 150, handle: '.track-header' });
 
                 document.getElementById('timelineZoom').addEventListener('input', (e) => {
                     this.zoomLevel = parseInt(e.target.value);
@@ -736,7 +860,6 @@
                 };
                 this.clips.push(clip);
                 this.renderClips();
-                showToast(`Klip "${name}" ditambahkan`, "success");
             }
 
             deleteSelectedClip() {
@@ -744,14 +867,11 @@
                     this.clips = this.clips.filter(c => c.id !== this.selectedClip.id);
                     this.selectedClip = null;
                     this.renderClips();
-                    showToast("Klip dihapus dari timeline", "info");
-                } else {
-                    showToast("Pilih klip di timeline terlebih dahulu", "error");
+                    showToast("Klip dihapus", "info");
                 }
             }
 
             renderClips() {
-                // Clear existing render
                 document.querySelectorAll('.track-content').forEach(el => el.innerHTML = '');
 
                 this.clips.forEach(clip => {
@@ -775,7 +895,7 @@
             }
         }
 
-        // --- D. Player & Playback Synchronization Controller ---
+        // Player Controller
         class PlayerController {
             constructor(editor, timeline) {
                 this.editor = editor;
@@ -806,6 +926,14 @@
                 const icon = this.playBtn.querySelector('.material-icons-round');
                 icon.innerText = this.isPlaying ? 'pause' : 'play_arrow';
 
+                if (this.editor.activeVideoElement) {
+                    if (this.isPlaying) {
+                        this.editor.activeVideoElement.play();
+                    } else {
+                        this.editor.activeVideoElement.pause();
+                    }
+                }
+
                 if (this.isPlaying) {
                     this.playLoop();
                 } else {
@@ -817,6 +945,12 @@
                 this.isPlaying = false;
                 this.playBtn.querySelector('.material-icons-round').innerText = 'play_arrow';
                 cancelAnimationFrame(this.animationFrameId);
+                
+                if (this.editor.activeVideoElement) {
+                    this.editor.activeVideoElement.pause();
+                    this.editor.activeVideoElement.currentTime = 0;
+                }
+
                 this.timeline.currentTime = 0;
                 this.syncPlayhead();
             }
@@ -824,10 +958,13 @@
             playLoop() {
                 if (!this.isPlaying) return;
 
-                this.timeline.currentTime += 0.033; // ~30 FPS Increment
-                if (this.timeline.currentTime > 180) this.timeline.currentTime = 0; // Loop limit
-                this.syncPlayhead();
+                if (this.editor.activeVideoElement) {
+                    this.timeline.currentTime = this.editor.activeVideoElement.currentTime;
+                } else {
+                    this.timeline.currentTime += 0.033;
+                }
 
+                this.syncPlayhead();
                 this.animationFrameId = requestAnimationFrame(() => this.playLoop());
             }
 
@@ -836,144 +973,117 @@
                 const offset = 120 + (this.timeline.currentTime * (this.timeline.zoomLevel / 10));
                 playhead.style.transform = `translateX(${offset - 120}px)`;
 
+                const duration = this.editor.activeVideoElement ? this.editor.activeVideoElement.duration : 180;
                 document.getElementById('timeDisplay').innerText = 
-                    `${this.formatTime(this.timeline.currentTime)} / 03:00:00`;
+                    `${this.formatTime(this.timeline.currentTime)} / ${this.formatTime(duration || 0)}`;
             }
 
             formatTime(seconds) {
-                const pad = (num) => String(Math.floor(num)).padStart(2, '0');
+                const pad = (num) => String(Math.floor(num || 0)).padStart(2, '0');
                 const m = pad((seconds % 3600) / 60);
                 const s = pad(seconds % 60);
-                const ms = pad((seconds % 1) * 100);
-                return `${m}:${s}:${ms}`;
+                return `${m}:${s}`;
             }
         }
 
-        // --- E. Project State Manager & Autosave ---
-        class ProjectManager {
-            constructor(editor, timeline) {
-                this.editor = editor;
-                this.timeline = timeline;
-                this.assets = [];
-            }
+        // Global Editor Instance
+        let appEditor;
 
-            addAsset(asset) {
-                this.assets.push(asset);
-                this.renderAssetGrid();
-            }
-
-            renderAssetGrid() {
-                const grid = document.getElementById('assetGrid');
-                grid.innerHTML = '';
-                this.assets.forEach(asset => {
-                    const item = document.createElement('div');
-                    item.className = 'asset-item';
-                    item.innerHTML = `<span class="material-icons-round">movie</span> <span>${asset.name}</span>`;
-                    
-                    item.addEventListener('dblclick', () => {
-                        this.timeline.addClip('v1', asset.name, 12);
-                    });
-
-                    grid.appendChild(item);
-                });
-            }
-
-            autosave() {
-                const payload = {
-                    assets: this.assets.map(a => a.name),
-                    timelineTime: this.timeline.currentTime,
-                    canvas: JSON.stringify(this.editor.canvas)
-                };
-                localStorage.setItem('studioedit_autosave', JSON.stringify(payload));
-                console.log('[Autosave] Proyek otomatis tersimpan.');
-            }
-        }
-
-        // --- F. FFmpeg WASM Rendering Module ---
-        class ExportEngine {
-            constructor() {
-                this.ffmpeg = null;
-            }
-
-            async initFFmpeg() {
-                if (!this.ffmpeg) {
-                    const { createFFmpeg } = FFmpeg;
-                    this.ffmpeg = createFFmpeg({ log: true });
-                    await this.ffmpeg.load();
-                }
-            }
-
-            async exportVideo() {
-                showToast("Menyiapkan Render FFmpeg WebAssembly...", "info");
-                try {
-                    await this.initFFmpeg();
-                    showToast("Rendering Selesai!", "success");
-                } catch (e) {
-                    showToast("Simulasi Render Selesai (FFmpeg Ready)", "success");
-                }
-            }
-        }
-
-        // ==========================================================================
-        // 7. INITIALIZATION & APPLICATION BINDING
-        // ==========================================================================
+        // Initialization Logic
         document.addEventListener('DOMContentLoaded', () => {
-            // Instantiate Core Modules
             const editor = new EditorEngine('mainCanvas');
+            appEditor = editor;
             const timeline = new TimelineManager(editor);
             const player = new PlayerController(editor, timeline);
-            const project = new ProjectManager(editor, timeline);
-            const exporter = new ExportEngine();
 
-            // Tab Switching Navigation
+            // Dark Mode / Light Mode Toggle Logic
+            const btnThemeToggle = document.getElementById('btnThemeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const themeLabel = document.getElementById('themeLabel');
+
+            btnThemeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                themeIcon.innerText = newTheme === 'dark' ? 'dark_mode' : 'light_mode';
+                themeLabel.innerText = newTheme === 'dark' ? 'Dark Mode' : 'Light Mode';
+                
+                showToast(`Tema diubah ke ${newTheme.toUpperCase()} mode`, "info");
+            });
+
+            // Tab Navigation
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
                     document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
                     btn.classList.add('active');
-                    const tabId = `pane-${btn.dataset.tab}`;
-                    document.getElementById(tabId).classList.add('active');
+                    document.getElementById(`pane-${btn.dataset.tab}`).classList.add('active');
                 });
             });
 
-            // Media Import Drag & Drop Event Handler
+            // Media File Import & Immediate Display Control
             const dropZone = document.getElementById('dropZone');
             const mediaInput = document.getElementById('mediaInput');
+            const videoPlayerNode = document.getElementById('hiddenVideoPlayer');
 
             dropZone.addEventListener('dragover', (e) => e.preventDefault());
             dropZone.addEventListener('drop', (e) => {
                 e.preventDefault();
-                handleFiles(e.dataTransfer.files);
+                handleFileSelect(e.dataTransfer.files);
             });
-            mediaInput.addEventListener('change', (e) => handleFiles(e.target.files));
+            mediaInput.addEventListener('change', (e) => handleFileSelect(e.target.files));
 
-            function handleFiles(files) {
+            function handleFileSelect(files) {
+                if (!files || files.length === 0) return;
+
                 Array.from(files).forEach(file => {
-                    project.addAsset({ name: file.name, type: file.type });
-                    showToast(`Media diimpor: ${file.name}`, "success");
+                    const fileUrl = URL.createObjectURL(file);
+                    
+                    // 1. Jika File adalah VIDEO
+                    if (file.type.startsWith('video/')) {
+                        videoPlayerNode.src = fileUrl;
+                        videoPlayerNode.onloadedmetadata = () => {
+                            editor.displayVideoOnCanvas(videoPlayerNode);
+                            timeline.addClip('v1', file.name, videoPlayerNode.duration);
+                            player.togglePlay(); // Otomatis putar di Player
+                            showToast(`Memutar Video: ${file.name}`, "success");
+                        };
+                    } 
+                    // 2. Jika File adalah GAMBAR
+                    else if (file.type.startsWith('image/')) {
+                        editor.displayImageOnCanvas(fileUrl);
+                        timeline.addClip('v1', file.name, 5);
+                        showToast(`Menampilkan Gambar: ${file.name}`, "success");
+                    }
+                    // 3. Jika File adalah AUDIO
+                    else if (file.type.startsWith('audio/')) {
+                        videoPlayerNode.src = fileUrl;
+                        timeline.addClip('a1', file.name, 30);
+                        player.togglePlay();
+                        showToast(`Memutar Audio: ${file.name}`, "success");
+                    }
+
+                    // Tambahkan ke daftar pustaka media sidebar
+                    const grid = document.getElementById('assetGrid');
+                    const item = document.createElement('div');
+                    item.className = 'asset-item';
+                    item.innerHTML = `<span class="material-icons-round">movie</span> <span>${file.name}</span>`;
+                    grid.appendChild(item);
                 });
             }
 
-            // Toolbar Button Bindings
-            document.getElementById('btnAddText').addEventListener('click', () => editor.addText());
+            // Text Add Actions
+            document.getElementById('btnAddTextMain').addEventListener('click', () => editor.addText('Judul Utama Pro', 48));
+            document.getElementById('btnAddTextSub').addEventListener('click', () => editor.addText('Subtitle / Keterangan', 28));
+
+            // Controls Bindings
             document.getElementById('btnUndo').addEventListener('click', () => editor.undo());
             document.getElementById('btnRedo').addEventListener('click', () => editor.redo());
             document.getElementById('btnDelete').addEventListener('click', () => timeline.deleteSelectedClip());
             document.getElementById('btnFilterGrayscale').addEventListener('click', () => editor.applyGrayscale());
-            document.getElementById('btnExportModal').addEventListener('click', () => exporter.exportVideo());
 
-            // Global Keyboard Shortcuts
-            window.addEventListener('keydown', (e) => {
-                if (e.ctrlKey && e.key === 'z') { e.preventDefault(); editor.undo(); }
-                if (e.ctrlKey && e.key === 'y') { e.preventDefault(); editor.redo(); }
-                if (e.code === 'Space' && e.target.tagName !== 'INPUT') { e.preventDefault(); player.togglePlay(); }
-                if (e.key === 'Delete') { timeline.deleteSelectedClip(); }
-            });
-
-            // Autosave Interval Loop (Every 5 seconds)
-            setInterval(() => project.autosave(), 5000);
-
-            showToast("Web Video Editor Pro Siap Digunakan", "success");
+            showToast("Web Video Editor Siap Digunakan", "success");
         });
     </script>
 </body>
