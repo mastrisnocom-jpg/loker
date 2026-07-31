@@ -1,803 +1,476 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="dark">
+<html lang="id" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Video Editor Pro - Persistent Storage Engine</title>
+    <title>Al-Qur'anul Karim — Premium Digital</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            950: '#022c22',
+                            900: '#064e3b',
+                            800: '#065f46',
+                            500: '#10b981',
+                            400: '#34d399',
+                        },
+                        gold: {
+                            400: '#facc15',
+                            500: '#eab308',
+                            600: '#ca8a04',
+                        },
+                        darkBg: '#090d16',
+                        darkCard: '#111827',
+                    }
+                }
+            }
+        }
+    </script>
 
-    <!-- Google Fonts & Material Design Icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700&family=Poppins:wght@500;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-
-    <!-- Third-Party CDN Libraries -->
-    <script src="https://unpkg.com/fabric@5.3.0/dist/fabric.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Scheherazade+New:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-            --bg-main: #121212;
-            --bg-surface: #1e1e1e;
-            --bg-surface-elevated: #2d2d2d;
-            --primary: #bb86fc;
-            --primary-variant: #3700b3;
-            --secondary: #03dac6;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --border: rgba(255, 255, 255, 0.12);
-            --glass-bg: rgba(30, 30, 30, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --accent-red: #ff4081;
-            --canvas-bg: #050505;
-        }
-
-        [data-theme="light"] {
-            --bg-main: #f4f5f7;
-            --bg-surface: #ffffff;
-            --bg-surface-elevated: #e4e6eb;
-            --primary: #6200ee;
-            --primary-variant: #3700b3;
-            --secondary: #018786;
-            --text-primary: #121212;
-            --text-secondary: #5f6368;
-            --border: rgba(0, 0, 0, 0.12);
-            --glass-bg: rgba(255, 255, 255, 0.9);
-            --glass-border: rgba(0, 0, 0, 0.08);
-            --accent-red: #e91e63;
-            --canvas-bg: #e0e0e0;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-primary);
-            overflow: hidden;
-            height: 100vh;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
-
-        .app-container {
-            display: grid;
-            grid-template-rows: 50px 1fr 280px;
-            height: 100vh;
+        .font-arabic {
+            font-family: 'Scheherazade New', serif;
+            line-height: 2.3;
         }
-
-        /* HEADER */
-        .top-header {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            z-index: 100;
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
         }
-
-        .brand {
-            display: flex; align-items: center; gap: 8px;
-            font-weight: 700; color: var(--primary); font-size: 1.1rem;
+        ::-webkit-scrollbar-track {
+            background: transparent;
         }
-
-        .header-actions { display: flex; gap: 8px; align-items: center; }
-
-        .aspect-select-wrapper {
-            display: flex; align-items: center; gap: 6px;
-            background: var(--bg-surface-elevated); padding: 4px 10px;
-            border-radius: 6px; border: 1px solid var(--border); font-size: 0.8rem;
+        ::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 10px;
         }
-
-        .aspect-select-wrapper select {
-            background: transparent; color: var(--text-primary);
-            border: none; outline: none; font-size: 0.8rem; cursor: pointer;
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(16, 185, 129, 0.5);
         }
-
-        .btn {
-            background: var(--bg-surface-elevated); color: var(--text-primary);
-            border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px;
-            cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;
-            transition: all 0.2s;
-        }
-
-        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
-        .btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
-
-        .btn-icon {
-            background: none; border: none; color: var(--text-primary);
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            padding: 6px; border-radius: 50%;
-        }
-        .btn-icon:hover { background: rgba(125,125,125,0.2); }
-
-        /* WORKSPACE */
-        .workspace { display: grid; grid-template-columns: 320px 1fr; overflow: hidden; }
-
-        .sidebar-left {
-            background-color: var(--bg-surface); border-right: 1px solid var(--border);
-            display: flex; overflow: hidden;
-        }
-
-        .nav-tabs {
-            width: 72px; background-color: var(--bg-main); display: flex;
-            flex-direction: column; align-items: center; padding-top: 12px;
-            border-right: 1px solid var(--border);
-        }
-
-        .nav-btn {
-            background: none; border: none; color: var(--text-secondary);
-            display: flex; flex-direction: column; align-items: center;
-            font-size: 9px; margin-bottom: 16px; cursor: pointer; gap: 4px; width: 100%;
-        }
-
-        .nav-btn.active, .nav-btn:hover { color: var(--primary); }
-
-        .tab-content { flex: 1; overflow-y: auto; padding: 16px; }
-        .tab-pane { display: none; }
-        .tab-pane.active { display: block; }
-        .tab-pane h3 { font-size: 0.95rem; margin-bottom: 12px; font-weight: 600; }
-
-        .drop-zone {
-            border: 2px dashed var(--border); border-radius: 8px; padding: 20px 12px;
-            text-align: center; color: var(--text-secondary); background: rgba(0,0,0,0.05);
-        }
-
-        .asset-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px; }
-
-        .asset-item {
-            background: var(--bg-surface-elevated); border: 1px solid var(--border);
-            border-radius: 6px; padding: 8px; font-size: 0.75rem; display: flex;
-            flex-direction: column; align-items: center; gap: 6px; cursor: pointer;
-            word-break: break-all; text-align: center;
-        }
-
-        .preset-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; }
-        .preset-card {
-            background: var(--bg-surface-elevated); border: 1px solid var(--border);
-            padding: 10px; border-radius: 6px; text-align: center; font-size: 0.75rem;
-            cursor: pointer; transition: all 0.2s;
-        }
-        .preset-card:hover { border-color: var(--primary); color: var(--primary); }
-
-        .input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-        .input-group label { font-size: 0.75rem; color: var(--text-secondary); }
-        .input-group select, .input-group input {
-            background: var(--bg-surface-elevated); color: var(--text-primary);
-            border: 1px solid var(--border); padding: 8px; border-radius: 4px; outline: none;
-        }
-
-        /* PREVIEW AREA */
-        .preview-area {
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background-color: var(--canvas-bg); position: relative; padding: 20px; overflow: hidden;
-        }
-
-        .player-container {
-            position: relative; background-color: #000;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.7); border-radius: 8px;
-            overflow: hidden; border: 1px solid var(--border); display: flex;
-            align-items: center; justify-content: center;
-        }
-
-        #activeVideo {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: contain; z-index: 1; background: #000;
-        }
-
-        .canvas-container { position: absolute !important; top: 0; left: 0; z-index: 2 !important; }
-
-        .canvas-placeholder {
-            position: absolute; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; color: var(--text-secondary);
-            font-size: 0.85rem; pointer-events: none; gap: 8px; z-index: 3;
-        }
-
-        .playback-controls {
-            position: absolute; bottom: 20px; background: var(--glass-bg);
-            backdrop-filter: blur(12px); border: 1px solid var(--glass-border);
-            padding: 6px 20px; border-radius: 30px; display: flex;
-            align-items: center; gap: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 50;
-        }
-
-        .time-display { font-family: monospace; font-size: 0.85rem; color: var(--text-primary); }
-
-        /* TIMELINE */
-        .timeline-container {
-            background-color: var(--bg-surface); border-top: 1px solid var(--border);
-            display: flex; flex-direction: column; overflow: hidden;
-        }
-
-        .timeline-toolbar {
-            height: 40px; border-bottom: 1px solid var(--border);
-            background: var(--bg-main); display: flex; align-items: center;
-            padding: 0 16px; justify-content: space-between;
-        }
-
-        .zoom-slider { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-secondary); }
-
-        .timeline-tracks-wrapper { flex: 1; overflow-x: auto; overflow-y: auto; position: relative; background-color: var(--bg-main); }
-
-        .playhead {
-            position: absolute; top: 0; bottom: 0; left: 120px; width: 2px;
-            background-color: var(--accent-red); z-index: 99; pointer-events: none;
-        }
-
-        .track { display: flex; height: 50px; border-bottom: 1px solid var(--border); position: relative; }
-
-        .track-header {
-            width: 120px; min-width: 120px; background-color: var(--bg-surface-elevated);
-            display: flex; align-items: center; padding: 0 10px; gap: 6px;
-            font-size: 0.75rem; z-index: 10; border-right: 1px solid var(--border);
-        }
-
-        .track-content {
-            flex: 1; position: relative; min-width: 2000px;
-            background-image: linear-gradient(90deg, var(--border) 1px, transparent 1px);
-            background-size: 50px 100%;
-        }
-
-        .timeline-clip {
-            position: absolute; top: 4px; height: 40px;
-            background: linear-gradient(135deg, var(--primary-variant), var(--primary));
-            border: 1px solid var(--primary); border-radius: 4px; color: #fff;
-            font-size: 0.75rem; padding: 4px 8px; overflow: hidden; cursor: grab;
-        }
-
-        /* EXPORT MODAL DIALOG */
-        .modal-overlay {
-            position: fixed; top:0; left:0; right:0; bottom:0;
-            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
-            display: none; align-items: center; justify-content: center; z-index: 999;
-        }
-
-        .modal-card {
-            background: var(--bg-surface); border: 1px solid var(--border);
-            border-radius: 12px; width: 440px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .modal-header h3 { font-size: 1.1rem; color: var(--text-primary); }
-
-        .progress-bar-container {
-            width: 100%; background: var(--bg-surface-elevated); height: 10px;
-            border-radius: 5px; overflow: hidden; margin-top: 12px; margin-bottom: 8px;
-        }
-
-        .progress-bar-fill { height: 100%; width: 0%; background: var(--primary); transition: width 0.2s; }
-
-        .toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 999; }
-        .toast { background: var(--bg-surface-elevated); color: var(--text-primary); border-left: 4px solid var(--primary); padding: 10px 16px; border-radius: 4px; font-size: 0.85rem; }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 dark:bg-darkBg dark:text-slate-100 transition-colors duration-300 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white">
 
-    <div class="app-container">
-        <!-- HEADER -->
-        <header class="top-header">
-            <div class="brand">
-                <span class="material-icons-round">video_settings</span>
-                <span>StudioEdit Web</span>
-            </div>
+    <!-- Ambient Background Lighting (Glow Effect) -->
+    <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-emerald-500/10 via-teal-500/5 to-transparent pointer-events-none blur-3xl -z-10"></div>
 
-            <div class="aspect-select-wrapper">
-                <span class="material-icons-round" style="font-size: 18px;">aspect_ratio</span>
-                <label for="aspectRatioSelect">Ukuran Canvas:</label>
-                <select id="aspectRatioSelect">
-                    <option value="16:9">16:9 (Landscape - YouTube)</option>
-                    <option value="9:16">9:16 (Portrait - TikTok/Reels)</option>
-                    <option value="1:1">1:1 (Square - Instagram)</option>
-                    <option value="4:3">4:3 (Classic)</option>
-                    <option value="21:9">21:9 (Cinematic)</option>
-                </select>
-            </div>
-
-            <div class="header-actions">
-                <button class="btn" id="btnClearStorage" title="Reset Semua Proyek"><span class="material-icons-round">delete_sweep</span> Reset Proyek</button>
-                <button class="btn" id="btnThemeToggle"><span class="material-icons-round" id="themeIcon">dark_mode</span> <span id="themeLabel">Dark</span></button>
-                <button class="btn btn-primary" id="btnOpenExportModal"><span class="material-icons-round">file_download</span> Ekspor Video</button>
-            </div>
-        </header>
-
-        <!-- WORKSPACE -->
-        <main class="workspace">
-            <aside class="sidebar-left">
-                <nav class="nav-tabs">
-                    <button class="nav-btn active" data-tab="media"><span class="material-icons-round">perm_media</span><span>Media</span></button>
-                    <button class="nav-btn" data-tab="text"><span class="material-icons-round">title</span><span>Teks</span></button>
-                    <button class="nav-btn" data-tab="effects"><span class="material-icons-round">auto_fix_high</span><span>Efek</span></button>
-                    <button class="nav-btn" data-tab="stickers"><span class="material-icons-round">sentiment_satisfied_alt</span><span>Stiker</span></button>
-                    <button class="nav-btn" data-tab="transitions"><span class="material-icons-round">transform</span><span>Transisi</span></button>
-                    <button class="nav-btn" data-tab="audio"><span class="material-icons-round">graphic_eq</span><span>Audio</span></button>
-                    <button class="nav-btn" data-tab="templates"><span class="material-icons-round">dashboard</span><span>Template</span></button>
-                </nav>
-
-                <div class="tab-content">
-                    <div class="tab-pane active" id="pane-media">
-                        <h3>Pustaka Media</h3>
-                        <div class="drop-zone" id="dropZone">
-                            <span class="material-icons-round" style="font-size:36px; color:var(--primary);">cloud_upload</span>
-                            <p style="font-size:0.8rem; margin-top:6px;">Tarik & Lepas Video/Gambar di sini</p>
-                            <label class="btn btn-primary" style="margin-top: 12px;">
-                                Pilih Berkas
-                                <input type="file" id="mediaInput" multiple accept="video/*,image/*,audio/*" hidden>
-                            </label>
-                        </div>
-                        <div class="asset-grid" id="assetGrid"></div>
-                    </div>
-
-                    <div class="tab-pane" id="pane-text">
-                        <h3>Teks & Judul</h3>
-                        <div class="input-group">
-                            <label>Jenis Font:</label>
-                            <select id="textFontSelect">
-                                <option value="Inter">Inter</option>
-                                <option value="Roboto">Roboto</option>
-                                <option value="Montserrat">Montserrat</option>
-                                <option value="Poppins">Poppins</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Warna Teks:</label>
-                            <input type="color" id="textColorPicker" value="#ffffff" style="height:36px; cursor:pointer;">
-                        </div>
-                        <button class="btn btn-primary" id="btnAddTextMain" style="width:100%; margin-top:6px;"><span class="material-icons-round">add</span> Tambah Judul Teks</button>
-                    </div>
-
-                    <div class="tab-pane" id="pane-effects">
-                        <h3>Efek & Filter Warna</h3>
-                        <div class="preset-grid">
-                            <div class="preset-card" onclick="appEditor.applyFilter('grayscale')"><span class="material-icons-round">filter_b_and_w</span><br>Hitam Putih</div>
-                            <div class="preset-card" onclick="appEditor.applyFilter('sepia')"><span class="material-icons-round">wb_sunny</span><br>Sepia Warm</div>
-                            <div class="preset-card" onclick="appEditor.applyFilter('invert')"><span class="material-icons-round">invert_colors</span><br>Invert</div>
-                            <div class="preset-card" onclick="appEditor.applyFilter('reset')"><span class="material-icons-round">refresh</span><br>Reset Filter</div>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane" id="pane-stickers">
-                        <h3>Stiker & Graphics</h3>
-                        <div class="preset-grid">
-                            <div class="preset-card" onclick="appEditor.addEmoji('🔥')">🔥 Api</div>
-                            <div class="preset-card" onclick="appEditor.addEmoji('⭐')">⭐ Bintang</div>
-                            <div class="preset-card" onclick="appEditor.addEmoji('🎉')">🎉 Perayaan</div>
-                            <div class="preset-card" onclick="appEditor.addEmoji('❤️')">❤️ Love</div>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane" id="pane-transitions">
-                        <h3>Transisi Klip</h3>
-                        <div class="preset-grid">
-                            <div class="preset-card">Fade In / Out</div>
-                            <div class="preset-card">Slide Push</div>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane" id="pane-audio">
-                        <h3>Audio & Voiceover</h3>
-                        <button class="btn" style="width:100%;"><span class="material-icons-round">mic</span> Rekam Suara</button>
-                    </div>
-
-                    <div class="tab-pane" id="pane-templates">
-                        <h3>Template Proyek</h3>
-                        <div class="preset-grid">
-                            <div class="preset-card" onclick="appEditor.setAspectRatio('16:9')">YouTube (16:9)</div>
-                            <div class="preset-card" onclick="appEditor.setAspectRatio('9:16')">TikTok (9:16)</div>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- PREVIEW AREA -->
-            <section class="preview-area">
-                <div class="player-container" id="playerContainer">
-                    <div class="canvas-placeholder" id="canvasPlaceholder">
-                        <span class="material-icons-round" style="font-size:48px;">movie_filter</span>
-                        <span>Impor berkas media untuk memulai editing</span>
-                    </div>
-                    
-                    <video id="activeVideo" playsinline muted preload="auto"></video>
-                    <canvas id="overlayCanvas"></canvas>
-                </div>
-
-                <div class="playback-controls">
-                    <button class="btn-icon" id="btnStop"><span class="material-icons-round">stop</span></button>
-                    <button class="btn-icon" id="btnPlay"><span class="material-icons-round">play_arrow</span></button>
-                    <span class="time-display" id="timeDisplay">00:00 / 00:00</span>
-                </div>
-            </section>
-        </main>
-
-        <!-- TIMELINE -->
-        <footer class="timeline-container">
-            <div class="timeline-toolbar">
-                <button class="btn-icon" id="btnDelete" title="Hapus Klip Selected"><span class="material-icons-round">delete</span></button>
-                <div class="zoom-slider">
-                    <span class="material-icons-round">zoom_out</span>
-                    <input type="range" id="timelineZoom" min="10" max="200" value="100">
-                    <span class="material-icons-round">zoom_in</span>
-                </div>
-            </div>
-
-            <div class="timeline-tracks-wrapper" id="timelineTracks">
-                <div class="playhead" id="playhead"></div>
-                <div class="track" data-track-id="v1">
-                    <div class="track-header"><span class="material-icons-round">videocam</span> Video 1</div>
-                    <div class="track-content" id="track-v1"></div>
-                </div>
-                <div class="track" data-track-id="t1">
-                    <div class="track-header"><span class="material-icons-round">title</span> Overlay</div>
-                    <div class="track-content" id="track-t1"></div>
-                </div>
-                <div class="track" data-track-id="a1">
-                    <div class="track-header"><span class="material-icons-round">audiotrack</span> Audio 1</div>
-                    <div class="track-content" id="track-a1"></div>
-                </div>
-            </div>
-        </footer>
-    </div>
-
-    <!-- EXPORT MODAL -->
-    <div class="modal-overlay" id="exportModal">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3>Ekspor Video Pro</h3>
-                <button class="btn-icon" id="btnCloseExportModal"><span class="material-icons-round">close</span></button>
-            </div>
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-50 bg-white/70 dark:bg-darkCard/70 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap justify-between items-center gap-4">
             
-            <div class="input-group">
-                <label>Format Output:</label>
-                <select id="exportFormat">
-                    <option value="mp4">MP4 (H.264 Video - Recommended)</option>
-                    <option value="webm">WEBM (Web Format)</option>
-                </select>
-            </div>
-
-            <div id="renderingProgressSection" style="display:none; margin-top:12px;">
-                <p style="font-size:0.8rem; color:var(--text-secondary);" id="progressStatusText">Menyiapkan FFmpeg WASM...</p>
-                <div class="progress-bar-container">
-                    <div class="progress-bar-fill" id="progressBarFill"></div>
+            <!-- Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="window.location.reload()">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-bold text-lg">
+                    📖
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-emerald-600 via-teal-500 to-gold-500 bg-clip-text text-transparent">
+                        Al-Qur'anul Karim
+                    </h1>
+                    <p class="text-[10px] text-slate-400 font-medium tracking-wider uppercase">Modern Digital Quran</p>
                 </div>
             </div>
 
-            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
-                <button class="btn" id="btnCancelExport">Batal</button>
-                <button class="btn btn-primary" id="btnStartRender"><span class="material-icons-round">render</span> Mulai Ekspor</button>
+            <!-- Controls (Language, Qori, Dark Mode) -->
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                
+                <!-- Terjemahan Bahasa Dunia -->
+                <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                    <span class="text-xs">🌐</span>
+                    <select id="langSelect" class="bg-transparent text-xs font-medium focus:outline-none cursor-pointer">
+                        <option value="id.indonesian" class="dark:bg-darkCard">🇮🇩 Indonesia</option>
+                        <option value="en.sahih" class="dark:bg-darkCard">🇬🇧 English (Saheeh)</option>
+                        <option value="fr.hamidullah" class="dark:bg-darkCard">🇫🇷 Français</option>
+                        <option value="es.cortes" class="dark:bg-darkCard">🇪🇸 Español</option>
+                        <option value="tr.yazir" class="dark:bg-darkCard">🇹🇷 Türkçe</option>
+                        <option value="ur.jalandhry" class="dark:bg-darkCard">🇵🇰 اردو (Urdu)</option>
+                        <option value="ru.kuliev" class="dark:bg-darkCard">🇷🇺 Русский</option>
+                        <option value="zh.jian" class="dark:bg-darkCard">🇨🇳 中文 (Simplified)</option>
+                        <option value="de.aburida" class="dark:bg-darkCard">🇩🇪 Deutsch</option>
+                        <option value="ar.muallem" class="dark:bg-darkCard">🇸🇦 Arabic Tafsir</option>
+                    </select>
+                </div>
+
+                <!-- Qori Select -->
+                <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                    <span class="text-xs">🎙️</span>
+                    <select id="qoriSelect" class="bg-transparent text-xs font-medium focus:outline-none cursor-pointer">
+                        <option value="ar.alafasy" class="dark:bg-darkCard">Mishary Rashid Alafasy</option>
+                        <option value="ar.abdurrahmaanasassudais" class="dark:bg-darkCard">Abdurrahman As-Sudais</option>
+                        <option value="ar.hudhaify" class="dark:bg-darkCard">Ali Al-Hudhaify</option>
+                        <option value="ar.husary" class="dark:bg-darkCard">Mahmoud Al-Hussary</option>
+                        <option value="ar.shaatree" class="dark:bg-darkCard">Abu Bakr Al-Shatri</option>
+                    </select>
+                </div>
+
+                <!-- Dark Mode Toggle -->
+                <button id="themeToggle" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                    <span id="themeIcon">🌙</span>
+                </button>
             </div>
         </div>
-    </div>
+    </header>
 
-    <div class="toast-container" id="toastContainer"></div>
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Sidebar Left: Surah & Bookmark (4 cols) -->
+        <aside class="lg:col-span-4 flex flex-col gap-4">
+            
+            <!-- Card Last Read (Bookmark) -->
+            <div id="lastReadWidget" class="relative overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white p-5 rounded-2xl shadow-xl shadow-emerald-950/20 hidden">
+                <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none"></div>
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200">
+                            📌 Terakhir Dibaca
+                        </span>
+                        <h3 id="lastReadSurah" class="font-bold text-xl mt-2 tracking-tight">-</h3>
+                        <p id="lastReadAyat" class="text-xs text-emerald-200/80 mt-0.5">Ayat -</p>
+                    </div>
+                </div>
+                <button id="btnContinue" class="mt-4 w-full py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-medium text-xs rounded-xl transition flex items-center justify-center gap-2">
+                    <span>Lanjutkan Membaca</span>
+                    <span>→</span>
+                </button>
+            </div>
 
-    <!-- JAVASCRIPT LOGIC ENGINE WITH STORAGE PERSISTENCE -->
-    <script>
-        function showToast(msg, type="info") {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            toast.innerText = msg;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3200);
-        }
+            <!-- Search Input -->
+            <div class="relative">
+                <input type="text" id="searchInput" placeholder="Ketik nama atau nomor surah..." 
+                    class="w-full pl-10 pr-4 py-3 rounded-2xl bg-white dark:bg-darkCard/80 border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs shadow-sm transition">
+                <span class="absolute left-3.5 top-3.5 text-slate-400 text-sm">🔍</span>
+            </div>
 
-        // --- INDEXEDDB STORAGE CONTROLLER UNTUK MENYIMPAN FILE MEDIA BERUKURAN BESAR ---
-        class StorageManager {
-            constructor() {
-                this.dbName = "StudioEditDB";
-                this.db = null;
-            }
+            <!-- Hasil Pencarian Surah (Hanya memunculkan yang dicari saja) -->
+            <div id="surahList" class="bg-white dark:bg-darkCard/60 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-sm overflow-y-auto max-h-[50vh] lg:max-h-[60vh] p-2 space-y-1">
+                <!-- Pesan awal ketika belum mengetik pencarian -->
+                <div class="text-center py-10 px-4 text-slate-400 text-xs">
+                    <span class="text-2xl block mb-2">🔎</span>
+                    Ketik nama surah di atas untuk menampilkan hasil pencarian (misal: <i>Al-Fatihah</i>, <i>Yasin</i>, atau angka <i>36</i>).
+                </div>
+            </div>
+        </aside>
 
-            async init() {
-                return new Promise((resolve, reject) => {
-                    const req = indexedDB.open(this.dbName, 1);
-                    req.onupgradeneeded = (e) => {
-                        const db = e.target.result;
-                        if (!db.objectStoreNames.contains("mediaAssets")) {
-                            db.createObjectStore("mediaAssets", { keyPath: "id" });
-                        }
-                    };
-                    req.onsuccess = (e) => {
-                        this.db = e.target.result;
-                        resolve(this.db);
-                    };
-                    req.onerror = (e) => reject(e);
-                });
-            }
-
-            async saveMedia(id, blob, name) {
-                if (!this.db) await this.init();
-                return new Promise((resolve, reject) => {
-                    const tx = this.db.transaction("mediaAssets", "readwrite");
-                    const store = tx.objectStore("mediaAssets");
-                    store.put({ id, blob, name, date: Date.now() });
-                    tx.oncomplete = () => resolve();
-                    tx.onerror = (e) => reject(e);
-                });
-            }
-
-            async getMedia(id) {
-                if (!this.db) await this.init();
-                return new Promise((resolve, reject) => {
-                    const tx = this.db.transaction("mediaAssets", "readonly");
-                    const store = tx.objectStore("mediaAssets");
-                    const req = store.get(id);
-                    req.onsuccess = () => resolve(req.result);
-                    req.onerror = (e) => reject(e);
-                });
-            }
-
-            async clearAll() {
-                if (!this.db) await this.init();
-                return new Promise((resolve, reject) => {
-                    const tx = this.db.transaction("mediaAssets", "readwrite");
-                    tx.objectStore("mediaAssets").clear();
-                    tx.oncomplete = () => {
-                        localStorage.removeItem('studioedit_project_state');
-                        resolve();
-                    };
-                });
-            }
-        }
-
-        class EditorEngine {
-            constructor(storage) {
-                this.storage = storage;
-                this.videoEl = document.getElementById('activeVideo');
-                this.canvas = new fabric.Canvas('overlayCanvas', { selection: true });
-                this.currentAspect = "16:9";
+        <!-- Right Section: Detail Surah & Teks Ayat (8 cols) -->
+        <section class="lg:col-span-8">
+            <div id="surahDetail" class="bg-white dark:bg-darkCard/60 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-slate-800/80 shadow-sm p-4 sm:p-8 min-h-[600px] flex flex-col">
                 
-                this.canvas.on('object:modified', () => triggerAutosave());
-                this.canvas.on('object:added', () => triggerAutosave());
-                this.setAspectRatio("16:9");
-            }
+                <!-- Empty Placeholder -->
+                <div id="placeholderView" class="my-auto text-center py-20 text-slate-400">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-emerald-500/10 flex items-center justify-center text-4xl">
+                        ✨
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-700 dark:text-slate-200">Cari Surah untuk Memulai</h3>
+                    <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Cari nama surah di kolom sebelah kiri untuk mulai membaca dan mendengarkan murottal.</p>
+                </div>
 
-            setAspectRatio(aspect) {
-                this.currentAspect = aspect;
-                document.getElementById('aspectRatioSelect').value = aspect;
-                
-                const container = document.getElementById('playerContainer');
-                const maxHeight = 420;
-                let w = 720, h = 405;
-
-                if (aspect === "9:16") { h = maxHeight; w = maxHeight * (9/16); }
-                else if (aspect === "1:1") { h = maxHeight; w = maxHeight; }
-                else if (aspect === "4:3") { h = maxHeight; w = maxHeight * (4/3); }
-                else if (aspect === "21:9") { w = 720; h = 720 * (9/21); }
-                else { w = 720; h = 720 * (9/16); }
-
-                container.style.width = `${w}px`;
-                container.style.height = `${h}px`;
-
-                this.canvas.setWidth(w);
-                this.canvas.setHeight(h);
-                this.canvas.renderAll();
-            }
-
-            loadMedia(url, isVideo = true) {
-                document.getElementById('canvasPlaceholder').style.display = 'none';
-
-                if (isVideo) {
-                    this.videoEl.style.display = 'block';
-                    this.videoEl.src = url;
-                    this.videoEl.load();
-                    this.videoEl.play().catch(() => {
-                        this.videoEl.muted = true;
-                        this.videoEl.play();
-                    });
-                }
-            }
-
-            addText(str = "Judul Teks Baru") {
-                const font = document.getElementById('textFontSelect').value;
-                const color = document.getElementById('textColorPicker').value;
-
-                const text = new fabric.IText(str, {
-                    left: this.canvas.width / 4,
-                    top: this.canvas.height / 3,
-                    fontFamily: font,
-                    fill: color,
-                    fontSize: 36,
-                    cornerColor: '#bb86fc'
-                });
-                this.canvas.add(text);
-                this.canvas.setActiveObject(text);
-                this.canvas.renderAll();
-            }
-
-            addEmoji(emoji) {
-                const text = new fabric.Text(emoji, {
-                    left: this.canvas.width / 2 - 20,
-                    top: this.canvas.height / 2 - 20,
-                    fontSize: 54
-                });
-                this.canvas.add(text);
-                this.canvas.renderAll();
-            }
-
-            applyFilter(filterType) {
-                if (filterType === 'grayscale') this.videoEl.style.filter = 'grayscale(100%)';
-                else if (filterType === 'sepia') this.videoEl.style.filter = 'sepia(80%)';
-                else if (filterType === 'invert') this.videoEl.style.filter = 'invert(100%)';
-                else this.videoEl.style.filter = 'none';
-
-                triggerAutosave();
-            }
-        }
-
-        class TimelineManager {
-            constructor() {
-                this.clips = [];
-                this.zoomLevel = 100;
-            }
-
-            addClip(trackId, name, duration = 10) {
-                const clip = { id: Date.now(), trackId, name, duration };
-                this.clips.push(clip);
-                this.render();
-                triggerAutosave();
-            }
-
-            render() {
-                document.querySelectorAll('.track-content').forEach(el => el.innerHTML = '');
-                this.clips.forEach(clip => {
-                    const trackEl = document.getElementById(`track-${clip.trackId}`);
-                    if (trackEl) {
-                        const div = document.createElement('div');
-                        div.className = 'timeline-clip';
-                        div.style.width = `${clip.duration * (this.zoomLevel / 10)}px`;
-                        div.innerText = clip.name;
-                        trackEl.appendChild(div);
-                    }
-                });
-            }
-        }
-
-        let storageManager, appEditor, appTimeline;
-
-        // --- SISTEM AUTOSAVE UNTUK MENYIMPAN STATE PROYEK ---
-        function triggerAutosave() {
-            if (!appEditor || !appTimeline) return;
-
-            const state = {
-                aspectRatio: appEditor.currentAspect,
-                canvasJSON: JSON.stringify(appEditor.canvas),
-                clips: appTimeline.clips,
-                videoFilter: appEditor.videoEl.style.filter,
-                videoTime: appEditor.videoEl.currentTime
-            };
-
-            localStorage.setItem('studioedit_project_state', JSON.stringify(state));
-        }
-
-        // --- SISTEM RESTORE UNTUK MEMULIHKAN DATA SAAT REFRESH ---
-        async function restoreProjectState() {
-            try {
-                // 1. Restore Media dari IndexedDB
-                const mediaRecord = await storageManager.getMedia("active_project_media");
-                if (mediaRecord && mediaRecord.blob) {
-                    const objectUrl = URL.createObjectURL(mediaRecord.blob);
-                    appEditor.loadMedia(objectUrl, true);
-
-                    const grid = document.getElementById('assetGrid');
-                    grid.innerHTML = `<div class="asset-item"><span class="material-icons-round">movie</span><span>${mediaRecord.name}</span></div>`;
-                }
-
-                // 2. Restore State dari LocalStorage
-                const savedStateRaw = localStorage.getItem('studioedit_project_state');
-                if (savedStateRaw) {
-                    const state = JSON.parse(savedStateRaw);
-
-                    if (state.aspectRatio) appEditor.setAspectRatio(state.aspectRatio);
-                    if (state.videoFilter) appEditor.videoEl.style.filter = state.videoFilter;
-                    if (state.clips) {
-                        appTimeline.clips = state.clips;
-                        appTimeline.render();
-                    }
-
-                    if (state.canvasJSON) {
-                        appEditor.canvas.loadFromJSON(state.canvasJSON, () => {
-                            appEditor.canvas.renderAll();
-                        });
-                    }
-
-                    showToast("Proyek berhasil dipulihkan!", "success");
-                }
-            } catch (err) {
-                console.error("Gagal memulihkan state:", err);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            storageManager = new StorageManager();
-            await storageManager.init();
-
-            appEditor = new EditorEngine(storageManager);
-            appTimeline = new TimelineManager();
-
-            const video = document.getElementById('activeVideo');
-            const playBtn = document.getElementById('btnPlay');
-
-            // Play / Pause Controls
-            playBtn.addEventListener('click', () => {
-                if (video.paused) {
-                    video.play();
-                    playBtn.querySelector('.material-icons-round').innerText = 'pause';
-                } else {
-                    video.pause();
-                    playBtn.querySelector('.material-icons-round').innerText = 'play_arrow';
-                }
-            });
-
-            document.getElementById('btnStop').addEventListener('click', () => {
-                video.pause();
-                video.currentTime = 0;
-                playBtn.querySelector('.material-icons-round').innerText = 'play_arrow';
-            });
-
-            video.addEventListener('timeupdate', () => {
-                const cur = video.currentTime || 0;
-                const dur = video.duration || 0;
-                const pad = (n) => String(Math.floor(n)).padStart(2, '0');
-                document.getElementById('timeDisplay').innerText = 
-                    `${pad(cur/60)}:${pad(cur%60)} / ${pad(dur/60)}:${pad(dur%60)}`;
-
-                document.getElementById('playhead').style.transform = `translateX(${cur * 10}px)`;
-            });
-
-            // Aspect Ratio Event
-            document.getElementById('aspectRatioSelect').addEventListener('change', (e) => {
-                appEditor.setAspectRatio(e.target.value);
-                triggerAutosave();
-            });
-
-            // File Import Event
-            const mediaInput = document.getElementById('mediaInput');
-            mediaInput.addEventListener('change', async (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const url = URL.createObjectURL(file);
-                    appEditor.loadMedia(url, true);
-                    appTimeline.addClip('v1', file.name, 10);
-
-                    // Simpan file fisik ke IndexedDB
-                    await storageManager.saveMedia("active_project_media", file, file.name);
-
-                    const grid = document.getElementById('assetGrid');
-                    grid.innerHTML = `<div class="asset-item"><span class="material-icons-round">movie</span><span>${file.name}</span></div>`;
+                <!-- Header Surah -->
+                <div id="surahHeader" class="hidden mb-8 text-center pb-6 border-b border-slate-200 dark:border-slate-800">
+                    <span id="activeSurahNumber" class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                        SURAH NO. -
+                    </span>
+                    <h2 id="activeSurahName" class="text-3xl font-bold text-slate-900 dark:text-slate-100 mt-3 tracking-tight"></h2>
+                    <p id="activeSurahTranslation" class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium"></p>
                     
-                    triggerAutosave();
-                    showToast("Video tersimpan di memori lokal!", "success");
-                }
-            });
+                    <!-- Audio Player Surah -->
+                    <div class="mt-5 flex justify-center items-center">
+                        <audio id="globalAudioPlayer" controls class="w-full max-w-md h-9 rounded-xl"></audio>
+                    </div>
+                </div>
 
-            // Reset Project Event
-            document.getElementById('btnClearStorage').addEventListener('click', async () => {
-                if (confirm("Apakah Anda yakin ingin menghapus semua media dan teks proyek saat ini?")) {
-                    await storageManager.clearAll();
-                    location.reload();
-                }
-            });
+                <!-- List Ayat -->
+                <div id="ayatContainer" class="space-y-6"></div>
+            </div>
+        </section>
 
-            // Sidebar Tabs Navigation
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-                    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-                    btn.classList.add('active');
-                    document.getElementById(`pane-${btn.dataset.tab}`).classList.add('active');
-                });
-            });
+    </main>
 
-            document.getElementById('btnAddTextMain').addEventListener('click', () => appEditor.addText());
+    <!-- Footer -->
+    <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 py-4 text-center text-xs text-slate-400">
+        <p>Al-Qur'an Digital Platform &copy; 2026. Powered by Global Quran Cloud API.</p>
+    </footer>
 
-            // Theme Toggle
-            document.getElementById('btnThemeToggle').addEventListener('click', () => {
-                const curTheme = document.documentElement.getAttribute('data-theme');
-                const newTheme = curTheme === 'dark' ? 'light' : 'dark';
-                document.documentElement.setAttribute('data-theme', newTheme);
-            });
+    <!-- JavaScript Application Logic -->
+    <script>
+        // App State
+        let allSurahs = [];
+        let currentSurahNo = null;
+        let selectedLang = 'id.indonesian';
+        let selectedQori = 'ar.alafasy';
 
-            // Restore data yang tersimpan saat halaman dimuat ulang
-            restoreProjectState();
+        // DOM Elements
+        const surahListEl = document.getElementById('surahList');
+        const searchInput = document.getElementById('searchInput');
+        const placeholderView = document.getElementById('placeholderView');
+        const surahHeader = document.getElementById('surahHeader');
+        const ayatContainer = document.getElementById('ayatContainer');
+        const langSelect = document.getElementById('langSelect');
+        const qoriSelect = document.getElementById('qoriSelect');
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const globalAudioPlayer = document.getElementById('globalAudioPlayer');
+
+        // Bookmark Elements
+        const lastReadWidget = document.getElementById('lastReadWidget');
+        const lastReadSurah = document.getElementById('lastReadSurah');
+        const lastReadAyat = document.getElementById('lastReadAyat');
+        const btnContinue = document.getElementById('btnContinue');
+
+        // Init App
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            fetchSurahList();
+            checkBookmark();
         });
+
+        // 1. Dark Mode
+        function initTheme() {
+            if (localStorage.theme === 'light') {
+                document.documentElement.classList.remove('dark');
+                themeIcon.textContent = '🌙';
+            } else {
+                document.documentElement.classList.add('dark');
+                themeIcon.textContent = '☀️';
+            }
+        }
+
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+                themeIcon.textContent = '🌙';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+                themeIcon.textContent = '☀️';
+            }
+        });
+
+        // 2. Fetch Data Surah dari Server
+        async function fetchSurahList() {
+            try {
+                const res = await fetch('https://api.alquran.cloud/v1/surah');
+                const data = await res.json();
+                allSurahs = data.data;
+            } catch (err) {
+                surahListEl.innerHTML = `<div class="p-4 text-xs text-red-400 text-center">Gagal memuat data surah.</div>`;
+            }
+        }
+
+        // Render hasil pencarian saja
+        function renderSearchResults(surahs) {
+            if (surahs.length === 0) {
+                surahListEl.innerHTML = `
+                    <div class="text-center py-8 px-4 text-slate-400 text-xs">
+                        Tidak ada surah yang cocok dengan pencarian Anda.
+                    </div>`;
+                return;
+            }
+
+            surahListEl.innerHTML = surahs.map(s => `
+                <div onclick="loadSurah(${s.number})" 
+                    class="group p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 cursor-pointer transition flex items-center justify-between border border-transparent hover:border-slate-200 dark:hover:border-slate-700/50">
+                    <div class="flex items-center space-x-3">
+                        <span class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition">
+                            ${s.number}
+                        </span>
+                        <div>
+                            <h4 class="font-semibold text-xs text-slate-800 dark:text-slate-200">${s.englishName}</h4>
+                            <p class="text-[10px] text-slate-400">${s.englishNameTranslation} • ${s.numberOfAyahs} Ayat</p>
+                        </div>
+                    </div>
+                    <span class="font-arabic text-base text-emerald-600 dark:text-emerald-400 font-semibold">${s.name}</span>
+                </div>
+            `).join('');
+        }
+
+        // Filter Pencarian (Hanya memunculkan yang dicari)
+        searchInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase().trim();
+
+            if (val === '') {
+                // Tampilan default saat form pencarian kosong
+                surahListEl.innerHTML = `
+                    <div class="text-center py-10 px-4 text-slate-400 text-xs">
+                        <span class="text-2xl block mb-2">🔎</span>
+                        Ketik nama surah di atas untuk menampilkan hasil pencarian (misal: <i>Al-Fatihah</i>, <i>Yasin</i>, atau angka <i>36</i>).
+                    </div>`;
+                return;
+            }
+
+            const filtered = allSurahs.filter(s => 
+                s.englishName.toLowerCase().includes(val) || 
+                s.englishNameTranslation.toLowerCase().includes(val) ||
+                s.number.toString() === val
+            );
+
+            renderSearchResults(filtered);
+        });
+
+        // 3. Load Surah Detail (Teks Arab + Terjemahan Multi-Bahasa + Audio)
+        async function loadSurah(surahNo) {
+            currentSurahNo = surahNo;
+            placeholderView.classList.add('hidden');
+            surahHeader.classList.remove('hidden');
+            ayatContainer.innerHTML = `<div class="text-center py-16 text-xs text-slate-400">Memuat teks, audio, dan terjemahan...</div>`;
+
+            try {
+                const [arabicRes, transRes, audioRes] = await Promise.all([
+                    fetch(`https://api.alquran.cloud/v1/surah/${surahNo}`),
+                    fetch(`https://api.alquran.cloud/v1/surah/${surahNo}/${selectedLang}`),
+                    fetch(`https://api.alquran.cloud/v1/surah/${surahNo}/${selectedQori}`)
+                ]);
+
+                const arabicData = await arabicRes.json();
+                const transData = await transRes.json();
+                const audioData = await audioRes.json();
+
+                const surahInfo = arabicData.data;
+
+                // Render Header
+                document.getElementById('activeSurahNumber').textContent = `SURAH NO. ${surahInfo.number}`;
+                document.getElementById('activeSurahName').textContent = `${surahInfo.englishName} (${surahInfo.name})`;
+                document.getElementById('activeSurahTranslation').textContent = `${surahInfo.revelationType} • ${surahInfo.numberOfAyahs} AYAT — ${surahInfo.englishNameTranslation}`;
+
+                // Set Full Surah Audio
+                if (audioData.data.ayahs.length > 0) {
+                    globalAudioPlayer.src = audioData.data.ayahs[0].audio; 
+                }
+
+                // Combine & Render Ayat
+                const combinedAyahs = surahInfo.ayahs.map((ayah, index) => ({
+                    numberInSurah: ayah.numberInSurah,
+                    textArab: ayah.text,
+                    textTrans: transData.data.ayahs[index] ? transData.data.ayahs[index].text : '',
+                    audioUrl: audioData.data.ayahs[index] ? audioData.data.ayahs[index].audio : ''
+                }));
+
+                renderAyat(combinedAyahs, surahInfo.englishName);
+
+            } catch (err) {
+                ayatContainer.innerHTML = `<p class="text-red-400 text-center text-xs">Gagal memuat data ayat. Silakan coba lagi.</p>`;
+            }
+        }
+
+        // Change Event Listeners (Bahasa & Qori)
+        langSelect.addEventListener('change', (e) => {
+            selectedLang = e.target.value;
+            if (currentSurahNo) loadSurah(currentSurahNo);
+        });
+
+        qoriSelect.addEventListener('change', (e) => {
+            selectedQori = e.target.value;
+            if (currentSurahNo) loadSurah(currentSurahNo);
+        });
+
+        // 4. Render Item Ayat
+        function renderAyat(ayahs, surahName) {
+            ayatContainer.innerHTML = ayahs.map(a => `
+                <div id="ayat-${a.numberInSurah}" class="p-5 rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40 hover:border-emerald-500/40 transition relative group">
+                    
+                    <!-- Top Action Bar -->
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="w-7 h-7 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-bold text-xs flex items-center justify-center shadow-md shadow-emerald-500/20">
+                            ${a.numberInSurah}
+                        </span>
+                        
+                        <div class="flex items-center gap-1.5">
+                            <!-- Simpan Bookmark -->
+                            <button onclick="saveBookmark(${currentSurahNo}, '${surahName}', ${a.numberInSurah})" 
+                                class="px-2.5 py-1.5 text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400 rounded-lg hover:bg-emerald-500/10 text-xs transition flex items-center gap-1">
+                                📌 <span class="hidden sm:inline">Simpan</span>
+                            </button>
+
+                            <!-- Bagikan Ayat -->
+                            <button onclick="shareAyat('${surahName}', ${a.numberInSurah}, \`${a.textArab}\`)" 
+                                class="px-2.5 py-1.5 text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400 rounded-lg hover:bg-emerald-500/10 text-xs transition flex items-center gap-1">
+                                🔗 <span class="hidden sm:inline">Share</span>
+                            </button>
+
+                            <!-- Putar Audio Ayat -->
+                            <button onclick="playAudioAyat('${a.audioUrl}')" 
+                                class="px-2.5 py-1.5 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-lg text-xs font-medium transition flex items-center gap-1">
+                                ▶️ <span class="hidden sm:inline">Putar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Teks Arab -->
+                    <div class="text-right font-arabic text-2xl sm:text-3xl mb-4 text-slate-800 dark:text-slate-100 tracking-wide leading-relaxed">
+                        ${a.textArab}
+                    </div>
+
+                    <!-- Terjemahan Bahasa Dunia -->
+                    <div class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
+                        ${a.textTrans}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 5. Play Audio Ayat Individual
+        let activeAudio = null;
+        function playAudioAyat(url) {
+            if (activeAudio) activeAudio.pause();
+            if (!url) return alert('Audio tidak tersedia untuk ayat ini.');
+            
+            activeAudio = new Audio(url);
+            activeAudio.play();
+        }
+
+        // 6. Bookmark Manager
+        function saveBookmark(surahNo, surahName, ayatNo) {
+            const data = { surahNo, surahName, ayatNo };
+            localStorage.setItem('quran_premium_bookmark', JSON.stringify(data));
+            checkBookmark();
+            alert(`Tersimpan: Surah ${surahName} ayat ${ayatNo}`);
+        }
+
+        function checkBookmark() {
+            const saved = localStorage.getItem('quran_premium_bookmark');
+            if (saved) {
+                const data = JSON.parse(saved);
+                lastReadSurah.textContent = data.surahName;
+                lastReadAyat.textContent = `Ayat ${data.ayatNo}`;
+                lastReadWidget.classList.remove('hidden');
+
+                btnContinue.onclick = async () => {
+                    await loadSurah(data.surahNo);
+                    setTimeout(() => {
+                        const el = document.getElementById(`ayat-${data.ayatNo}`);
+                        if (el) {
+                            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            el.classList.add('ring-2', 'ring-emerald-500');
+                        }
+                    }, 600);
+                };
+            }
+        }
+
+        // 7. Share Functionality
+        function shareAyat(surahName, ayatNo, textArab) {
+            const text = `Al-Qur'an - ${surahName} Ayat ${ayatNo}:\n\n"${textArab}"\n\nBagikan via Al-Qur'an Digital`;
+            if (navigator.share) {
+                navigator.share({ title: `${surahName}:${ayatNo}`, text: text, url: window.location.href });
+            } else {
+                navigator.clipboard.writeText(text);
+                alert('Teks ayat berhasil disalin!');
+            }
+        }
     </script>
 </body>
 </html>
