@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BELFIS - Login</title>
+    <!-- Font Awesome untuk Icon (Email & Lock) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background-color: #e2f7f3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        /* Section Logo Header */
+        .logo-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .logo-section img {
+            max-width: 80%;
+            height: auto;
+        }
+
+        /* Card Form Login */
+        .login-card {
+            background-color: #ffffff;
+            border-radius: 4px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .login-header {
+            background-color: #16a085;
+            color: #ffffff;
+            padding: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .login-body {
+            padding: 25px 20px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 40px 12px 12px;
+            border: 1px solid #d1d1d1;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #333;
+            outline: none;
+        }
+
+        .input-group input::placeholder {
+            color: #a9a9a9;
+        }
+
+        .input-group input:focus {
+            border-color: #16a085;
+        }
+
+        .input-group i {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .btn-login {
+            background-color: #16a085;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-login:hover {
+            background-color: #138d75;
+        }
+
+        /* Section Informasi Footer */
+        .company-info {
+            color: #333333;
+            font-size: 13.5px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .company-info h3 {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .browser-note {
+            font-size: 12px;
+            color: #555555;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Logo Section -->
+        <div class="logo-section">
+            <!-- Ganti src dengan link gambar/logo asli Anda -->
+            <img src="https://via.placeholder.com/200x60?text=BTN+Logo" alt="BTN Logo">
+            <img src="https://via.placeholder.com/250x70?text=BINAYASA" alt="Binayasa Logo">
+            <img src="https://via.placeholder.com/200x50?text=DANA+PENSIUN+BTN" alt="Dana Pensiun BTN Logo">
+        </div>
+
+        <!-- Login Form Card -->
+        <div class="login-card">
+            <div class="login-header">
+                BELFIS
+            </div>
+            <div class="login-body">
+                <form action="#" method="POST">
+                    <div class="input-group">
+                        <input type="email" placeholder="Email" required>
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" placeholder="Password" required>
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+
+                    <div class="btn-container">
+                        <button type="submit" class="btn-login">Login</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Company Information -->
+        <div class="company-info">
+            <h3>PT Binayasa Putrabatara</h3>
+            <p>Kantor Pusat : Rukan Crown Palace Blok A-29, Jl. Prof. Dr. Soepomo, SH no. 231, Tebet, Jakarta Selatan 12870</p>
+            <p>Telepon (021) 830 1571 - 830 1591 - 1592</p>
+            <p>Faximil (021) 830 1631</p>
+        </div>
+
+        <!-- Bottom Note -->
+        <div class="browser-note">
+            Best viewed using latest browser versions of Chrome, Firefox, Opera.
+        </div>
+    </div>
+
+</body>
+</html>
