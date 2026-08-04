@@ -67,15 +67,22 @@
 
     #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 10000; display: flex; flex-direction: column; justify-content: center; padding: 20px; overflow-y: auto; }
     .auth-card { background: var(--card-bg); border-radius: 20px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
-    .btn-primary { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; }
-    .btn-secondary { width: 100%; padding: 10px; background: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 12px; font-weight: 600; font-size: 0.85rem; cursor: pointer; margin-top: 8px; }
+    .btn-primary { width: 100%; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 0.8rem; cursor: pointer; }
+    .btn-secondary { width: 100%; padding: 8px; background: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 10px; font-weight: 600; font-size: 0.75rem; cursor: pointer; margin-top: 8px; }
     
-    .input-field { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; margin-bottom: 12px; outline: none; font-size: 0.85rem; background: var(--card-bg); color: var(--text-main); }
-    .data-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: var(--icon-bg); border-radius: 12px; margin-bottom: 8px; text-align: left; }
+    .input-field { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; margin-top: 4px; margin-bottom: 10px; outline: none; font-size: 0.75rem; background: var(--card-bg); color: var(--text-main); }
+    .data-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: var(--icon-bg); border-radius: 10px; margin-bottom: 6px; text-align: left; }
     
-    .menu-popup-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9998; justify-content: center; align-items: flex-end; }
-    .menu-popup-card { background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 20px; max-height: 80vh; overflow-y: auto; box-shadow: 0 -8px 24px rgba(0,0,0,0.2); }
+    /* MODAL POP-UP STYLE - COMPACT FONT & MODERN SLIDE-UP */
+    .menu-popup-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9998; justify-content: center; align-items: flex-end; }
+    .menu-popup-card { background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 16px; max-height: 80vh; overflow-y: auto; box-shadow: 0 -6px 20px rgba(0,0,0,0.15); }
     
+    /* COMPACT SWEETALERT CUSTOM POP-UP FONT */
+    .swal2-popup { font-size: 0.75rem !important; border-radius: 16px !important; padding: 14px !important; width: 90% !important; max-width: 380px !important; }
+    .swal2-title { font-size: 0.95rem !important; font-weight: 700 !important; }
+    .swal2-input, .swal2-select { font-size: 0.75rem !important; height: 36px !important; margin: 6px 0 !important; border-radius: 8px !important; }
+    .swal2-confirm, .swal2-cancel { font-size: 0.75rem !important; padding: 8px 14px !important; border-radius: 8px !important; }
+
     .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; padding: 16px; }
     .admin-only { display: none; }
   </style>
@@ -85,19 +92,19 @@
   <!-- AUTH OVERLAY (LOGIN & REGISTER) -->
   <div id="auth-overlay">
     <div style="text-align: center; color: white; margin-bottom: 16px;">
-      <span class="material-symbols-rounded" style="font-size: 48px;">domain</span>
-      <h2 style="font-size: 1.3rem;">BBMS MOBILE</h2>
-      <p style="font-size: 0.8rem; opacity: 0.9;">PT. Binayasa Putra Batara (BSN)</p>
+      <span class="material-symbols-rounded" style="font-size: 40px;">domain</span>
+      <h2 style="font-size: 1.1rem;">BBMS MOBILE</h2>
+      <p style="font-size: 0.75rem; opacity: 0.9;">PT. Binayasa Putra Batara (BSN)</p>
     </div>
 
     <!-- LOGIN FORM -->
     <div class="auth-card" id="login-box">
-      <h3 style="font-size: 1rem; margin-bottom: 12px; text-align: center;">Masuk ke Akun</h3>
+      <h3 style="font-size: 0.9rem; margin-bottom: 10px; text-align: center;">Masuk ke Akun</h3>
       <form id="login-form">
-        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">EMAIL</label>
+        <label style="font-size: 0.65rem; font-weight: 700; color: var(--text-sub);">EMAIL</label>
         <input type="email" id="login-email" class="input-field" placeholder="email@domain.com" required>
 
-        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">PASSWORD</label>
+        <label style="font-size: 0.65rem; font-weight: 700; color: var(--text-sub);">PASSWORD</label>
         <input type="password" id="login-password" class="input-field" placeholder="******" required>
 
         <button type="submit" class="btn-primary">MASUK SISTEM</button>
@@ -107,15 +114,15 @@
 
     <!-- REGISTER FORM -->
     <div class="auth-card" id="register-box" style="display: none;">
-      <h3 style="font-size: 1rem; margin-bottom: 12px; text-align: center;">Daftar Akun Baru</h3>
+      <h3 style="font-size: 0.9rem; margin-bottom: 10px; text-align: center;">Daftar Akun Baru</h3>
       <form id="register-form">
-        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">NAMA LENGKAP</label>
+        <label style="font-size: 0.65rem; font-weight: 700; color: var(--text-sub);">NAMA LENGKAP</label>
         <input type="text" id="reg-fullname" class="input-field" placeholder="Nama Lengkap" required>
 
-        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">NOMOR HP/WHATSAPP</label>
+        <label style="font-size: 0.65rem; font-weight: 700; color: var(--text-sub);">NOMOR HP/WHATSAPP</label>
         <input type="tel" id="reg-phone" class="input-field" placeholder="08123456789" required>
 
-        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">ROLE HAK AKSES</label>
+        <label style="font-size: 0.65rem; font-weight: 700; color: var(--text-sub);">ROLE HAK AKSES</label>
         <select id="reg-role" class="input-field" required>
           <option value="administrator">1. Administrator</option>
           <option value="kepala_unit">2. Kepala Unit</option>
@@ -125,10 +132,10 @@
           <option value="vendor">6. Vendor</option>
         </select>
 
-        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">EMAIL</label>
+        <label style="font-size: 0.65rem; font-weight: 700; color: var(--text-sub);">EMAIL</label>
         <input type="email" id="reg-email" class="input-field" placeholder="email@domain.com" required>
 
-        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">PASSWORD</label>
+        <label style="font-size: 0.65rem; font-weight: 700; color: var(--text-sub);">PASSWORD</label>
         <input type="password" id="reg-password" class="input-field" placeholder="Minimal 6 Karakter" minlength="6" required>
 
         <button type="submit" class="btn-primary">DAFTAR AKUN</button>
@@ -144,19 +151,19 @@
       <div class="user-info">
         <div class="avatar" id="avatar-initials">--</div>
         <div>
-          <div style="font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+          <div style="font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 4px;">
             <span id="user-name">Pengguna</span>
-            <span class="material-symbols-rounded" onclick="editProfileModal()" style="font-size: 16px; color: var(--primary); cursor: pointer;" title="Edit Profil">edit</span>
+            <span class="material-symbols-rounded" onclick="editProfileModal()" style="font-size: 15px; color: var(--primary); cursor: pointer;" title="Edit Profil">edit</span>
           </div>
           <span class="role-badge" id="user-role-display">Guest</span>
         </div>
       </div>
       <div style="display: flex; gap: 6px;">
-        <button onclick="toggleTheme()" style="background: var(--card-bg); border: 1px solid var(--border); padding: 6px; border-radius: 50%; cursor: pointer;">
-          <span class="material-symbols-rounded" style="font-size: 20px; color: var(--text-main);">brightness_4</span>
+        <button onclick="toggleTheme()" style="background: var(--card-bg); border: 1px solid var(--border); padding: 5px; border-radius: 50%; cursor: pointer;">
+          <span class="material-symbols-rounded" style="font-size: 18px; color: var(--text-main);">brightness_4</span>
         </button>
-        <button onclick="logout()" style="background: var(--card-bg); border: 1px solid var(--border); padding: 6px; border-radius: 50%; cursor: pointer; color: #E53935;">
-          <span class="material-symbols-rounded" style="font-size: 20px;">logout</span>
+        <button onclick="logout()" style="background: var(--card-bg); border: 1px solid var(--border); padding: 5px; border-radius: 50%; cursor: pointer; color: #E53935;">
+          <span class="material-symbols-rounded" style="font-size: 18px;">logout</span>
         </button>
       </div>
     </header>
@@ -164,19 +171,19 @@
     <!-- SUMMARY CARDS -->
     <div class="summary-scroll">
       <div class="summary-card">
-        <div class="icon-wrap" style="background: #E8F5E9; color: #0B8F4D;"><span class="material-symbols-rounded" style="font-size: 20px;">location_city</span></div>
+        <div class="icon-wrap" style="background: #E8F5E9; color: #0B8F4D;"><span class="material-symbols-rounded" style="font-size: 18px;">location_city</span></div>
         <div class="val" id="val-total-kantor">0</div><div class="lbl">Kantor BSN</div>
       </div>
       <div class="summary-card">
-        <div class="icon-wrap" style="background: #FFF8E1; color: #D4A017;"><span class="material-symbols-rounded" style="font-size: 20px;">assignment</span></div>
+        <div class="icon-wrap" style="background: #FFF8E1; color: #D4A017;"><span class="material-symbols-rounded" style="font-size: 18px;">assignment</span></div>
         <div class="val" id="val-total-wo">0</div><div class="lbl">Work Order</div>
       </div>
       <div class="summary-card">
-        <div class="icon-wrap" style="background: #E3F2FD; color: #2196F3;"><span class="material-symbols-rounded" style="font-size: 20px;">folder_open</span></div>
+        <div class="icon-wrap" style="background: #E3F2FD; color: #2196F3;"><span class="material-symbols-rounded" style="font-size: 18px;">folder_open</span></div>
         <div class="val" id="val-total-arsip">0</div><div class="lbl">File Arsip</div>
       </div>
       <div class="summary-card">
-        <div class="icon-wrap" style="background: #FFEBEE; color: #E53935;"><span class="material-symbols-rounded" style="font-size: 20px;">inventory_2</span></div>
+        <div class="icon-wrap" style="background: #FFEBEE; color: #E53935;"><span class="material-symbols-rounded" style="font-size: 18px;">inventory_2</span></div>
         <div class="val" id="val-total-asset">0</div><div class="lbl">Asset Gedung</div>
       </div>
     </div>
@@ -199,29 +206,29 @@
 
     <!-- DASHBOARD GRAFIK REALTIME -->
     <div class="content-box">
-      <h4 style="font-size: 0.85rem; margin-bottom: 10px;">Grafik Perawatan Gedung Realtime</h4>
+      <h4 style="font-size: 0.8rem; margin-bottom: 8px;">Grafik Perawatan Gedung Realtime</h4>
       <div style="height: 180px;"><canvas id="mainChart"></canvas></div>
     </div>
 
   </div>
 
-  <!-- POP-UP DIALOG MENU -->
+  <!-- POP-UP DIALOG MENU - COMPACT & MODERN FONT -->
   <div class="menu-popup-backdrop" id="menu-popup-modal">
     <div class="menu-popup-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
-        <h3 id="popup-title" style="font-size: 1rem;">Detail Menu</h3>
-        <span class="material-symbols-rounded" onclick="closeMenuPopup()" style="cursor: pointer; color: #E53935;">close</span>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+        <h3 id="popup-title" style="font-size: 0.85rem; font-weight: 700;">Detail Menu</h3>
+        <span class="material-symbols-rounded" onclick="closeMenuPopup()" style="cursor: pointer; color: #E53935; font-size: 18px;">close</span>
       </div>
 
-      <div id="popup-admin-action" style="margin-bottom: 12px; text-align: right;"></div>
-      <div id="popup-body-content"></div>
+      <div id="popup-admin-action" style="margin-bottom: 10px; text-align: right;"></div>
+      <div id="popup-body-content" style="font-size: 0.75rem;"></div>
     </div>
   </div>
 
   <!-- MODAL CAMERA SCANNER -->
   <div class="modal-backdrop" id="qr-modal">
-    <div style="background: var(--card-bg); padding: 16px; border-radius: 16px; width: 100%; max-width: 300px; text-align: center;">
-      <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Scan QR Asset Gedung</h4>
+    <div style="background: var(--card-bg); padding: 14px; border-radius: 16px; width: 100%; max-width: 300px; text-align: center;">
+      <h4 style="font-size: 0.85rem; margin-bottom: 8px;">Scan QR Asset Gedung</h4>
       <div id="reader" style="width: 100%;"></div>
       <button onclick="closeQRScanner()" class="btn-primary" style="background: #E53935; margin-top: 10px;">Tutup</button>
     </div>
@@ -366,9 +373,9 @@
       const { value: formValues } = await Swal.fire({
         title: 'Edit Profil Saya',
         html:
-          `<label style="font-size:0.75rem; font-weight:bold; display:block; text-align:left;">Nama Lengkap</label>` +
+          `<label style="font-size:0.65rem; font-weight:bold; display:block; text-align:left;">Nama Lengkap</label>` +
           `<input id="swal-prof-name" class="swal2-input" value="${document.getElementById("user-name").innerText}" placeholder="Nama Lengkap">` +
-          `<label style="font-size:0.75rem; font-weight:bold; display:block; text-align:left; margin-top:8px;">Nomor HP / WhatsApp</label>` +
+          `<label style="font-size:0.65rem; font-weight:bold; display:block; text-align:left; margin-top:6px;">Nomor HP / WhatsApp</label>` +
           `<input id="swal-prof-phone" class="swal2-input" value="${(currentProfile && currentProfile.phone) || ''}" placeholder="08123456789">`,
         focusConfirm: false,
         showCancelButton: true,
@@ -431,13 +438,13 @@
       const contentEl = document.getElementById("popup-body-content");
 
       popupModal.style.display = "flex";
-      contentEl.innerHTML = `<p style="font-size:0.8rem; text-align:center; color:gray; padding:20px;">Memuat data...</p>`;
+      contentEl.innerHTML = `<p style="font-size:0.7rem; text-align:center; color:gray; padding:16px;">Memuat data...</p>`;
       adminActionEl.innerHTML = "";
 
       if (menuType === 'kantor') {
         titleEl.innerText = "Master Data Kantor BSN";
         if (currentUserRole === 'administrator') {
-          adminActionEl.innerHTML = `<button onclick="addOfficeModal()" class="btn-primary" style="padding:6px 12px; font-size:0.75rem;">+ Tambah Kantor</button>`;
+          adminActionEl.innerHTML = `<button onclick="addOfficeModal()" class="btn-primary" style="padding:4px 10px; font-size:0.7rem; font-weight:700;">+ Tambah Kantor</button>`;
         }
         const { data } = await supabaseClient.from('offices').select('*');
         renderKantorPopupContent(data || [], contentEl);
@@ -445,7 +452,7 @@
       else if (menuType === 'asset') {
         titleEl.innerText = "Asset Management Gedung";
         if (currentUserRole === 'administrator') {
-          adminActionEl.innerHTML = `<button onclick="addAssetModal()" class="btn-primary" style="padding:6px 12px; font-size:0.75rem;">+ Input Asset</button>`;
+          adminActionEl.innerHTML = `<button onclick="addAssetModal()" class="btn-primary" style="padding:4px 10px; font-size:0.7rem; font-weight:700;">+ Input Asset</button>`;
         }
         const { data } = await supabaseClient.from('assets').select('*');
         renderAssetPopupContent(data || [], contentEl);
@@ -453,7 +460,7 @@
       else if (menuType === 'utility') {
         titleEl.innerText = "Tagihan Utilitas Gedung";
         if (currentUserRole === 'administrator') {
-          adminActionEl.innerHTML = `<button onclick="addUtilityModal()" class="btn-primary" style="padding:6px 12px; font-size:0.75rem;">+ Input Tagihan</button>`;
+          adminActionEl.innerHTML = `<button onclick="addUtilityModal()" class="btn-primary" style="padding:4px 10px; font-size:0.7rem; font-weight:700;">+ Input Tagihan</button>`;
         }
         const { data } = await supabaseClient.from('utility_bills').select('*');
         renderUtilityPopupContent(data || [], contentEl);
@@ -461,7 +468,7 @@
       else if (menuType === 'maintenance') {
         titleEl.innerText = "Perawatan Routine Gedung";
         if (currentUserRole === 'administrator') {
-          adminActionEl.innerHTML = `<button onclick="addMaintenanceModal()" class="btn-primary" style="padding:6px 12px; font-size:0.75rem;">+ Jadwal Perawatan</button>`;
+          adminActionEl.innerHTML = `<button onclick="addMaintenanceModal()" class="btn-primary" style="padding:4px 10px; font-size:0.7rem; font-weight:700;">+ Jadwal Perawatan</button>`;
         }
         const { data } = await supabaseClient.from('maintenances').select('*');
         renderMaintenancePopupContent(data || [], contentEl);
@@ -469,7 +476,7 @@
       else if (menuType === 'workorder') {
         titleEl.innerText = "Work Order Execution";
         if (currentUserRole === 'administrator') {
-          adminActionEl.innerHTML = `<button onclick="addWOModal()" class="btn-primary" style="padding:6px 12px; font-size:0.75rem;">+ Buat WO Baru</button>`;
+          adminActionEl.innerHTML = `<button onclick="addWOModal()" class="btn-primary" style="padding:4px 10px; font-size:0.7rem; font-weight:700;">+ Buat WO Baru</button>`;
         }
         const { data } = await supabaseClient.from('work_orders').select('*');
         renderWOPopupContent(data || [], contentEl);
@@ -477,7 +484,7 @@
       else if (menuType === 'cleaning') {
         titleEl.innerText = "General Cleaning Checklist";
         if (currentUserRole === 'administrator') {
-          adminActionEl.innerHTML = `<button onclick="addCleaningModal()" class="btn-primary" style="padding:6px 12px; font-size:0.75rem;">+ Input Cleaning</button>`;
+          adminActionEl.innerHTML = `<button onclick="addCleaningModal()" class="btn-primary" style="padding:4px 10px; font-size:0.7rem; font-weight:700;">+ Input Cleaning</button>`;
         }
         const { data } = await supabaseClient.from('cleanings').select('*');
         renderCleaningPopupContent(data || [], contentEl);
@@ -485,7 +492,7 @@
       else if (menuType === 'arsip') {
         titleEl.innerText = "Penyimpanan Arsip Dokumen";
         if (currentUserRole === 'administrator') {
-          adminActionEl.innerHTML = `<button onclick="openUploadArsipModal()" class="btn-primary" style="padding:6px 12px; font-size:0.75rem;">+ Simpan Arsip</button>`;
+          adminActionEl.innerHTML = `<button onclick="openUploadArsipModal()" class="btn-primary" style="padding:4px 10px; font-size:0.7rem; font-weight:700;">+ Simpan Arsip</button>`;
         }
         const { data } = await supabaseClient.from('archives').select('*');
         renderArsipPopupContent(data || [], contentEl);
@@ -495,14 +502,14 @@
         contentEl.innerHTML = `
           <input type="date" id="calendar-picker" class="input-field" onchange="filterScheduleByDatePopup()">
           <div id="popup-schedule-results">
-            <p style="font-size:0.75rem; color:gray; text-align:center;">Pilih tanggal untuk melihat jadwal.</p>
+            <p style="font-size:0.7rem; color:gray; text-align:center;">Pilih tanggal untuk melihat jadwal.</p>
           </div>
         `;
       }
       else if (menuType === 'reports') {
         titleEl.innerText = "Laporan & Export Document";
         contentEl.innerHTML = `
-          <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; flex-direction:column; gap:8px;">
             <button onclick="window.print()" class="btn-primary">Print / Export PDF Laporan</button>
             <button onclick="exportExcelFromPopup()" class="btn-primary" style="background:#2E7D32;">Export Excel Master Data</button>
           </div>
@@ -512,7 +519,7 @@
         titleEl.innerText = "Pengaturan Sistem (Admin)";
         
         if (currentUserRole !== 'administrator') {
-          contentEl.innerHTML = `<p style="font-size:0.8rem; color:#E53935; text-align:center; padding:20px;">Akses Ditolak. Menu Pengaturan hanya dapat diakses oleh Administrator.</p>`;
+          contentEl.innerHTML = `<p style="font-size:0.75rem; color:#E53935; text-align:center; padding:16px;">Akses Ditolak. Menu Pengaturan hanya dapat diakses oleh Administrator.</p>`;
           return;
         }
 
@@ -521,19 +528,19 @@
 
         contentEl.innerHTML = `
           <div style="text-align:left;">
-            <label style="font-size:0.7rem; font-weight:700;">NAMA APLIKASI</label>
+            <label style="font-size:0.65rem; font-weight:700;">NAMA APLIKASI</label>
             <input id="set-app" class="input-field" value="${s.app_name}">
 
-            <label style="font-size:0.7rem; font-weight:700;">NAMA PERUSAHAAN</label>
+            <label style="font-size:0.65rem; font-weight:700;">NAMA PERUSAHAAN</label>
             <input id="set-comp" class="input-field" value="${s.company_name}">
 
-            <label style="font-size:0.7rem; font-weight:700;">NAMA KLIEN / PENGELOLA</label>
+            <label style="font-size:0.65rem; font-weight:700;">NAMA KLIEN / PENGELOLA</label>
             <input id="set-client" class="input-field" value="${s.client_name}">
 
-            <label style="font-size:0.7rem; font-weight:700;">HOTLINE SUPPORT PHONE</label>
+            <label style="font-size:0.65rem; font-weight:700;">HOTLINE SUPPORT PHONE</label>
             <input id="set-phone" class="input-field" value="${s.support_phone}">
 
-            <button onclick="saveSettings()" class="btn-primary" style="margin-top:8px;">Simpan Pengaturan</button>
+            <button onclick="saveSettings()" class="btn-primary" style="margin-top:6px;">Simpan Pengaturan</button>
           </div>
         `;
       }
@@ -563,19 +570,19 @@
       document.getElementById("menu-popup-modal").style.display = "none";
     }
 
-    // POP-UP RENDER CONTENT HELPERS (TAMPILKAN LOKASI KANTOR)
+    // POP-UP RENDER CONTENT HELPERS (FONT COMPACT)
     function renderKantorPopupContent(data, el) {
-      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada data kantor.</p>`; return; }
+      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.7rem; color:gray; text-align:center;">Belum ada data kantor.</p>`; return; }
       el.innerHTML = data.map(o => `
         <div class="data-item">
           <div>
-            <div style="font-weight:700; font-size:0.8rem;">${o.code} - ${o.name}</div>
-            <div style="font-size:0.7rem; color:var(--text-sub);">PIC: ${o.pic_name || '-'} • ${o.address || '-'}</div>
+            <div style="font-weight:700; font-size:0.75rem;">${o.code} - ${o.name}</div>
+            <div style="font-size:0.65rem; color:var(--text-sub);">PIC: ${o.pic_name || '-'} • ${o.address || '-'}</div>
           </div>
           ${currentUserRole === 'administrator' ? `
-            <div style="display:flex; gap:6px;">
-              <span class="material-symbols-rounded" onclick="editOfficeModal('${o.id}', '${o.code}', '${o.name}', '${o.pic_name || ''}', '${o.address || ''}')" style="color:#2196F3; font-size:18px; cursor:pointer;">edit</span>
-              <span class="material-symbols-rounded" onclick="deleteOffice('${o.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>
+            <div style="display:flex; gap:4px;">
+              <span class="material-symbols-rounded" onclick="editOfficeModal('${o.id}', '${o.code}', '${o.name}', '${o.pic_name || ''}', '${o.address || ''}')" style="color:#2196F3; font-size:16px; cursor:pointer;">edit</span>
+              <span class="material-symbols-rounded" onclick="deleteOffice('${o.id}')" style="color:#E53935; font-size:16px; cursor:pointer;">delete</span>
             </div>
           ` : ''}
         </div>
@@ -583,87 +590,87 @@
     }
 
     function renderAssetPopupContent(data, el) {
-      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada asset gedung.</p>`; return; }
+      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.7rem; color:gray; text-align:center;">Belum ada asset gedung.</p>`; return; }
       el.innerHTML = data.map(a => `
         <div class="data-item">
           <div>
-            <div style="font-weight:700; font-size:0.8rem;">${a.name} (${a.asset_number})</div>
-            <div style="font-size:0.7rem; color:var(--text-sub);">Lokasi Kantor: ${a.office_name || 'Kantor Pusat'} • Kategori: ${a.category}</div>
+            <div style="font-weight:700; font-size:0.75rem;">${a.name} (${a.asset_number})</div>
+            <div style="font-size:0.65rem; color:var(--text-sub);">Kantor: ${a.office_name || 'Kantor Pusat'} • Kategori: ${a.category} • Status: ${a.status}</div>
           </div>
-          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteAsset('${a.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
+          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteAsset('${a.id}')" style="color:#E53935; font-size:16px; cursor:pointer;">delete</span>` : ''}
         </div>
       `).join('');
     }
 
     function renderUtilityPopupContent(data, el) {
-      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada tagihan utilitas.</p>`; return; }
+      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.7rem; color:gray; text-align:center;">Belum ada tagihan utilitas.</p>`; return; }
       el.innerHTML = data.map(u => `
         <div class="data-item">
           <div>
-            <div style="font-weight:700; font-size:0.8rem;">Tagihan ${u.bill_type} (${u.month_year})</div>
-            <div style="font-size:0.7rem; color:var(--text-sub);">Kantor: ${u.office_name || 'Kantor Pusat'} • Rp ${u.amount.toLocaleString()}</div>
+            <div style="font-weight:700; font-size:0.75rem;">Tagihan ${u.bill_type} (${u.month_year})</div>
+            <div style="font-size:0.65rem; color:var(--text-sub);">Kantor: ${u.office_name || 'Kantor Pusat'} • Rp ${u.amount.toLocaleString()}</div>
           </div>
-          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteUtility('${u.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
+          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteUtility('${u.id}')" style="color:#E53935; font-size:16px; cursor:pointer;">delete</span>` : ''}
         </div>
       `).join('');
     }
 
     function renderMaintenancePopupContent(data, el) {
-      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada jadwal perawatan.</p>`; return; }
+      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.7rem; color:gray; text-align:center;">Belum ada jadwal perawatan.</p>`; return; }
       el.innerHTML = data.map(m => `
         <div class="data-item">
           <div>
-            <div style="font-weight:700; font-size:0.8rem;">${m.title}</div>
-            <div style="font-size:0.7rem; color:var(--text-sub);">Kantor: ${m.office_name || 'Kantor Pusat'} • Asset: ${m.asset_name || '-'} • Tgl: ${m.scheduled_date}</div>
+            <div style="font-weight:700; font-size:0.75rem;">${m.title}</div>
+            <div style="font-size:0.65rem; color:var(--text-sub);">Kantor: ${m.office_name || 'Kantor Pusat'} • Asset: ${m.asset_name || '-'} • Tgl: ${m.scheduled_date}</div>
           </div>
-          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteMaintenance('${m.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
+          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteMaintenance('${m.id}')" style="color:#E53935; font-size:16px; cursor:pointer;">delete</span>` : ''}
         </div>
       `).join('');
     }
 
     function renderWOPopupContent(data, el) {
-      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada Work Order.</p>`; return; }
+      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.7rem; color:gray; text-align:center;">Belum ada Work Order.</p>`; return; }
       el.innerHTML = data.map(w => `
         <div class="data-item">
           <div>
-            <div style="font-weight:700; font-size:0.8rem;">${w.wo_number} - ${w.title}</div>
-            <div style="font-size:0.7rem; color:var(--text-sub);">Kantor: ${w.office_name || 'Kantor Pusat'} • Status: ${w.status}</div>
+            <div style="font-weight:700; font-size:0.75rem;">${w.wo_number} - ${w.title}</div>
+            <div style="font-size:0.65rem; color:var(--text-sub);">Kantor: ${w.office_name || 'Kantor Pusat'} • Status: ${w.status}</div>
           </div>
-          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteWO('${w.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
+          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteWO('${w.id}')" style="color:#E53935; font-size:16px; cursor:pointer;">delete</span>` : ''}
         </div>
       `).join('');
     }
 
     function renderCleaningPopupContent(data, el) {
-      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada data cleaning.</p>`; return; }
+      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.7rem; color:gray; text-align:center;">Belum ada data cleaning.</p>`; return; }
       el.innerHTML = data.map(c => `
         <div class="data-item">
           <div>
-            <div style="font-weight:700; font-size:0.8rem;">Area: ${c.area_name}</div>
-            <div style="font-size:0.7rem; color:var(--text-sub);">Kantor: ${c.office_name || 'Kantor Pusat'} • Petugas: ${c.cleaner_name || '-'}</div>
+            <div style="font-weight:700; font-size:0.75rem;">Area: ${c.area_name}</div>
+            <div style="font-size:0.65rem; color:var(--text-sub);">Kantor: ${c.office_name || 'Kantor Pusat'} • Petugas: ${c.cleaner_name || '-'}</div>
           </div>
-          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteCleaning('${c.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
+          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteCleaning('${c.id}')" style="color:#E53935; font-size:16px; cursor:pointer;">delete</span>` : ''}
         </div>
       `).join('');
     }
 
     function renderArsipPopupContent(data, el) {
-      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada file arsip.</p>`; return; }
+      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.7rem; color:gray; text-align:center;">Belum ada file arsip.</p>`; return; }
       el.innerHTML = data.map(a => `
         <div class="data-item">
           <div>
-            <div style="font-weight:700; font-size:0.8rem;">${a.title}</div>
-            <div style="font-size:0.7rem; color:var(--text-sub);">Kantor: ${a.office_name || 'Kantor Pusat'} • Kategori: ${a.category}</div>
+            <div style="font-weight:700; font-size:0.75rem;">${a.title}</div>
+            <div style="font-size:0.65rem; color:var(--text-sub);">Kantor: ${a.office_name || 'Kantor Pusat'} • Kategori: ${a.category}</div>
           </div>
           <div>
-            ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteArchive('${a.id}')" style="color:#E53935; font-size:18px; cursor:pointer; margin-right:6px;">delete</span>` : ''}
-            <span class="material-symbols-rounded" style="color:var(--primary); font-size:18px; cursor:pointer;">download</span>
+            ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteArchive('${a.id}')" style="color:#E53935; font-size:16px; cursor:pointer; margin-right:4px;">delete</span>` : ''}
+            <span class="material-symbols-rounded" style="color:var(--primary); font-size:16px; cursor:pointer;">download</span>
           </div>
         </div>
       `).join('');
     }
 
-    // FORM MODALS WITH OFFICE DROPDOWN SELECTION
+    // ADMIN CRUD FORM MODALS
     async function addOfficeModal() {
       const { value: f } = await Swal.fire({
         title: 'Tambah Kantor BSN',
@@ -883,13 +890,13 @@
 
       if (data && data.length > 0) {
         resContainer.innerHTML = data.map(m => `
-          <div class="data-item" style="margin-top:8px;">
-            <div style="font-weight:700; font-size:0.8rem;">${m.title}</div>
-            <div style="font-size:0.7rem; color:gray;">Kantor: ${m.office_name || 'Kantor Pusat'} • Asset: ${m.asset_name || '-'}</div>
+          <div class="data-item" style="margin-top:6px;">
+            <div style="font-weight:700; font-size:0.75rem;">${m.title}</div>
+            <div style="font-size:0.65rem; color:gray;">Kantor: ${m.office_name || 'Kantor Pusat'} • Asset: ${m.asset_name || '-'}</div>
           </div>
         `).join('');
       } else {
-        resContainer.innerHTML = `<p style="font-size:0.75rem; color:gray; margin-top:8px; text-align:center;">Tidak ada jadwal pada tanggal ini.</p>`;
+        resContainer.innerHTML = `<p style="font-size:0.7rem; color:gray; margin-top:6px; text-align:center;">Tidak ada jadwal pada tanggal ini.</p>`;
       }
     }
 
