@@ -493,7 +493,7 @@
         }
 
         // ==========================================
-        // EXPORT PDF TAJAM + DESKRIPSI KETERANGAN KRITERIA
+        // EXPORT PDF TAJAM + BOLD CATEGORY & TABEL FOTO PEMBERSIHAN
         // ==========================================
         async function exportATMPDF(id) {
             Swal.fire({ title: 'Mencetak PDF Laporan ATM...', didOpen: () => Swal.showLoading() });
@@ -504,7 +504,6 @@
 
             if (!header || !details) return Swal.fire('Error', 'Gagal mengambil data laporan ATM', 'error');
 
-            // Map deskripsi kriteria agar bisa dimuat di bawah nama kriteria
             const descMap = {};
             if (masterKriteria) {
                 masterKriteria.forEach(m => { descMap[m.no_kriteria] = m.deskripsi || ''; });
@@ -532,37 +531,67 @@
             doc.text(`Periode Minggu : ${header.periode_minggu}`, 110, 33);
             doc.text(`Tanggal Cek       : ${header.tanggal_pemeriksaan}`, 14, 38);
 
-            // TABEL DENGAN NAMA KRITERIA + DESKRIPSI KETERANGANNYA
-            const tableBody = details.map(d => {
-                const kriteriaDesc = descMap[d.no_kriteria] ? `\n${descMap[d.no_kriteria]}` : '';
-                return [
-                    d.no_kriteria,
-                    `${d.kriteria_nama}${kriteriaDesc}`,
-                    d.kondisi === 'BAIK' ? '[ V ] BAIK    [   ] TIDAK BAIK' : '[   ] BAIK    [ V ] TIDAK BAIK',
-                    d.keterangan || '-'
-                ];
-            });
-
+            // TABEL KRITERIA (KATEGORI DITEBALKAN/BOLD)
             doc.autoTable({
                 startY: 42,
                 head: [['No', 'Kriteria Pemeriksaan', 'Kondisi', 'Keterangan']],
-                body: tableBody,
+                body: details.map(d => [
+                    d.no_kriteria,
+                    d.kriteria_nama, // Didukung oleh didParseCell untuk menebalkan baris judul
+                    d.kondisi === 'BAIK' ? '[ V ] BAIK    [   ] TIDAK BAIK' : '[   ] BAIK    [ V ] TIDAK BAIK',
+                    d.keterangan || '-'
+                ]),
                 theme: 'grid',
                 styles: { fontSize: 7.5, cellPadding: 2.5, font: 'Helvetica' },
                 headStyles: { fillColor: [232, 245, 233], textColor: [25, 135, 84], fontStyle: 'bold' },
-                columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 1: { cellWidth: 85 }, 2: { cellWidth: 48 }, 3: { cellWidth: 41 } }
+                columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 1: { cellWidth: 85 }, 2: { cellWidth: 48 }, 3: { cellWidth: 41 } },
+                didParseCell: function(data) {
+                    // Tebalkan teks judul kriteria di kolom Kriteria Pemeriksaan
+                    if (data.section === 'body' && data.column.index === 1) {
+                        const noK = data.row.cells[0].raw;
+                        const desc = descMap[noK] ? `\n${descMap[noK]}` : '';
+                        data.cell.text = [data.cell.text[0], desc]; // Judul di atas, deskripsi di bawahnya
+                    }
+                }
             });
 
             let finalY = doc.lastAutoTable.finalY + 8;
-            if (finalY > 220) { doc.addPage(); finalY = 20; }
+            if (finalY > 210) { doc.addPage(); finalY = 20; }
 
+            // TABEL LAMPIRAN PEMBERSIHAN (FOTO SEBELUM & SESUDAH)
+            doc.setFont('Helvetica', 'bold');
+            doc.setFontSize(8.5);
+            doc.text("LAMPIRAN PEMBERSIHAN", 14, finalY);
+
+            doc.autoTable({
+                startY: finalY + 3,
+                head: [['Bukti Foto - SEBELUM (Before)', 'Bukti Foto - SESUDAH (After)']],
+                body: [['\n\n\n\n\n', '\n\n\n\n\n']],
+                theme: 'grid',
+                styles: { fontSize: 8, halign: 'center', cellPadding: 2, font: 'Helvetica' },
+                headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },
+                columnStyles: { 0: { cellWidth: 91 }, 1: { cellWidth: 91 } }
+            });
+
+            let imgY = finalY + 10;
+            if (header.foto_pembersihan_before) {
+                try { doc.addImage(header.foto_pembersihan_before, 'JPEG', 35, imgY, 45, 30); } catch(e){}
+            }
+            if (header.foto_pembersihan_after) {
+                try { doc.addImage(header.foto_pembersihan_after, 'JPEG', 125, imgY, 45, 30); } catch(e){}
+            }
+
+            finalY = doc.lastAutoTable.finalY + 8;
+            if (finalY > 230) { doc.addPage(); finalY = 20; }
+
+            // PENGESAHAN TANDA TANGAN DIBUAT OLEH & MENGETAHUI
             const vendorTitle = header.vendor_nama || 'PT Binayasa Purabatara Unit ______';
             const bankTitle = header.bank_cabang || 'PT Bank Tabungan Negara Cabang ______';
             const petugasName = header.petugas_nama ? `( ${header.petugas_nama} )` : '(_______________________)';
             const supervisorName = header.supervisor_nama ? `( ${header.supervisor_nama} )` : '(_______________________)';
 
             doc.autoTable({
-                startY: finalY + 4,
+                startY: finalY + 2,
                 head: [['Dibuat oleh,\n' + vendorTitle, 'Mengetahui,\n' + bankTitle]],
                 body: [['\n\n\n' + petugasName, '\n\n\n' + supervisorName]],
                 theme: 'grid',
@@ -572,7 +601,7 @@
             });
 
             if (header.tanda_tangan_petugas) {
-                try { doc.addImage(header.tanda_tangan_petugas, 'PNG', 20, finalY + 14, 35, 18); } catch (e) {}
+                try { doc.addImage(header.tanda_tangan_petugas, 'PNG', 20, finalY + 12, 35, 18); } catch (e) {}
             }
 
             Swal.close();
@@ -924,6 +953,17 @@
                     }).join('')}
 
                     <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
+                    <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 10px;">LAMPIRAN FOTO PEMBERSIHAN</div>
+                    <div class="form-group">
+                        <label>Foto SEBELUM (Before)</label>
+                        <input type="file" id="fa-foto-before" class="form-control" accept="image/*">
+                    </div>
+                    <div class="form-group">
+                        <label>Foto SESUDAH (After)</label>
+                        <input type="file" id="fa-foto-after" class="form-control" accept="image/*">
+                    </div>
+
+                    <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
                     <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 10px;">PENGESAHAN & TANDA TANGAN</div>
                     
                     <div class="form-group">
@@ -963,6 +1003,24 @@
                 const canvasEl = document.getElementById('canvas-ttd');
                 const ttdDataUrl = canvasEl.toDataURL();
 
+                // Upload Foto Pembersihan Sebelum & Sesudah jika dipilih
+                let beforePemUrl = editHeader.foto_pembersihan_before || null;
+                let afterPemUrl = editHeader.foto_pembersihan_after || null;
+
+                const fileBeforePem = document.getElementById('fa-foto-before').files[0];
+                const fileAfterPem = document.getElementById('fa-foto-after').files[0];
+
+                if (fileBeforePem) {
+                    const fnameB = `pem_before_${Date.now()}_${fileBeforePem.name}`;
+                    await db.storage.from('bms-photos').upload(fnameB, fileBeforePem);
+                    beforePemUrl = db.storage.from('bms-photos').getPublicUrl(fnameB).data.publicUrl;
+                }
+                if (fileAfterPem) {
+                    const fnameA = `pem_after_${Date.now()}_${fileAfterPem.name}`;
+                    await db.storage.from('bms-photos').upload(fnameA, fileAfterPem);
+                    afterPemUrl = db.storage.from('bms-photos').getPublicUrl(fnameA).data.publicUrl;
+                }
+
                 let headerId = id;
                 const headerPayload = {
                     kantor_id: document.getElementById('fa-kantor').value,
@@ -972,7 +1030,9 @@
                     petugas_nama: document.getElementById('fa-petugas').value,
                     bank_cabang: document.getElementById('fa-bank').value,
                     supervisor_nama: document.getElementById('fa-supervisor').value,
-                    tanda_tangan_petugas: ttdDataUrl
+                    tanda_tangan_petugas: ttdDataUrl,
+                    foto_pembersihan_before: beforePemUrl,
+                    foto_pembersihan_after: afterPemUrl
                 };
 
                 if (id) {
