@@ -297,7 +297,7 @@
             });
         }
 
-        // SUB PAGE ROUTER & FULL DATA DISPLAY
+        // SUB PAGE ROUTER
         async function openSubPage(pageKey) {
             const overlay = document.getElementById('sub-page-overlay');
             const titleEl = document.getElementById('sub-page-title');
@@ -459,7 +459,7 @@
             document.getElementById('sub-page-overlay').style.display = 'none';
         }
 
-        // CRUD FORMS ACTIONS
+        // --- FORM ACTION WITH COMPLETE ERROR HANDLING ---
         function openFormKantor() {
             document.getElementById('modal-title').innerText = "Tambah Kantor";
             document.getElementById('modal-body').innerHTML = `
@@ -472,22 +472,37 @@
 
             document.getElementById('f-kantor').onsubmit = async (e) => {
                 e.preventDefault();
-                await db.from('kantor').insert([{ nama: document.getElementById('fk-nama').value, alamat: document.getElementById('fk-alamat').value }]);
-                document.getElementById('app-modal').style.display = 'none';
-                openSubPage('kantor');
-                loadDashboardStats();
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+
+                const { error } = await db.from('kantor').insert([{ 
+                    nama: document.getElementById('fk-nama').value, 
+                    alamat: document.getElementById('fk-alamat').value 
+                }]);
+
+                if (error) {
+                    Swal.fire('Gagal Menyimpan', error.message, 'error');
+                } else {
+                    Swal.fire('Berhasil', 'Data kantor tersimpan', 'success');
+                    document.getElementById('app-modal').style.display = 'none';
+                    openSubPage('kantor');
+                    loadDashboardStats();
+                }
             };
         }
 
         function openFormAsset() {
-            db.from('kantor').select('id, nama').then(({data: kantorList}) => {
+            db.from('kantor').select('id, nama').then(({data: kantorList, error: errK}) => {
+                if (errK || !kantorList || kantorList.length === 0) {
+                    return Swal.fire('Peringatan', 'Silakan tambah Data Kantor terlebih dahulu!', 'warning');
+                }
+
                 document.getElementById('modal-title').innerText = "Tambah Asset";
                 document.getElementById('modal-body').innerHTML = `
                     <form id="f-asset">
                         <div class="form-group">
                             <label>Kantor</label>
                             <select id="fa-kantor" class="form-control" required>
-                                ${kantorList ? kantorList.map(k => `<option value="${k.id}">${k.nama}</option>`).join('') : ''}
+                                ${kantorList.map(k => `<option value="${k.id}">${k.nama}</option>`).join('')}
                             </select>
                         </div>
                         <div class="form-group"><label>Kode Asset</label><input type="text" id="fa-kode" class="form-control" value="AST-${Date.now().toString().slice(-4)}" required></div>
@@ -499,28 +514,38 @@
 
                 document.getElementById('f-asset').onsubmit = async (e) => {
                     e.preventDefault();
-                    await db.from('asset').insert([{
+                    Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+
+                    const { error } = await db.from('asset').insert([{
                         kantor_id: document.getElementById('fa-kantor').value,
                         kode_asset: document.getElementById('fa-kode').value,
                         nama_asset: document.getElementById('fa-nama').value,
                         kategori: document.getElementById('fa-kat').value,
                         status: 'Baik'
                     }]);
-                    document.getElementById('app-modal').style.display = 'none';
-                    openSubPage('asset');
-                    loadDashboardStats();
+
+                    if (error) {
+                        Swal.fire('Gagal Menyimpan', error.message, 'error');
+                    } else {
+                        Swal.fire('Berhasil', 'Data asset tersimpan', 'success');
+                        document.getElementById('app-modal').style.display = 'none';
+                        openSubPage('asset');
+                        loadDashboardStats();
+                    }
                 };
             });
         }
 
         function openFormUtilitas() {
             db.from('kantor').select('id, nama').then(({data: kantorList}) => {
+                if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah data kantor dulu!', 'warning');
+
                 document.getElementById('modal-title').innerText = "Catat Utilitas";
                 document.getElementById('modal-body').innerHTML = `
                     <form id="f-utilitas">
                         <div class="form-group">
                             <label>Kantor</label>
-                            <select id="fu-kantor" class="form-control">${kantorList ? kantorList.map(k=>`<option value="${k.id}">${k.nama}</option>`).join('') : ''}</select>
+                            <select id="fu-kantor" class="form-control">${kantorList.map(k=>`<option value="${k.id}">${k.nama}</option>`).join('')}</select>
                         </div>
                         <div class="form-group">
                             <label>Jenis Utilitas</label>
@@ -536,7 +561,9 @@
 
                 document.getElementById('f-utilitas').onsubmit = async (e) => {
                     e.preventDefault();
-                    await db.from('utilitas').insert([{
+                    Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+
+                    const { error } = await db.from('utilitas').insert([{
                         kantor_id: document.getElementById('fu-kantor').value,
                         jenis: document.getElementById('fu-jenis').value,
                         jumlah_pemakaian: document.getElementById('fu-jumlah').value,
@@ -544,20 +571,28 @@
                         biaya: document.getElementById('fu-biaya').value,
                         bulan_tahun: document.getElementById('fu-bulan').value
                     }]);
-                    document.getElementById('app-modal').style.display = 'none';
-                    openSubPage('utilitas');
+
+                    if (error) {
+                        Swal.fire('Gagal Menyimpan', error.message, 'error');
+                    } else {
+                        Swal.fire('Berhasil', 'Data utilitas tersimpan', 'success');
+                        document.getElementById('app-modal').style.display = 'none';
+                        openSubPage('utilitas');
+                    }
                 };
             });
         }
 
         function openFormWO() {
             db.from('asset').select('id, nama_asset').then(({data: assetList}) => {
+                if (!assetList || assetList.length === 0) return Swal.fire('Peringatan', 'Tambah data asset dulu!', 'warning');
+
                 document.getElementById('modal-title').innerText = "Buat Work Order";
                 document.getElementById('modal-body').innerHTML = `
                     <form id="f-wo">
                         <div class="form-group">
                             <label>Asset</label>
-                            <select id="fw-asset" class="form-control">${assetList ? assetList.map(a=>`<option value="${a.id}">${a.nama_asset}</option>`).join('') : ''}</select>
+                            <select id="fw-asset" class="form-control">${assetList.map(a=>`<option value="${a.id}">${a.nama_asset}</option>`).join('')}</select>
                         </div>
                         <div class="form-group"><label>Judul Pekerjaan</label><input type="text" id="fw-judul" class="form-control" required></div>
                         <button type="submit" class="btn btn-primary" style="margin-top:8px;">Simpan Work Order</button>
@@ -566,25 +601,35 @@
 
                 document.getElementById('f-wo').onsubmit = async (e) => {
                     e.preventDefault();
-                    await db.from('work_orders').insert([{
+                    Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+
+                    const { error } = await db.from('work_orders').insert([{
                         asset_id: document.getElementById('fw-asset').value,
                         judul: document.getElementById('fw-judul').value,
                         status: 'Pending'
                     }]);
-                    document.getElementById('app-modal').style.display = 'none';
-                    openSubPage('workorder');
-                    loadDashboardStats();
+
+                    if (error) {
+                        Swal.fire('Gagal Menyimpan', error.message, 'error');
+                    } else {
+                        Swal.fire('Berhasil', 'Work order tersimpan', 'success');
+                        document.getElementById('app-modal').style.display = 'none';
+                        openSubPage('workorder');
+                        loadDashboardStats();
+                    }
                 };
             });
         }
 
         function openFormPerawatan() {
             Promise.all([db.from('work_orders').select('id, judul'), db.from('teknisi').select('id, nama')]).then(([woRes, tekRes]) => {
+                if (!woRes.data || woRes.data.length === 0) return Swal.fire('Peringatan', 'Buat Work Order terlebih dahulu!', 'warning');
+
                 document.getElementById('modal-title').innerText = "Input Hasil Perawatan";
                 document.getElementById('modal-body').innerHTML = `
                     <form id="f-main">
-                        <div class="form-group"><label>Work Order</label><select id="fm-wo" class="form-control">${woRes.data ? woRes.data.map(w=>`<option value="${w.id}">${w.judul}</option>`).join('') : ''}</select></div>
-                        <div class="form-group"><label>Teknisi</label><select id="fm-teknisi" class="form-control">${tekRes.data ? tekRes.data.map(t=>`<option value="${t.id}">${t.nama}</option>`).join('') : ''}</select></div>
+                        <div class="form-group"><label>Work Order</label><select id="fm-wo" class="form-control">${woRes.data.map(w=>`<option value="${w.id}">${w.judul}</option>`).join('')}</select></div>
+                        <div class="form-group"><label>Teknisi</label><select id="fm-teknisi" class="form-control">${tekRes.data ? tekRes.data.map(t=>`<option value="${t.id}">${t.nama}</option>`).join('') : '<option value="">-</option>'}</select></div>
                         <div class="form-group"><label>Foto Before</label><input type="file" id="fm-before" class="form-control" accept="image/*"></div>
                         <div class="form-group"><label>Foto After</label><input type="file" id="fm-after" class="form-control" accept="image/*"></div>
                         <div class="form-group"><label>Biaya Perbaikan (Rp)</label><input type="number" id="fm-biaya" class="form-control" value="0"></div>
@@ -594,7 +639,7 @@
 
                 document.getElementById('f-main').onsubmit = async (e) => {
                     e.preventDefault();
-                    Swal.fire({ title: 'Mengunggah Foto...', didOpen: () => Swal.showLoading() });
+                    Swal.fire({ title: 'Mengunggah...', didOpen: () => Swal.showLoading() });
 
                     let beforeUrl = null, afterUrl = null;
                     const fileBefore = document.getElementById('fm-before').files[0];
@@ -611,18 +656,22 @@
                         afterUrl = db.storage.from('bms-photos').getPublicUrl(fname).data.publicUrl;
                     }
 
-                    await db.from('maintenances').insert([{
+                    const { error } = await db.from('maintenances').insert([{
                         work_order_id: document.getElementById('fm-wo').value,
-                        teknisi_id: document.getElementById('fm-teknisi').value,
+                        teknisi_id: document.getElementById('fm-teknisi').value || null,
                         foto_before: beforeUrl,
                         foto_after: afterUrl,
                         biaya: document.getElementById('fm-biaya').value,
                         tanggal_selesai: new Date()
                     }]);
 
-                    Swal.close();
-                    document.getElementById('app-modal').style.display = 'none';
-                    openSubPage('perawatan');
+                    if (error) {
+                        Swal.fire('Gagal Menyimpan', error.message, 'error');
+                    } else {
+                        Swal.fire('Berhasil', 'Data pengerjaan tersimpan', 'success');
+                        document.getElementById('app-modal').style.display = 'none';
+                        openSubPage('perawatan');
+                    }
                 };
             });
         }
@@ -639,13 +688,21 @@
 
             document.getElementById('f-teknisi').onsubmit = async (e) => {
                 e.preventDefault();
-                await db.from('teknisi').insert([{
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+
+                const { error } = await db.from('teknisi').insert([{
                     nama: document.getElementById('ft-nama').value,
                     spesialisasi: document.getElementById('ft-spesialisasi').value,
                     status: 'Tersedia'
                 }]);
-                document.getElementById('app-modal').style.display = 'none';
-                openSubPage('teknisi');
+
+                if (error) {
+                    Swal.fire('Gagal Menyimpan', error.message, 'error');
+                } else {
+                    Swal.fire('Berhasil', 'Teknisi tersimpan', 'success');
+                    document.getElementById('app-modal').style.display = 'none';
+                    openSubPage('teknisi');
+                }
             };
         }
 
