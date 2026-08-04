@@ -73,10 +73,10 @@
     .btn-secondary { width: 100%; padding: 10px; background: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 12px; font-weight: 600; font-size: 0.85rem; cursor: pointer; margin-top: 8px; }
     
     .input-field { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; margin-bottom: 12px; outline: none; font-size: 0.85rem; background: var(--card-bg); color: var(--text-main); }
-    .archive-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: var(--icon-bg); border-radius: 12px; margin-bottom: 8px; }
+    .data-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: var(--icon-bg); border-radius: 12px; margin-bottom: 8px; }
     .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; padding: 16px; }
 
-    /* Admin Actions Control */
+    /* Admin Action Controls */
     .admin-only { display: none; }
   </style>
 </head>
@@ -177,7 +177,7 @@
       </div>
     </div>
 
-    <!-- GRID MENU -->
+    <!-- GRID MENU (SEMUA MENU AKTIF) -->
     <div class="menu-grid">
       <div class="menu-item" onclick="showPage('kantor')"><div class="menu-icon-circle"><span class="material-symbols-rounded">domain</span></div><span class="menu-label">Kantor</span></div>
       <div class="menu-item" onclick="showPage('asset')"><div class="menu-icon-circle"><span class="material-symbols-rounded">inventory_2</span></div><span class="menu-label">Asset</span></div>
@@ -193,23 +193,14 @@
       <div class="menu-item" onclick="showPage('sql')"><div class="menu-icon-circle"><span class="material-symbols-rounded">database</span></div><span class="menu-label">SQL RLS</span></div>
     </div>
 
-    <!-- VIEWS -->
+    <!-- PAGE VIEWS -->
+
+    <!-- 1. DASHBOARD -->
     <div id="view-dashboard" class="page-view active">
       <div class="content-box"><h4 style="font-size: 0.85rem; margin-bottom: 10px;">Grafik Perawatan Gedung Realtime</h4><div style="height: 180px;"><canvas id="mainChart"></canvas></div></div>
     </div>
 
-    <!-- ARSIP VIEW -->
-    <div id="view-arsip" class="page-view">
-      <div class="content-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h4 style="font-size: 0.9rem;">Penyimpanan Arsip</h4>
-          <button onclick="openUploadArsipModal()" class="admin-only" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Simpan Arsip</button>
-        </div>
-        <div id="arsip-list"></div>
-      </div>
-    </div>
-
-    <!-- MASTER KANTOR VIEW -->
+    <!-- 2. MASTER KANTOR VIEW -->
     <div id="view-kantor" class="page-view">
       <div class="content-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -232,11 +223,40 @@
       </div>
     </div>
 
-    <div id="view-asset" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 8px;">Asset Management</h4><div id="asset-card-list"></div></div></div>
-    <div id="view-utility" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 10px;">Utilitas Gedung</h4><div id="utility-list"></div></div></div>
-    <div id="view-maintenance" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 8px;">Perawatan Routine</h4><div id="maintenance-list"></div></div></div>
-    
-    <!-- WORK ORDER VIEW -->
+    <!-- 3. ASSET VIEW -->
+    <div id="view-asset" class="page-view">
+      <div class="content-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="font-size: 0.9rem;">Asset Management</h4>
+          <button onclick="addAssetModal()" class="admin-only" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Input Asset</button>
+        </div>
+        <div id="asset-card-list"></div>
+      </div>
+    </div>
+
+    <!-- 4. UTILITY BILLS VIEW -->
+    <div id="view-utility" class="page-view">
+      <div class="content-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="font-size: 0.9rem;">Tagihan Utilitas Gedung</h4>
+          <button onclick="addUtilityModal()" class="admin-only" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Tagihan Baru</button>
+        </div>
+        <div id="utility-list"></div>
+      </div>
+    </div>
+
+    <!-- 5. MAINTENANCE VIEW -->
+    <div id="view-maintenance" class="page-view">
+      <div class="content-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="font-size: 0.9rem;">Perawatan Routine Gedung</h4>
+          <button onclick="addMaintenanceModal()" class="admin-only" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Jadwal Perawatan</button>
+        </div>
+        <div id="maintenance-list"></div>
+      </div>
+    </div>
+
+    <!-- 6. WORK ORDER VIEW -->
     <div id="view-workorder" class="page-view">
       <div class="content-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -247,17 +267,60 @@
       </div>
     </div>
 
-    <div id="view-cleaning" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem;">General Cleaning</h4><p style="font-size: 0.75rem; color: var(--text-sub); margin-top: 4px;">Area: Lobby, Toilet, Kaca, Wallsign.</p></div></div>
-    <div id="view-schedule" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 8px;">Jadwal Gedung</h4><input type="date" class="input-field"></div></div>
-    <div id="view-reports" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 10px;">Laporan & Export</h4><button onclick="window.print()" class="btn-primary">Export PDF / Print</button></div></div>
-    <div id="view-sql" class="page-view"><div class="content-box"><h4 style="font-size: 0.85rem; margin-bottom: 6px;">Supabase Connected</h4><p style="font-size:0.7rem;">https://pykkfcszdihobpwhqinq.supabase.co</p></div></div>
+    <!-- 7. GENERAL CLEANING VIEW -->
+    <div id="view-cleaning" class="page-view">
+      <div class="content-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="font-size: 0.9rem;">General Cleaning Checklist</h4>
+          <button onclick="addCleaningModal()" class="admin-only" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Input Cleaning</button>
+        </div>
+        <div id="cleaning-list"></div>
+      </div>
+    </div>
+
+    <!-- 8. ARSIP VIEW -->
+    <div id="view-arsip" class="page-view">
+      <div class="content-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="font-size: 0.9rem;">Penyimpanan Arsip</h4>
+          <button onclick="openUploadArsipModal()" class="admin-only" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Simpan Arsip</button>
+        </div>
+        <div id="arsip-list"></div>
+      </div>
+    </div>
+
+    <!-- 9. SCHEDULE VIEW -->
+    <div id="view-schedule" class="page-view">
+      <div class="content-box">
+        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Jadwal Kegiatan Gedung</h4>
+        <input type="date" id="calendar-picker" class="input-field" onchange="filterScheduleByDate()">
+        <div id="schedule-results"></div>
+      </div>
+    </div>
+
+    <!-- 10. REPORTS VIEW -->
+    <div id="view-reports" class="page-view">
+      <div class="content-box">
+        <h4 style="font-size: 0.9rem; margin-bottom: 10px;">Laporan Operasional & Export</h4>
+        <button onclick="window.print()" class="btn-primary" style="margin-bottom:8px;">Print / Export PDF</button>
+        <button onclick="exportExcel('table-kantor', 'Laporan_BBMS')" class="btn-primary" style="background: #2E7D32;">Export Excel Data Kantor</button>
+      </div>
+    </div>
+
+    <!-- 11. SQL VIEW -->
+    <div id="view-sql" class="page-view">
+      <div class="content-box">
+        <h4 style="font-size: 0.85rem; margin-bottom: 6px;">Supabase Realtime Connected</h4>
+        <p style="font-size:0.7rem; color:var(--text-sub);">Database: https://pykkfcszdihobpwhqinq.supabase.co</p>
+      </div>
+    </div>
 
   </div>
 
   <!-- MODAL CAMERA SCANNER -->
   <div class="modal-backdrop" id="qr-modal">
     <div style="background: var(--card-bg); padding: 16px; border-radius: 16px; width: 100%; max-width: 300px; text-align: center;">
-      <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Scan QR Asset</h4>
+      <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Scan QR Asset Gedung</h4>
       <div id="reader" style="width: 100%;"></div>
       <button onclick="closeQRScanner()" class="btn-primary" style="background: #E53935; margin-top: 10px;">Tutup</button>
     </div>
@@ -313,7 +376,7 @@
           Swal.fire({
             icon: 'success',
             title: 'Pendaftaran Berhasil',
-            text: 'Akun telah terbuat. Silakan login dengan akun Anda.',
+            text: 'Akun telah terbuat. Silakan login.',
             confirmButtonColor: '#0B8F4D'
           }).then(() => toggleAuthMode('login'));
         }
@@ -360,7 +423,7 @@
           document.getElementById("avatar-initials").innerText = profile.full_name.substring(0, 2).toUpperCase();
         }
 
-        // Tampilkan fitur khusus Administrator
+        // Buka kontrol Admin jika role administrator
         if (currentUserRole === 'administrator') {
           document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'inline-block');
         } else {
@@ -379,36 +442,37 @@
     }
 
     async function loadDatabaseData() {
-      // 1. Offices
+      // 1. Fetch Offices
       const { data: offices, count: officeCount } = await supabaseClient.from('offices').select('*', { count: 'exact' });
       document.getElementById('val-total-kantor').innerText = officeCount || 0;
-      
-      const tbody = document.getElementById("kantor-rows");
-      if (offices && offices.length > 0) {
-        tbody.innerHTML = offices.map(o => `
-          <tr style="border-bottom: 1px solid var(--border);">
-            <td style="padding: 6px;"><b>${o.code}</b></td>
-            <td style="padding: 6px;">${o.name}</td>
-            <td style="padding: 6px;">${o.pic_name || '-'}</td>
-            <td style="padding: 6px;" class="admin-only">
-              <span class="material-symbols-rounded" onclick="editOffice('${o.id}', '${o.name}', '${o.pic_name}')" style="cursor:pointer; font-size:16px; color:#2196F3;">edit</span>
-              <span class="material-symbols-rounded" onclick="deleteOffice('${o.id}')" style="cursor:pointer; font-size:16px; color:#E53935;">delete</span>
-            </td>
-          </tr>
-        `).join('');
-      } else {
-        tbody.innerHTML = `<tr><td colspan="4" style="padding:10px; text-align:center; color:gray;">Belum ada data kantor.</td></tr>`;
-      }
+      renderOfficeRows(offices || []);
 
-      // 2. Work Orders
+      // 2. Fetch Assets
+      const { data: assets, count: assetCount } = await supabaseClient.from('assets').select('*', { count: 'exact' });
+      document.getElementById('val-total-asset').innerText = assetCount || 0;
+      renderAssetList(assets || []);
+
+      // 3. Fetch Work Orders
       const { data: wos, count: woCount } = await supabaseClient.from('work_orders').select('*', { count: 'exact' });
       document.getElementById('val-total-wo').innerText = woCount || 0;
       renderWOList(wos || []);
 
-      // 3. Archives
+      // 4. Fetch Archives
       const { data: archives, count: archiveCount } = await supabaseClient.from('archives').select('*', { count: 'exact' });
       document.getElementById('val-total-arsip').innerText = archiveCount || 0;
       renderArsipList(archives || []);
+
+      // 5. Fetch Utility Bills
+      const { data: bills } = await supabaseClient.from('utility_bills').select('*');
+      renderUtilityList(bills || []);
+
+      // 6. Fetch Maintenances
+      const { data: maintenances } = await supabaseClient.from('maintenances').select('*');
+      renderMaintenanceList(maintenances || []);
+
+      // 7. Fetch Cleanings
+      const { data: cleanings } = await supabaseClient.from('cleanings').select('*');
+      renderCleaningList(cleanings || []);
 
       // Re-apply admin visibility
       if (currentUserRole === 'administrator') {
@@ -417,82 +481,227 @@
     }
 
     // ==========================================
-    // ADMINISTRATOR CRUD ACTIONS
+    // ADMINISTRATOR FORM INPUT & CRUD ACTIONS
     // ==========================================
 
-    // CRUD KANTOR
+    // 1. MASTER KANTOR FORM
     async function addOfficeModal() {
       const { value: formValues } = await Swal.fire({
-        title: 'Tambah Kantor Baru',
+        title: 'Tambah Kantor BSN',
         html:
           '<input id="swal-code" class="swal2-input" placeholder="Kode Kantor (misal: BSN-001)">' +
           '<input id="swal-name" class="swal2-input" placeholder="Nama Kantor">' +
-          '<input id="swal-pic" class="swal2-input" placeholder="Nama PIC">',
+          '<input id="swal-pic" class="swal2-input" placeholder="PIC Kantor">' +
+          '<input id="swal-addr" class="swal2-input" placeholder="Alamat Kantor">',
         focusConfirm: false,
         showCancelButton: true,
-        confirmButtonText: 'Simpan Kantor',
+        confirmButtonText: 'Simpan',
         confirmButtonColor: '#0B8F4D',
         preConfirm: () => [
           document.getElementById('swal-code').value,
           document.getElementById('swal-name').value,
-          document.getElementById('swal-pic').value
+          document.getElementById('swal-pic').value,
+          document.getElementById('swal-addr').value
         ]
       });
 
       if (formValues && formValues[0] && formValues[1]) {
         const { error } = await supabaseClient.from('offices').insert([
-          { code: formValues[0], name: formValues[1], pic_name: formValues[2], address: 'Alamat BSN' }
+          { code: formValues[0], name: formValues[1], pic_name: formValues[2], address: formValues[3] || 'Alamat BSN' }
         ]);
 
         if (error) Swal.fire('Gagal', error.message, 'error');
-        else { Swal.fire('Berhasil', 'Kantor baru telah ditambahkan', 'success'); loadDatabaseData(); }
+        else { Swal.fire('Berhasil', 'Kantor baru disimpan', 'success'); loadDatabaseData(); }
       }
     }
 
-    async function editOffice(id, currentName, currentPic) {
-      const { value: formValues } = await Swal.fire({
-        title: 'Edit Data Kantor',
-        html:
-          `<input id="swal-name" class="swal2-input" value="${currentName}" placeholder="Nama Kantor">` +
-          `<input id="swal-pic" class="swal2-input" value="${currentPic}" placeholder="Nama PIC">`,
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Update Kantor',
-        confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [
-          document.getElementById('swal-name').value,
-          document.getElementById('swal-pic').value
-        ]
-      });
-
-      if (formValues) {
-        const { error } = await supabaseClient.from('offices').update({
-          name: formValues[0], pic_name: formValues[1]
-        }).eq('id', id);
-
-        if (error) Swal.fire('Gagal Edit', error.message, 'error');
-        else { Swal.fire('Berhasil', 'Data kantor diperbarui', 'success'); loadDatabaseData(); }
+    function renderOfficeRows(offices) {
+      const tbody = document.getElementById("kantor-rows");
+      if (offices.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="padding:10px; text-align:center; color:gray;">Belum ada data kantor.</td></tr>`;
+        return;
       }
+      tbody.innerHTML = offices.map(o => `
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 6px;"><b>${o.code}</b></td>
+          <td style="padding: 6px;">${o.name}</td>
+          <td style="padding: 6px;">${o.pic_name || '-'}</td>
+          <td style="padding: 6px;" class="admin-only">
+            <span class="material-symbols-rounded" onclick="deleteOffice('${o.id}')" style="cursor:pointer; font-size:16px; color:#E53935;">delete</span>
+          </td>
+        </tr>
+      `).join('');
     }
 
     async function deleteOffice(id) {
-      const result = await Swal.fire({
-        title: 'Hapus Kantor?',
-        text: 'Data kantor ini akan dihapus permanen!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#E53935',
-        confirmButtonText: 'Ya, Hapus'
-      });
-
-      if (result.isConfirmed) {
-        const { error } = await supabaseClient.from('offices').delete().eq('id', id);
-        if (error) Swal.fire('Gagal Hapus', error.message, 'error');
-        else { Swal.fire('Terhapus', 'Kantor berhasil dihapus', 'success'); loadDatabaseData(); }
+      if (confirm("Hapus kantor ini?")) {
+        await supabaseClient.from('offices').delete().eq('id', id);
+        loadDatabaseData();
       }
     }
 
-    // CRUD WORK ORDER
+    // 2. ASSET FORM
+    async function addAssetModal() {
+      const { value: formValues } = await Swal.fire({
+        title: 'Input Asset Gedung',
+        html:
+          '<input id="swal-num" class="swal2-input" placeholder="No Asset (misal: AST-001)">' +
+          '<input id="swal-astname" class="swal2-input" placeholder="Nama Asset (misal: AC Server)">' +
+          '<input id="swal-cat" class="swal2-input" placeholder="Kategori (AC/Genset/Lift)">',
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Simpan Asset',
+        confirmButtonColor: '#0B8F4D',
+        preConfirm: () => [
+          document.getElementById('swal-num').value,
+          document.getElementById('swal-astname').value,
+          document.getElementById('swal-cat').value
+        ]
+      });
+
+      if (formValues && formValues[0] && formValues[1]) {
+        const { error } = await supabaseClient.from('assets').insert([
+          { asset_number: formValues[0], name: formValues[1], category: formValues[2] || 'Umum' }
+        ]);
+
+        if (error) Swal.fire('Gagal', error.message, 'error');
+        else { Swal.fire('Berhasil', 'Asset berhasil di-input', 'success'); loadDatabaseData(); }
+      }
+    }
+
+    function renderAssetList(items) {
+      const container = document.getElementById("asset-card-list");
+      if (items.length === 0) {
+        container.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center; padding:10px;">Belum ada asset gedung.</p>`;
+        return;
+      }
+      container.innerHTML = items.map(a => `
+        <div class="data-item">
+          <div>
+            <div style="font-weight: 700; font-size: 0.8rem;">${a.name} (${a.asset_number})</div>
+            <div style="font-size: 0.7rem; color: var(--text-sub);">Kategori: ${a.category} • Status: ${a.status}</div>
+          </div>
+          <span class="material-symbols-rounded admin-only" onclick="deleteAsset('${a.id}')" style="color: #E53935; font-size: 18px; cursor: pointer;">delete</span>
+        </div>
+      `).join('');
+    }
+
+    async function deleteAsset(id) {
+      if (confirm("Hapus asset ini?")) {
+        await supabaseClient.from('assets').delete().eq('id', id);
+        loadDatabaseData();
+      }
+    }
+
+    // 3. UTILITY BILLS FORM
+    async function addUtilityModal() {
+      const { value: formValues } = await Swal.fire({
+        title: 'Input Tagihan Utilitas',
+        html:
+          '<select id="swal-type" class="swal2-input"><option value="PLN">PLN</option><option value="PDAM">PDAM</option><option value="Internet">Internet</option></select>' +
+          '<input id="swal-my" class="swal2-input" placeholder="Bulan & Tahun (misal: Agustus 2026)">' +
+          '<input id="swal-cust" class="swal2-input" placeholder="No. Pelanggan">' +
+          '<input id="swal-amount" type="number" class="swal2-input" placeholder="Nominal Rp">',
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Simpan Tagihan',
+        confirmButtonColor: '#0B8F4D',
+        preConfirm: () => [
+          document.getElementById('swal-type').value,
+          document.getElementById('swal-my').value,
+          document.getElementById('swal-cust').value,
+          document.getElementById('swal-amount').value
+        ]
+      });
+
+      if (formValues && formValues[3]) {
+        const { error } = await supabaseClient.from('utility_bills').insert([
+          { bill_type: formValues[0], month_year: formValues[1], customer_number: formValues[2], amount: parseFloat(formValues[3]) }
+        ]);
+
+        if (error) Swal.fire('Gagal', error.message, 'error');
+        else { Swal.fire('Berhasil', 'Tagihan disimpan', 'success'); loadDatabaseData(); }
+      }
+    }
+
+    function renderUtilityList(items) {
+      const container = document.getElementById("utility-list");
+      if (items.length === 0) {
+        container.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center; padding:10px;">Belum ada catatan tagihan utilitas.</p>`;
+        return;
+      }
+      container.innerHTML = items.map(u => `
+        <div class="data-item">
+          <div>
+            <div style="font-weight: 700; font-size: 0.8rem;">Tagihan ${u.bill_type} (${u.month_year})</div>
+            <div style="font-size: 0.7rem; color: var(--text-sub);">No. Pelanggan: ${u.customer_number} • Nominal: Rp ${u.amount.toLocaleString()}</div>
+          </div>
+          <span class="material-symbols-rounded admin-only" onclick="deleteUtility('${u.id}')" style="color: #E53935; font-size: 18px; cursor: pointer;">delete</span>
+        </div>
+      `).join('');
+    }
+
+    async function deleteUtility(id) {
+      if (confirm("Hapus catatan tagihan ini?")) {
+        await supabaseClient.from('utility_bills').delete().eq('id', id);
+        loadDatabaseData();
+      }
+    }
+
+    // 4. MAINTENANCE FORM
+    async function addMaintenanceModal() {
+      const { value: formValues } = await Swal.fire({
+        title: 'Input Perawatan Routine',
+        html:
+          '<input id="swal-mtitle" class="swal2-input" placeholder="Judul Perawatan (misal: Service AC)">' +
+          '<input id="swal-mast" class="swal2-input" placeholder="Nama Asset">' +
+          '<input id="swal-mdate" type="date" class="swal2-input">',
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Simpan Perawatan',
+        confirmButtonColor: '#0B8F4D',
+        preConfirm: () => [
+          document.getElementById('swal-mtitle').value,
+          document.getElementById('swal-mast').value,
+          document.getElementById('swal-mdate').value
+        ]
+      });
+
+      if (formValues && formValues[0] && formValues[2]) {
+        const { error } = await supabaseClient.from('maintenances').insert([
+          { title: formValues[0], asset_name: formValues[1], scheduled_date: formValues[2] }
+        ]);
+
+        if (error) Swal.fire('Gagal', error.message, 'error');
+        else { Swal.fire('Berhasil', 'Jadwal perawatan disimpan', 'success'); loadDatabaseData(); }
+      }
+    }
+
+    function renderMaintenanceList(items) {
+      const container = document.getElementById("maintenance-list");
+      if (items.length === 0) {
+        container.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center; padding:10px;">Belum ada jadwal perawatan.</p>`;
+        return;
+      }
+      container.innerHTML = items.map(m => `
+        <div class="data-item">
+          <div>
+            <div style="font-weight: 700; font-size: 0.8rem;">${m.title}</div>
+            <div style="font-size: 0.7rem; color: var(--text-sub);">Asset: ${m.asset_name || '-'} • Tgl: ${m.scheduled_date}</div>
+          </div>
+          <span class="material-symbols-rounded admin-only" onclick="deleteMaintenance('${m.id}')" style="color: #E53935; font-size: 18px; cursor: pointer;">delete</span>
+        </div>
+      `).join('');
+    }
+
+    async function deleteMaintenance(id) {
+      if (confirm("Hapus perawatan ini?")) {
+        await supabaseClient.from('maintenances').delete().eq('id', id);
+        loadDatabaseData();
+      }
+    }
+
+    // 5. WORK ORDER FORM
     async function addWOModal() {
       const { value: formValues } = await Swal.fire({
         title: 'Buat Work Order Baru',
@@ -515,7 +724,7 @@
         ]);
 
         if (error) Swal.fire('Gagal', error.message, 'error');
-        else { Swal.fire('Berhasil', 'WO baru berhasil terbit', 'success'); loadDatabaseData(); }
+        else { Swal.fire('Berhasil', 'WO baru terbit', 'success'); loadDatabaseData(); }
       }
     }
 
@@ -527,14 +736,12 @@
       }
 
       container.innerHTML = items.map(w => `
-        <div class="archive-item">
+        <div class="data-item">
           <div>
             <div style="font-weight: 700; font-size: 0.8rem;">${w.wo_number} - ${w.title}</div>
             <div style="font-size: 0.7rem; color: var(--text-sub);">Status: ${w.status}</div>
           </div>
-          <div class="admin-only">
-            <span class="material-symbols-rounded" onclick="deleteWO('${w.id}')" style="cursor:pointer; font-size:16px; color:#E53935;">delete</span>
-          </div>
+          <span class="material-symbols-rounded admin-only" onclick="deleteWO('${w.id}')" style="color: #E53935; font-size: 18px; cursor: pointer;">delete</span>
         </div>
       `).join('');
     }
@@ -546,7 +753,60 @@
       }
     }
 
-    // CRUD ARSIP
+    // 6. GENERAL CLEANING FORM
+    async function addCleaningModal() {
+      const { value: formValues } = await Swal.fire({
+        title: 'Input General Cleaning',
+        html:
+          '<input id="swal-carea" class="swal2-input" placeholder="Area Cleaning (Lobby/Kaca/Toilet)">' +
+          '<input id="swal-cname" class="swal2-input" placeholder="Nama Petugas Cleaning">' +
+          '<input id="swal-cdate" type="date" class="swal2-input">',
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Simpan Cleaning',
+        confirmButtonColor: '#0B8F4D',
+        preConfirm: () => [
+          document.getElementById('swal-carea').value,
+          document.getElementById('swal-cname').value,
+          document.getElementById('swal-cdate').value
+        ]
+      });
+
+      if (formValues && formValues[0] && formValues[2]) {
+        const { error } = await supabaseClient.from('cleanings').insert([
+          { area_name: formValues[0], cleaner_name: formValues[1], cleaning_date: formValues[2] }
+        ]);
+
+        if (error) Swal.fire('Gagal', error.message, 'error');
+        else { Swal.fire('Berhasil', 'Data cleaning tersimpan', 'success'); loadDatabaseData(); }
+      }
+    }
+
+    function renderCleaningList(items) {
+      const container = document.getElementById("cleaning-list");
+      if (items.length === 0) {
+        container.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center; padding:10px;">Belum ada catatan cleaning.</p>`;
+        return;
+      }
+      container.innerHTML = items.map(c => `
+        <div class="data-item">
+          <div>
+            <div style="font-weight: 700; font-size: 0.8rem;">Area: ${c.area_name}</div>
+            <div style="font-size: 0.7rem; color: var(--text-sub);">Petugas: ${c.cleaner_name || '-'} • Tgl: ${c.cleaning_date}</div>
+          </div>
+          <span class="material-symbols-rounded admin-only" onclick="deleteCleaning('${c.id}')" style="color: #E53935; font-size: 18px; cursor: pointer;">delete</span>
+        </div>
+      `).join('');
+    }
+
+    async function deleteCleaning(id) {
+      if (confirm("Hapus catatan cleaning ini?")) {
+        await supabaseClient.from('cleanings').delete().eq('id', id);
+        loadDatabaseData();
+      }
+    }
+
+    // 7. ARSIP FORM
     function renderArsipList(items) {
       const container = document.getElementById("arsip-list");
       if (items.length === 0) {
@@ -555,7 +815,7 @@
       }
 
       container.innerHTML = items.map(a => `
-        <div class="archive-item">
+        <div class="data-item">
           <div>
             <div style="font-weight: 700; font-size: 0.8rem;">${a.title}</div>
             <div style="font-size: 0.7rem; color: var(--text-sub);">${a.category}</div>
@@ -602,10 +862,28 @@
       }
     }
 
-    // HELPER UTILITIES
+    // GENERAL NAVIGATION & UTILITY FUNCTIONS
     function showPage(pageId) {
       document.querySelectorAll(".page-view").forEach(p => p.classList.remove("active"));
       document.getElementById(`view-${pageId}`).classList.add("active");
+    }
+
+    async function filterScheduleByDate() {
+      const selectedDate = document.getElementById("calendar-picker").value;
+      const resContainer = document.getElementById("schedule-results");
+      
+      const { data } = await supabaseClient.from('maintenances').select('*').eq('scheduled_date', selectedDate);
+
+      if (data && data.length > 0) {
+        resContainer.innerHTML = data.map(m => `
+          <div class="data-item" style="margin-top:8px;">
+            <div style="font-weight:700; font-size:0.8rem;">${m.title}</div>
+            <div style="font-size:0.7rem; color:gray;">Asset: ${m.asset_name || '-'}</div>
+          </div>
+        `).join('');
+      } else {
+        resContainer.innerHTML = `<p style="font-size:0.75rem; color:gray; margin-top:8px;">Tidak ada jadwal di tanggal ini.</p>`;
+      }
     }
 
     function initChart() {
@@ -613,7 +891,7 @@
         type: 'bar',
         data: {
           labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei'],
-          datasets: [{ label: 'Maintenance', data: [12, 19, 15, 17, 22], backgroundColor: '#0B8F4D' }]
+          datasets: [{ label: 'Maintenance Routine', data: [12, 19, 15, 17, 22], backgroundColor: '#0B8F4D' }]
         },
         options: { responsive: true, maintainAspectRatio: false }
       });
@@ -623,7 +901,7 @@
       document.getElementById("qr-modal").style.display = "flex";
       html5QrCode = new Html5Qrcode("reader");
       html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 160, height: 160 } },
-        (decodedText) => { closeQRScanner(); Swal.fire('QR Code', decodedText, 'success'); },
+        (decodedText) => { closeQRScanner(); Swal.fire('QR Code Detected', decodedText, 'success'); },
         () => {}
       ).catch(() => closeQRScanner());
     }
@@ -638,7 +916,7 @@
     }
 
     function openAIChat() {
-      Swal.fire({ title: 'AI Assistant', input: 'text', inputPlaceholder: 'Tanyakan sesuatu...', confirmButtonColor: '#0B8F4D' });
+      Swal.fire({ title: 'AI Assistant Gedung', input: 'text', inputPlaceholder: 'Ketik pertanyaan...', confirmButtonColor: '#0B8F4D' });
     }
 
     function exportExcel(tableID, filename) {
