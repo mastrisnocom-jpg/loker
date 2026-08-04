@@ -100,6 +100,14 @@
 
         .signature-pad { border: 1px dashed var(--border); border-radius: 8px; background: #fff; width: 100%; height: 120px; touch-action: none; cursor: crosshair; }
 
+        /* BILL CHECK RESULT CARD */
+        .bill-result-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 14px; margin-top: 14px; display: none; }
+        .bill-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; font-size: 0.82rem; }
+        .bill-row:last-child { border-bottom: none; }
+        .bill-label { color: var(--text-sub); }
+        .bill-val { font-weight: 700; color: var(--text-main); }
+        .bill-total { background: #e0f2fe; padding: 10px; border-radius: 8px; margin-top: 8px; font-weight: 800; color: #0369a1; font-size: 0.95rem; }
+
         /* MODAL */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: var(--card-bg); border-radius: var(--radius); width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; padding: 20px; position: relative; }
@@ -170,6 +178,7 @@
                 <div class="grid-item" onclick="openSubPage('kantor')"><div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-building"></i></div><span class="grid-label">Kantor</span></div>
                 <div class="grid-item" onclick="openSubPage('asset')"><div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-boxes-stacked"></i></div><span class="grid-label">Asset</span></div>
                 <div class="grid-item" onclick="openSubPage('utilitas')"><div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-bolt"></i></div><span class="grid-label">Utilitas</span></div>
+                <div class="grid-item" onclick="openSubPage('cek_tagihan')"><div class="grid-icon-wrapper" style="background:#fef3c7; color:#d97706;"><i class="fa-solid fa-receipt"></i></div><span class="grid-label">Cek Tagihan</span></div>
                 <div class="grid-item" onclick="openSubPage('perawatan')"><div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-screwdriver-wrench"></i></div><span class="grid-label">Perawatan</span></div>
                 <div class="grid-item" onclick="openSubPage('workorder')"><div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-clipboard-list"></i></div><span class="grid-label">Work Order</span></div>
                 <div class="grid-item" onclick="openSubPage('pemeriksaan_atm')"><div class="grid-icon-wrapper" style="background:#e0f2fe; color:#0284c7;"><i class="fa-solid fa-credit-card"></i></div><span class="grid-label">Cek ATM</span></div>
@@ -423,7 +432,7 @@
                                             <td>
                                                 <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Kantor', '${k.nama}', 'Alamat: ${k.alamat}')"><i class="fa-solid fa-eye"></i></button>
                                                 <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormKantor('${k.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Kantor', 'Kantor: ${k.nama}\\nAlamat: ${k.alamat}')"><i class="fa-solid fa-share-nodes"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Kantor', 'Kantor: ${k.nama}\nAlamat: ${k.alamat}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('kantor','${k.id}','kantor')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -446,9 +455,9 @@
                                             <td>${a.nama_asset}</td>
                                             <td><span class="badge badge-${a.status === 'Baik' ? 'success' : 'danger'}">${a.status}</span></td>
                                             <td>
-                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Asset', '${a.nama_asset}', 'Kode: ${a.kode_asset}\\nKategori: ${a.kategori}\\nStatus: ${a.status}')"><i class="fa-solid fa-eye"></i></button>
+                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Asset', '${a.nama_asset}', 'Kode: ${a.kode_asset}\nKategori: ${a.kategori}\nStatus: ${a.status}')"><i class="fa-solid fa-eye"></i></button>
                                                 <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormAsset('${a.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Asset', 'Asset: ${a.nama_asset}\\nKode: ${a.kode_asset}\\nStatus: ${a.status}')"><i class="fa-solid fa-share-nodes"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Asset', 'Asset: ${a.nama_asset}\nKode: ${a.kode_asset}\nStatus: ${a.status}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('asset','${a.id}','asset')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -475,7 +484,7 @@
                                                 <button class="btn btn-info" style="padding:4px 8px;" onclick="viewDetailATM('${atm.id}', '${atm.kantor ? atm.kantor.nama : ''}', '${atm.periode_minggu}')"><i class="fa-solid fa-eye"></i></button>
                                                 <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormPemeriksaanATM('${atm.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
                                                 <button class="btn btn-primary" style="padding:4px 8px;" onclick="exportATMPDF('${atm.id}')"><i class="fa-solid fa-file-pdf"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Laporan Pemeriksaan ATM', 'Lokasi: ${atm.kantor ? atm.kantor.nama : '-'}\\nKategori: ${atm.kategori_atm}\\nPeriode: ${atm.periode_minggu}')"><i class="fa-solid fa-share-nodes"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Laporan Pemeriksaan ATM', 'Lokasi: ${atm.kantor ? atm.kantor.nama : '-'}\nKategori: ${atm.kategori_atm}\nPeriode: ${atm.periode_minggu}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('pemeriksaan_atm','${atm.id}','pemeriksaan_atm')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -483,6 +492,90 @@
                                 </tbody>
                             </table>
                         </div>`;
+                } else if (pageKey === 'cek_tagihan') {
+                    // FITUR CEK TAGIHAN PLN & PDAM
+                    contentEl.innerHTML = `
+                        <div class="card">
+                            <div class="card-title"><i class="fa-solid fa-receipt"></i> Cek Tagihan PLN & PDAM</div>
+                            <form id="f-cek-tagihan">
+                                <div class="form-group">
+                                    <label>Jenis Layanan</label>
+                                    <select id="ft-layanan" class="form-control" onchange="togglePDAMPicker()">
+                                        <option value="PLN">PLN (Listrik Pascapayar)</option>
+                                        <option value="PDAM">PDAM (Air Minum)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" id="group-pdam-wilayah" style="display:none;">
+                                    <label>Wilayah PDAM</label>
+                                    <select id="ft-wilayah-pdam" class="form-control">
+                                        <option value="PDAM Kota Surabaya">PDAM Kota Surabaya</option>
+                                        <option value="PDAM Kab. Sidoarjo">PDAM Kab. Sidoarjo</option>
+                                        <option value="PDAM Kota Jakarta (PAM Jaya)">PDAM Kota Jakarta (PAM Jaya)</option>
+                                        <option value="PDAM Kota Bandung">PDAM Kota Bandung</option>
+                                        <option value="PDAM Kota Semarang">PDAM Kota Semarang</option>
+                                        <option value="PDAM Kota Medan">PDAM Kota Medan</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>ID Pelanggan / Nomor Meter</label>
+                                    <input type="number" id="ft-id-pelanggan" class="form-control" placeholder="Contoh: 531234567890" required>
+                                </div>
+                                <button type="submit" class="btn btn-warning" style="width:100%; margin-top:6px;"><i class="fa-solid fa-magnifying-glass"></i> Cek Tagihan Sekarang</button>
+                            </form>
+
+                            <div id="bill-result" class="bill-result-card">
+                                <div class="checklist-title" id="res-layanan-title">HASIL PENGECEKAN TAGIHAN</div>
+                                <div class="bill-row"><span class="bill-label">ID Pelanggan:</span><span class="bill-val" id="res-id-pel">-</span></div>
+                                <div class="bill-row"><span class="bill-label">Nama Pelanggan:</span><span class="bill-val" id="res-nama">-</span></div>
+                                <div class="bill-row"><span class="bill-label">Periode Tagihan:</span><span class="bill-val" id="res-periode">-</span></div>
+                                <div class="bill-row"><span class="bill-label">Pemakaian / Daya:</span><span class="bill-val" id="res-pemakaian">-</span></div>
+                                <div class="bill-row"><span class="bill-label">Status Bayar:</span><span class="bill-val" id="res-status">-</span></div>
+                                <div class="bill-row"><span class="bill-label">Biaya Admin:</span><span class="bill-val" id="res-admin">Rp 2.500</span></div>
+                                <div class="bill-total" id="res-total">TOTAL TAGIHAN: Rp 0</div>
+                                
+                                <div style="display:flex; gap:6px; margin-top:10px;">
+                                    <button class="btn btn-share" style="width:100%;" onclick="shareBillResult()"><i class="fa-solid fa-share-nodes"></i> Bagikan Tagihan</button>
+                                </div>
+                            </div>
+                        </div>`;
+
+                    document.getElementById('f-cek-tagihan').onsubmit = (e) => {
+                        e.preventDefault();
+                        const layanan = document.getElementById('ft-layanan').value;
+                        const idPel = document.getElementById('ft-id-pelanggan').value;
+                        const wilayah = document.getElementById('ft-wilayah-pdam').value;
+
+                        if (!idPel) return Swal.fire('Peringatan', 'Masukkan ID Pelanggan!', 'warning');
+
+                        Swal.fire({ title: 'Menghubungkan Server Cek Tagihan...', didOpen: () => Swal.showLoading() });
+
+                        setTimeout(() => {
+                            Swal.close();
+                            const billCard = document.getElementById('bill-result');
+                            billCard.style.display = 'block';
+
+                            const mockNames = ['PT BINAYASA PURABATARA', 'GEDUNG BSN KCP MULYOSARI', 'KCP RUNGKUT MERR', 'KANTOR CABANG BTN'];
+                            const selectedName = mockNames[Math.floor(Math.random() * mockNames.length)];
+                            const mockUsage = layanan === 'PLN' ? 'R1M / 1300 VA (342 kWh)' : 'Golongan IIB (32 m³)';
+                            const mockAmount = Math.floor(Math.random() * (450000 - 150000 + 1)) + 150000;
+                            const totalAmount = mockAmount + 2500;
+
+                            document.getElementById('res-layanan-title').innerText = `TAGIHAN ${layanan} ${layanan === 'PDAM' ? '(' + wilayah + ')' : ''}`;
+                            document.getElementById('res-id-pel').innerText = idPel;
+                            document.getElementById('res-nama').innerText = selectedName;
+                            document.getElementById('res-periode').innerText = 'Agustus 2026';
+                            document.getElementById('res-pemakaian').innerText = mockUsage;
+                            document.getElementById('res-status').innerHTML = `<span class="badge badge-danger">BELUM DIBAYAR</span>`;
+                            document.getElementById('res-total').innerText = `TOTAL TAGIHAN: Rp ${totalAmount.toLocaleString('id-ID')}`;
+                            
+                            window.lastBillData = {
+                                layanan: layanan,
+                                idPel: idPel,
+                                nama: selectedName,
+                                total: totalAmount
+                            };
+                        }, 1200);
+                    };
                 } else if (pageKey === 'jadwal') {
                     actionBtn.style.display = 'inline-flex';
                     actionBtn.onclick = () => openFormJadwal();
@@ -499,9 +592,9 @@
                                             <td>${j.tanggal || '-'}</td>
                                             <td><span class="badge badge-${j.status === 'Selesai' ? 'success' : 'warning'}">${j.status}</span></td>
                                             <td>
-                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Jadwal', '${j.judul}', 'Kategori: ${j.kategori}\\nTanggal: ${j.tanggal}\\nStatus: ${j.status}\\nKet: ${j.keterangan}')"><i class="fa-solid fa-eye"></i></button>
+                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Jadwal', '${j.judul}', 'Kategori: ${j.kategori}\nTanggal: ${j.tanggal}\nStatus: ${j.status}\nKet: ${j.keterangan}')"><i class="fa-solid fa-eye"></i></button>
                                                 <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormJadwal('${j.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Jadwal Kegiatan', 'Judul: ${j.judul}\\nTanggal: ${j.tanggal}\\nStatus: ${j.status}')"><i class="fa-solid fa-share-nodes"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Jadwal Kegiatan', 'Judul: ${j.judul}\nTanggal: ${j.tanggal}\nStatus: ${j.status}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('jadwal','${j.id}','jadwal')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -524,9 +617,9 @@
                                             <td>${u.jumlah_pemakaian} ${u.satuan}</td>
                                             <td>Rp ${Number(u.biaya).toLocaleString('id-ID')}</td>
                                             <td>
-                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Utilitas', '${u.jenis}', 'Pemakaian: ${u.jumlah_pemakaian} ${u.satuan}\\nBiaya: Rp ${u.biaya}')"><i class="fa-solid fa-eye"></i></button>
+                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Utilitas', '${u.jenis}', 'Pemakaian: ${u.jumlah_pemakaian} ${u.satuan}\nBiaya: Rp ${u.biaya}')"><i class="fa-solid fa-eye"></i></button>
                                                 <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormUtilitas('${u.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Utilitas', 'Jenis: ${u.jenis}\\nPemakaian: ${u.jumlah_pemakaian} ${u.satuan}\\nBiaya: Rp ${u.biaya}')"><i class="fa-solid fa-share-nodes"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Utilitas', 'Jenis: ${u.jenis}\nPemakaian: ${u.jumlah_pemakaian} ${u.satuan}\nBiaya: Rp ${u.biaya}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('utilitas','${u.id}','utilitas')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -549,9 +642,9 @@
                                             <td>${w.asset ? w.asset.nama_asset : '-'}</td>
                                             <td><span class="badge badge-warning">${w.status}</span></td>
                                             <td>
-                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Work Order', '${w.judul}', 'Asset: ${w.asset ? w.asset.nama_asset : '-'}\\nStatus: ${w.status}')"><i class="fa-solid fa-eye"></i></button>
+                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Work Order', '${w.judul}', 'Asset: ${w.asset ? w.asset.nama_asset : '-'}\nStatus: ${w.status}')"><i class="fa-solid fa-eye"></i></button>
                                                 <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormWO('${w.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Work Order', 'Judul: ${w.judul}\\nAsset: ${w.asset ? w.asset.nama_asset : '-'}\\nStatus: ${w.status}')"><i class="fa-solid fa-share-nodes"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Work Order', 'Judul: ${w.judul}\nAsset: ${w.asset ? w.asset.nama_asset : '-'}\nStatus: ${w.status}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('work_orders','${w.id}','workorder')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -575,8 +668,8 @@
                                             <td>${m.foto_after ? `<img src="${m.foto_after}" class="img-thumb">` : '-'}</td>
                                             <td>Rp ${Number(m.biaya).toLocaleString('id-ID')}</td>
                                             <td>
-                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Hasil Perawatan', '${m.work_orders ? m.work_orders.judul : '-'}', 'Teknisi: ${m.teknisi ? m.teknisi.nama : '-'}\\nBiaya: Rp ${m.biaya}')"><i class="fa-solid fa-eye"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Laporan Perawatan', 'WO: ${m.work_orders ? m.work_orders.judul : '-'}\\nTeknisi: ${m.teknisi ? m.teknisi.nama : '-'}\\nBiaya: Rp ${m.biaya}')"><i class="fa-solid fa-share-nodes"></i></button>
+                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Hasil Perawatan', '${m.work_orders ? m.work_orders.judul : '-'}', 'Teknisi: ${m.teknisi ? m.teknisi.nama : '-'}\nBiaya: Rp ${m.biaya}')"><i class="fa-solid fa-eye"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Laporan Perawatan', 'WO: ${m.work_orders ? m.work_orders.judul : '-'}\nTeknisi: ${m.teknisi ? m.teknisi.nama : '-'}\nBiaya: Rp ${m.biaya}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('maintenances','${m.id}','perawatan')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -599,9 +692,9 @@
                                             <td>${t.spesialisasi}</td>
                                             <td><span class="badge badge-success">${t.status}</span></td>
                                             <td>
-                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Teknisi', '${t.nama}', 'Spesialisasi: ${t.spesialisasi}\\nStatus: ${t.status}')"><i class="fa-solid fa-eye"></i></button>
+                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Teknisi', '${t.nama}', 'Spesialisasi: ${t.spesialisasi}\nStatus: ${t.status}')"><i class="fa-solid fa-eye"></i></button>
                                                 <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormTeknisi('${t.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Teknisi', 'Nama: ${t.nama}\\nSpesialisasi: ${t.spesialisasi}\\nStatus: ${t.status}')"><i class="fa-solid fa-share-nodes"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Teknisi', 'Nama: ${t.nama}\nSpesialisasi: ${t.spesialisasi}\nStatus: ${t.status}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('teknisi','${t.id}','teknisi')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -652,6 +745,23 @@
                 }
             } catch (err) {
                 contentEl.innerHTML = `<p style="text-align:center; padding:20px; color:#dc3545;"><i class="fa-solid fa-triangle-exclamation"></i> Gagal memuat data: ${err.message}</p>`;
+            }
+        }
+
+        function togglePDAMPicker() {
+            const layanan = document.getElementById('ft-layanan').value;
+            const pdamPicker = document.getElementById('group-pdam-wilayah');
+            if (layanan === 'PDAM') {
+                pdamPicker.style.display = 'block';
+            } else {
+                pdamPicker.style.display = 'none';
+            }
+        }
+
+        function shareBillResult() {
+            if (window.lastBillData) {
+                const b = window.lastBillData;
+                shareData(`Info Tagihan ${b.layanan}`, `ID Pelanggan: ${b.idPel}\nNama: ${b.nama}\nTotal Tagihan: Rp ${b.total.toLocaleString('id-ID')}\nStatus: BELUM DIBAYAR`);
             }
         }
 
@@ -747,7 +857,12 @@
                     d.no_kriteria,
                     d.kriteria_nama, 
                     d.kondisi === 'BAIK' ? '[ V ] BAIK    [   ] TIDAK BAIK' : '[   ] BAIK    [ V ] TIDAK BAIK',
-                    (d.keterangan || '-') + (d.foto_bukti ? '\n\n\n\n\n' : '')
+                    (d.keterangan || '-') + (d.foto_bukti ? '
+
+
+
+
+' : '')
                 ]),
                 theme: 'grid',
                 styles: { fontSize: 7.5, cellPadding: 2, font: 'Helvetica', valign: 'top' },
@@ -761,7 +876,8 @@
                 didParseCell: function(data) {
                     if (data.section === 'body' && data.column.index === 1) {
                         const noK = data.row.cells[0].raw;
-                        const desc = descMap[noK] ? `\n${descMap[noK]}` : '';
+                        const desc = descMap[noK] ? `
+${descMap[noK]}` : '';
                         data.cell.text = [data.cell.text[0], desc]; 
                     }
                 },
@@ -792,7 +908,21 @@
             doc.autoTable({
                 startY: finalY + 3,
                 head: [['Bukti Foto - SEBELUM (Before)', 'Bukti Foto - SESUDAH (After)']],
-                body: [['\n\n\n\n\n\n\n', '\n\n\n\n\n\n\n']],
+                body: [['
+
+
+
+
+
+
+', '
+
+
+
+
+
+
+']],
                 theme: 'grid',
                 styles: { fontSize: 8, halign: 'center', cellPadding: 2, font: 'Helvetica' },
                 headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },
