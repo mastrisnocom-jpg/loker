@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Building Management System</title>
     
-    <!-- External CSS Dependencies -->
+    <!-- CSS Dependencies -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     
@@ -95,7 +95,7 @@
         .btn-danger { background: #dc3545; color: #fff; }
         .btn-icon { width: 36px; height: 36px; border-radius: 50%; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-main); cursor: pointer; }
 
-        /* USER PROFILE HEADER */
+        /* PROFILE HEADER */
         .profile-header {
             display: flex;
             align-items: center;
@@ -142,7 +142,7 @@
         .stat-box h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: 2px; }
         .stat-box p { font-size: 0.72rem; color: var(--text-sub); font-weight: 500; }
 
-        /* APP GRID MENU (10 MENU SAMA PERSIS DENGAN PERMINTAAN KAMPUS/AWAL) */
+        /* APP GRID MENU */
         .app-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -183,7 +183,7 @@
 
         .card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 12px; }
 
-        /* PAGE SUB VIEW (OVERLAY DETIL MENU) */
+        /* PAGE SUB VIEW */
         .sub-page {
             display: none;
             position: absolute;
@@ -203,7 +203,7 @@
 
         .sub-header h2 { font-size: 1.1rem; flex: 1; }
 
-        /* TABLE VIEW */
+        /* TABLES & BADGES */
         .table-responsive { width: 100%; overflow-x: auto; }
         .table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.82rem; }
         .table th, .table td { padding: 10px; border-bottom: 1px solid var(--border); text-align: left; }
@@ -290,7 +290,7 @@
                 </div>
             </div>
 
-            <!-- 10 MENU SESUAI PERMINTAAN AWAL -->
+            <!-- APP MENU GRID -->
             <div class="app-grid">
                 <div class="grid-item" onclick="openSubPage('kantor')">
                     <div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-building"></i></div>
@@ -341,7 +341,7 @@
             </div>
         </div>
 
-        <!-- 3. SUB PAGE VIEW (OVERLAY DETIL MENU) -->
+        <!-- 3. SUB PAGE OVERLAY -->
         <div id="sub-page-overlay" class="sub-page">
             <div class="sub-header">
                 <button class="btn-icon" onclick="closeSubPage()"><i class="fa-solid fa-arrow-left"></i></button>
@@ -373,7 +373,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
-        // --- TERINTEGRASI KUNCI API SUPABASE SAYA ---
+        // --- KUNCI API SUPABASE SAMA PERSIS DENGAN VERSI BISA LOGIN ---
         const SUPABASE_URL = "https://pykkfcszdihobpwhqinq.supabase.co";
         const SUPABASE_ANON_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5a2tmY3N6ZGlob2Jwd2hxaW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU3OTEyNjEsImV4cCI6MjA0NDQ3NzI2MX0.Ig1GsJvn0jDobVCBGlp2lLwTLvtn6eAkzKKf3VxMFiA";
         
@@ -413,7 +413,7 @@
                 const { error } = await db.auth.signInWithPassword({ email, password });
 
                 if (error) {
-                    Swal.fire('Gagal', error.message, 'error');
+                    Swal.fire('Gagal Login', error.message, 'error');
                 } else {
                     Swal.close();
                     checkAuth();
@@ -471,9 +471,7 @@
             });
         }
 
-        // ==========================================
-        // SUB PAGE ROUTER & FULL CRUD IMPLEMENTATION
-        // ==========================================
+        // --- ALL SUB PAGES ROUTING & FULL FUNCTIONS ---
         async function openSubPage(pageKey) {
             const overlay = document.getElementById('sub-page-overlay');
             const titleEl = document.getElementById('sub-page-title');
@@ -485,7 +483,6 @@
             actionBtn.style.display = 'none';
             overlay.style.display = 'block';
 
-            // 1. KANTOR
             if (pageKey === 'kantor') {
                 actionBtn.style.display = 'inline-flex';
                 actionBtn.onclick = () => openFormKantor();
@@ -507,9 +504,7 @@
                         </table>
                     </div>
                 `;
-            } 
-            // 2. ASSET
-            else if (pageKey === 'asset') {
+            } else if (pageKey === 'asset') {
                 actionBtn.style.display = 'inline-flex';
                 actionBtn.onclick = () => openFormAsset();
                 const { data } = await db.from('asset').select('*, kantor(nama)').order('created_at', {ascending:false});
@@ -531,9 +526,7 @@
                         </table>
                     </div>
                 `;
-            }
-            // 3. UTILITAS
-            else if (pageKey === 'utilitas') {
+            } else if (pageKey === 'utilitas') {
                 actionBtn.style.display = 'inline-flex';
                 actionBtn.onclick = () => openFormUtilitas();
                 const { data } = await db.from('utilitas').select('*, kantor(nama)').order('created_at', {ascending:false});
@@ -553,9 +546,7 @@
                         </table>
                     </div>
                 `;
-            }
-            // 4. WORK ORDER
-            else if (pageKey === 'workorder') {
+            } else if (pageKey === 'workorder') {
                 actionBtn.style.display = 'inline-flex';
                 actionBtn.onclick = () => openFormWO();
                 const { data } = await db.from('work_orders').select('*, asset(nama_asset)').order('created_at', {ascending:false});
@@ -576,9 +567,7 @@
                         </table>
                     </div>
                 `;
-            }
-            // 5. PERAWATAN (WITH FOTO BEFORE/AFTER)
-            else if (pageKey === 'perawatan') {
+            } else if (pageKey === 'perawatan') {
                 actionBtn.style.display = 'inline-flex';
                 actionBtn.onclick = () => openFormPerawatan();
                 const { data } = await db.from('maintenances').select('*, work_orders(judul), teknisi(nama)').order('created_at', {ascending:false});
@@ -599,9 +588,7 @@
                         </table>
                     </div>
                 `;
-            }
-            // 6. TEKNISI
-            else if (pageKey === 'teknisi') {
+            } else if (pageKey === 'teknisi') {
                 actionBtn.style.display = 'inline-flex';
                 actionBtn.onclick = () => openFormTeknisi();
                 const { data } = await db.from('teknisi').select('*').order('created_at', {ascending:false});
@@ -621,37 +608,30 @@
                         </table>
                     </div>
                 `;
-            }
-            // 7. JADWAL
-            else if (pageKey === 'jadwal') {
+            } else if (pageKey === 'jadwal') {
                 contentEl.innerHTML = `
                     <div class="card">
-                        <div class="card-title"><i class="fa-solid fa-calendar-check"></i> Kalender & Reminder Jadwal Maintenance</div>
-                        <p style="font-size:0.85rem; color:var(--text-sub);">Daftar pemeliharaan aset terjadwal minggu ini.</p>
-                        <ul style="margin-top:15px; font-size:0.85rem; padding-left:20px;">
-                            <li><b>28 Aug:</b> Maintenance Routine Lift Utama</li>
-                            <li><b>30 Aug:</b> Service AC Gedung B</li>
+                        <div class="card-title"><i class="fa-solid fa-calendar-check"></i> Kalender Maintenance</div>
+                        <ul style="margin-top:10px; font-size:0.85rem; padding-left:20px;">
+                            <li><b>28 Aug:</b> Routine Lift Service</li>
+                            <li><b>30 Aug:</b> Service AC Gedung Utama</li>
                         </ul>
                     </div>
                 `;
-            }
-            // 8. LAPORAN & EXPORT
-            else if (pageKey === 'laporan') {
+            } else if (pageKey === 'laporan') {
                 contentEl.innerHTML = `
                     <div class="card">
-                        <div class="card-title"><i class="fa-solid fa-file-export"></i> Ekspor Laporan System</div>
+                        <div class="card-title"><i class="fa-solid fa-file-export"></i> Ekspor Data</div>
                         <button class="btn btn-primary" onclick="exportExcel()" style="margin-bottom:10px;"><i class="fa-solid fa-file-excel"></i> Export Excel (Asset)</button>
                         <button class="btn btn-danger" onclick="exportPDF()"><i class="fa-solid fa-file-pdf"></i> Export PDF (Kantor)</button>
                     </div>
                 `;
-            }
-            // 9. PENGATURAN
-            else if (pageKey === 'pengaturan') {
+            } else if (pageKey === 'pengaturan') {
                 contentEl.innerHTML = `
                     <div class="card">
                         <div class="card-title"><i class="fa-solid fa-sliders"></i> Pengaturan Aplikasi</div>
-                        <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom:12px;">Mode Tampilan, RLS & Storage Supabase terhubung.</p>
-                        <button class="btn btn-secondary" onclick="document.body.toggleAttribute('data-theme','dark')">Toggle Dark Mode</button>
+                        <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom:12px;">Sistem terintegrasi dengan Supabase RLS & Storage.</p>
+                        <button class="btn btn-secondary" onclick="document.body.toggleAttribute('data-theme','dark')">Toggle Mode Gelap</button>
                     </div>
                 `;
             }
@@ -661,9 +641,7 @@
             document.getElementById('sub-page-overlay').style.display = 'none';
         }
 
-        // ==========================================
-        // FORMS & ACTIONS
-        // ==========================================
+        // --- FORMS & DIALOGS ---
         function openFormKantor() {
             document.getElementById('modal-title').innerText = "Tambah Kantor";
             document.getElementById('modal-body').innerHTML = `
@@ -840,7 +818,7 @@
             document.getElementById('modal-body').innerHTML = `
                 <form id="f-teknisi">
                     <div class="form-group"><label>Nama</label><input type="text" id="ft-nama" class="form-control" required></div>
-                    <div class="form-group"><label>Spesialisasi</label><input type="text" id="ft-spesialisasi" class="form-control" placeholder="AC, Lift, Electrical" required></div>
+                    <div class="form-group"><label>Spesialisasi</label><input type="text" id="ft-spesialisasi" class="form-control" placeholder="AC, Electrical" required></div>
                     <button type="submit" class="btn btn-primary">Simpan Teknisi</button>
                 </form>
             `;
