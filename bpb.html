@@ -90,6 +90,7 @@
         .badge { padding: 3px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; }
         .badge-success { background: #d1e7dd; color: #0f5132; }
         .badge-danger { background: #f8d7da; color: #842029; }
+        .badge-warning { background: #fff3cd; color: #664d03; }
 
         .checklist-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
         .checklist-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; color: var(--primary); }
@@ -216,6 +217,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -226,6 +228,7 @@
         
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
+        let qrScanner = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
@@ -281,13 +284,11 @@
             });
 
             document.getElementById('btn-close-modal').addEventListener('click', () => {
+                stopQRScanner();
                 document.getElementById('app-modal').style.display = 'none';
             });
         }
 
-        // ==========================================
-        // KOMPRESI GAMBAR OTOMATIS < 200 KB
-        // ==========================================
         async function compressImage(file, maxSizeKB = 200) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -371,7 +372,7 @@
             });
         }
 
-        // ROUTER SUB PAGE
+        // ROUTER SUB PAGE LENGKAP TANPA STUCK LOADING
         async function openSubPage(pageKey) {
             const overlay = document.getElementById('sub-page-overlay');
             const titleEl = document.getElementById('sub-page-title');
@@ -385,184 +386,238 @@
             kriteriaBtn.style.display = 'none';
             overlay.style.display = 'block';
 
-            if (pageKey === 'kantor') {
-                actionBtn.style.display = 'inline-flex';
-                actionBtn.onclick = () => openFormKantor();
-                const { data } = await db.from('kantor').select('*').order('created_at', {ascending:false});
-                contentEl.innerHTML = `
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead><tr><th>Nama</th><th>Alamat</th><th>Aksi</th></tr></thead>
-                            <tbody>
-                                ${data && data.length > 0 ? data.map(k => `
-                                    <tr>
-                                        <td><b>${k.nama}</b></td>
-                                        <td>${k.alamat}</td>
-                                        <td>
-                                            <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormKantor('${k.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                            <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('kantor','${k.id}','kantor')"><i class="fa-solid fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                `).join('') : '<tr><td colspan="3" style="text-align:center;">Belum ada data kantor</td></tr>'}
-                            </tbody>
-                        </table>
-                    </div>`;
-            } else if (pageKey === 'asset') {
-                actionBtn.style.display = 'inline-flex';
-                actionBtn.onclick = () => openFormAsset();
-                const { data } = await db.from('asset').select('*, kantor(nama)').order('created_at', {ascending:false});
-                contentEl.innerHTML = `
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead><tr><th>Kode</th><th>Nama Asset</th><th>Status</th><th>Aksi</th></tr></thead>
-                            <tbody>
-                                ${data && data.length > 0 ? data.map(a => `
-                                    <tr>
-                                        <td><b>${a.kode_asset}</b></td>
-                                        <td>${a.nama_asset}</td>
-                                        <td><span class="badge badge-${a.status === 'Baik' ? 'success' : 'danger'}">${a.status}</span></td>
-                                        <td>
-                                            <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormAsset('${a.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                            <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('asset','${a.id}','asset')"><i class="fa-solid fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada data asset</td></tr>'}
-                            </tbody>
-                        </table>
-                    </div>`;
-            } else if (pageKey === 'pemeriksaan_atm') {
-                actionBtn.style.display = 'inline-flex';
-                kriteriaBtn.style.display = 'inline-flex';
-                actionBtn.onclick = () => openFormPemeriksaanATM();
-                const { data } = await db.from('pemeriksaan_atm').select('*, kantor(nama)').order('tanggal_pemeriksaan', {ascending:false});
-                contentEl.innerHTML = `
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead><tr><th>Lokasi/KCP</th><th>Kategori</th><th>Periode</th><th>Aksi</th></tr></thead>
-                            <tbody>
-                                ${data && data.length > 0 ? data.map(atm => `
-                                    <tr>
-                                        <td><b>${atm.kantor ? atm.kantor.nama : '-'}</b></td>
-                                        <td><span class="badge badge-success">${atm.kategori_atm}</span></td>
-                                        <td>${atm.periode_minggu}</td>
-                                        <td>
-                                            <button class="btn btn-info" style="padding:4px 8px;" onclick="viewDetailATM('${atm.id}', '${atm.kantor ? atm.kantor.nama : ''}', '${atm.periode_minggu}')"><i class="fa-solid fa-eye"></i></button>
-                                            <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormPemeriksaanATM('${atm.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                            <button class="btn btn-primary" style="padding:4px 8px;" onclick="exportATMPDF('${atm.id}')"><i class="fa-solid fa-file-pdf"></i></button>
-                                            <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('pemeriksaan_atm','${atm.id}','pemeriksaan_atm')"><i class="fa-solid fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada pemeriksaan ATM</td></tr>'}
-                            </tbody>
-                        </table>
-                    </div>`;
-            } else if (pageKey === 'jadwal') {
-                contentEl.innerHTML = `
-                    <div class="card">
-                        <div class="card-title"><i class="fa-solid fa-calendar-days"></i> Kalender Jadwal Pemeliharaan</div>
-                        <p style="font-size:0.8rem; color:var(--text-sub); margin-bottom:12px;">Daftar kegiatan rutin pemeliharaan mendatang:</p>
-                        <div class="checklist-card">
-                            <div class="checklist-title">1. Pemeliharaan Rutin Lift Utama</div>
-                            <div class="checklist-desc">Tanggal: Setiap Hari Senin Minggu I</div>
-                            <span class="badge badge-success">Terjadwal</span>
-                        </div>
-                        <div class="checklist-card">
-                            <div class="checklist-title">2. Cek Suhu AC & Kebersihan Ruang ATM</div>
-                            <div class="checklist-desc">Tanggal: Setiap Hari Jumat Mingguan</div>
-                            <span class="badge badge-success">Terjadwal</span>
-                        </div>
-                    </div>`;
-            } else if (pageKey === 'utilitas') {
-                actionBtn.style.display = 'inline-flex';
-                actionBtn.onclick = () => openFormUtilitas();
-                const { data } = await db.from('utilitas').select('*, kantor(nama)').order('created_at', {ascending:false});
-                contentEl.innerHTML = `
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead><tr><th>Jenis</th><th>Pemakaian</th><th>Biaya (Rp)</th></tr></thead>
-                            <tbody>
-                                ${data && data.length > 0 ? data.map(u => `
-                                    <tr>
-                                        <td><b>${u.jenis}</b></td>
-                                        <td>${u.jumlah_pemakaian} ${u.satuan}</td>
-                                        <td>Rp ${Number(u.biaya).toLocaleString('id-ID')}</td>
-                                    </tr>
-                                `).join('') : '<tr><td colspan="3" style="text-align:center;">Belum ada data utilitas</td></tr>'}
-                            </tbody>
-                        </table>
-                    </div>`;
-            } else if (pageKey === 'workorder') {
-                actionBtn.style.display = 'inline-flex';
-                actionBtn.onclick = () => openFormWO();
-                const { data } = await db.from('work_orders').select('*, asset(nama_asset)').order('created_at', {ascending:false});
-                contentEl.innerHTML = `
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead><tr><th>Judul</th><th>Asset</th><th>Status</th><th>Aksi</th></tr></thead>
-                            <tbody>
-                                ${data && data.length > 0 ? data.map(w => `
-                                    <tr>
-                                        <td><b>${w.judul}</b></td>
-                                        <td>${w.asset ? w.asset.nama_asset : '-'}</td>
-                                        <td><span class="badge badge-warning">${w.status}</span></td>
-                                        <td><button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('work_orders','${w.id}','workorder')"><i class="fa-solid fa-trash"></i></button></td>
-                                    </tr>
-                                `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada Work Order</td></tr>'}
-                            </tbody>
-                        </table>
-                    </div>`;
-            } else if (pageKey === 'perawatan') {
-                actionBtn.style.display = 'inline-flex';
-                actionBtn.onclick = () => openFormPerawatan();
-                const { data } = await db.from('maintenances').select('*, work_orders(judul), teknisi(nama)').order('created_at', {ascending:false});
-                contentEl.innerHTML = `
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead><tr><th>WO</th><th>Before</th><th>After</th><th>Biaya</th></tr></thead>
-                            <tbody>
-                                ${data && data.length > 0 ? data.map(m => `
-                                    <tr>
-                                        <td><b>${m.work_orders ? m.work_orders.judul : '-'}</b></td>
-                                        <td>${m.foto_before ? `<img src="${m.foto_before}" class="img-thumb">` : '-'}</td>
-                                        <td>${m.foto_after ? `<img src="${m.foto_after}" class="img-thumb">` : '-'}</td>
-                                        <td>Rp ${Number(m.biaya).toLocaleString('id-ID')}</td>
-                                    </tr>
-                                `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada data pengerjaan</td></tr>'}
-                            </tbody>
-                        </table>
-                    </div>`;
-            } else if (pageKey === 'teknisi') {
-                actionBtn.style.display = 'inline-flex';
-                actionBtn.onclick = () => openFormTeknisi();
-                const { data } = await db.from('teknisi').select('*').order('created_at', {ascending:false});
-                contentEl.innerHTML = `
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead><tr><th>Nama</th><th>Spesialisasi</th><th>Status</th></tr></thead>
-                            <tbody>
-                                ${data && data.length > 0 ? data.map(t => `
-                                    <tr>
-                                        <td><b>${t.nama}</b></td>
-                                        <td>${t.spesialisasi}</td>
-                                        <td><span class="badge badge-success">${t.status}</span></td>
-                                    </tr>
-                                `).join('') : '<tr><td colspan="3" style="text-align:center;">Belum ada data teknisi</td></tr>'}
-                            </tbody>
-                        </table>
-                    </div>`;
-            } else if (pageKey === 'laporan') {
-                contentEl.innerHTML = `
-                    <div class="card">
-                        <div class="card-title"><i class="fa-solid fa-file-export"></i> Ekspor Laporan System</div>
-                        <button class="btn btn-primary" onclick="exportExcel()" style="margin-bottom:10px; width:100%;"><i class="fa-solid fa-file-excel"></i> Export Excel (Data Asset)</button>
-                        <button class="btn btn-danger" onclick="exportPDF()" style="width:100%;"><i class="fa-solid fa-file-pdf"></i> Export PDF (Data Kantor)</button>
-                    </div>`;
-            } else if (pageKey === 'pengaturan') {
-                contentEl.innerHTML = `
-                    <div class="card">
-                        <div class="card-title"><i class="fa-solid fa-sliders"></i> Pengaturan Aplikasi</div>
-                        <button class="btn btn-secondary" onclick="document.body.toggleAttribute('data-theme','dark')" style="width:100%;">Ganti Tema (Dark/Light)</button>
-                    </div>`;
+            try {
+                if (pageKey === 'kantor') {
+                    actionBtn.style.display = 'inline-flex';
+                    actionBtn.onclick = () => openFormKantor();
+                    const { data } = await db.from('kantor').select('*').order('created_at', {ascending:false});
+                    contentEl.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead><tr><th>Nama</th><th>Alamat</th><th>Aksi</th></tr></thead>
+                                <tbody>
+                                    ${data && data.length > 0 ? data.map(k => `
+                                        <tr>
+                                            <td><b>${k.nama}</b></td>
+                                            <td>${k.alamat}</td>
+                                            <td>
+                                                <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormKantor('${k.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('kantor','${k.id}','kantor')"><i class="fa-solid fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    `).join('') : '<tr><td colspan="3" style="text-align:center;">Belum ada data kantor</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else if (pageKey === 'asset') {
+                    actionBtn.style.display = 'inline-flex';
+                    actionBtn.onclick = () => openFormAsset();
+                    const { data } = await db.from('asset').select('*, kantor(nama)').order('created_at', {ascending:false});
+                    contentEl.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead><tr><th>Kode</th><th>Nama Asset</th><th>Status</th><th>Aksi</th></tr></thead>
+                                <tbody>
+                                    ${data && data.length > 0 ? data.map(a => `
+                                        <tr>
+                                            <td><b>${a.kode_asset}</b></td>
+                                            <td>${a.nama_asset}</td>
+                                            <td><span class="badge badge-${a.status === 'Baik' ? 'success' : 'danger'}">${a.status}</span></td>
+                                            <td>
+                                                <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormAsset('${a.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('asset','${a.id}','asset')"><i class="fa-solid fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada data asset</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else if (pageKey === 'pemeriksaan_atm') {
+                    actionBtn.style.display = 'inline-flex';
+                    kriteriaBtn.style.display = 'inline-flex';
+                    actionBtn.onclick = () => openFormPemeriksaanATM();
+                    const { data } = await db.from('pemeriksaan_atm').select('*, kantor(nama)').order('tanggal_pemeriksaan', {ascending:false});
+                    contentEl.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead><tr><th>Lokasi/KCP</th><th>Kategori</th><th>Periode</th><th>Aksi</th></tr></thead>
+                                <tbody>
+                                    ${data && data.length > 0 ? data.map(atm => `
+                                        <tr>
+                                            <td><b>${atm.kantor ? atm.kantor.nama : '-'}</b></td>
+                                            <td><span class="badge badge-success">${atm.kategori_atm}</span></td>
+                                            <td>${atm.periode_minggu}</td>
+                                            <td>
+                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewDetailATM('${atm.id}', '${atm.kantor ? atm.kantor.nama : ''}', '${atm.periode_minggu}')"><i class="fa-solid fa-eye"></i></button>
+                                                <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormPemeriksaanATM('${atm.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                <button class="btn btn-primary" style="padding:4px 8px;" onclick="exportATMPDF('${atm.id}')"><i class="fa-solid fa-file-pdf"></i></button>
+                                                <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('pemeriksaan_atm','${atm.id}','pemeriksaan_atm')"><i class="fa-solid fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada pemeriksaan ATM</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else if (pageKey === 'jadwal') {
+                    // JADWAL CRUD DINAMIS FULL
+                    actionBtn.style.display = 'inline-flex';
+                    actionBtn.onclick = () => openFormJadwal();
+                    const { data } = await db.from('jadwal').select('*').order('tanggal', {ascending:true});
+                    contentEl.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead><tr><th>Judul Kegiatan</th><th>Kategori</th><th>Tanggal</th><th>Status</th><th>Aksi</th></tr></thead>
+                                <tbody>
+                                    ${data && data.length > 0 ? data.map(j => `
+                                        <tr>
+                                            <td><b>${j.judul}</b><br><small style="color:var(--text-sub);">${j.keterangan || ''}</small></td>
+                                            <td>${j.kategori || '-'}</td>
+                                            <td>${j.tanggal || '-'}</td>
+                                            <td><span class="badge badge-${j.status === 'Selesai' ? 'success' : 'warning'}">${j.status}</span></td>
+                                            <td>
+                                                <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormJadwal('${j.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('jadwal','${j.id}','jadwal')"><i class="fa-solid fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    `).join('') : '<tr><td colspan="5" style="text-align:center;">Belum ada jadwal pemeliharaan</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else if (pageKey === 'utilitas') {
+                    actionBtn.style.display = 'inline-flex';
+                    actionBtn.onclick = () => openFormUtilitas();
+                    const { data } = await db.from('utilitas').select('*, kantor(nama)').order('created_at', {ascending:false});
+                    contentEl.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead><tr><th>Jenis</th><th>Pemakaian</th><th>Biaya (Rp)</th><th>Aksi</th></tr></thead>
+                                <tbody>
+                                    ${data && data.length > 0 ? data.map(u => `
+                                        <tr>
+                                            <td><b>${u.jenis}</b> (${u.kantor ? u.kantor.nama : '-'})</td>
+                                            <td>${u.jumlah_pemakaian} ${u.satuan}</td>
+                                            <td>Rp ${Number(u.biaya).toLocaleString('id-ID')}</td>
+                                            <td>
+                                                <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormUtilitas('${u.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('utilitas','${u.id}','utilitas')"><i class="fa-solid fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada data utilitas</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else if (pageKey === 'workorder') {
+                    actionBtn.style.display = 'inline-flex';
+                    actionBtn.onclick = () => openFormWO();
+                    const { data } = await db.from('work_orders').select('*, asset(nama_asset)').order('created_at', {ascending:false});
+                    contentEl.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead><tr><th>Judul</th><th>Asset</th><th>Status</th><th>Aksi</th></tr></thead>
+                                <tbody>
+                                    ${data && data.length > 0 ? data.map(w => `
+                                        <tr>
+                                            <td><b>${w.judul}</b></td>
+                                            <td>${w.asset ? w.asset.nama_asset : '-'}</td>
+                                            <td><span class="badge badge-warning">${w.status}</span></td>
+                                            <td>
+                                                <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormWO('${w.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('work_orders','${w.id}','workorder')"><i class="fa-solid fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada Work Order</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else if (pageKey === 'perawatan') {
+                    actionBtn.style.display = 'inline-flex';
+                    actionBtn.onclick = () => openFormPerawatan();
+                    const { data } = await db.from('maintenances').select('*, work_orders(judul), teknisi(nama)').order('created_at', {ascending:false});
+                    contentEl.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead><tr><th>WO</th><th>Before</th><th>After</th><th>Biaya</th><th>Aksi</th></tr></thead>
+                                <tbody>
+                                    ${data && data.length > 0 ? data.map(m => `
+                                        <tr>
+                                            <td><b>${m.work_orders ? m.work_orders.judul : '-'}</b><br><small>Teknisi: ${m.teknisi ? m.teknisi.nama : '-'}</small></td>
+                                            <td>${m.foto_before ? `<img src="${m.foto_before}" class="img-thumb">` : '-'}</td>
+                                            <td>${m.foto_after ? `<img src="${m.foto_after}" class="img-thumb">` : '-'}</td>
+                                            <td>Rp ${Number(m.biaya).toLocaleString('id-ID')}</td>
+                                            <td>
+                                                <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('maintenances','${m.id}','perawatan')"><i class="fa-solid fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    `).join('') : '<tr><td colspan="5" style="text-align:center;">Belum ada data pengerjaan</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else if (pageKey === 'teknisi') {
+                    actionBtn.style.display = 'inline-flex';
+                    actionBtn.onclick = () => openFormTeknisi();
+                    const { data } = await db.from('teknisi').select('*').order('created_at', {ascending:false});
+                    contentEl.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead><tr><th>Nama</th><th>Spesialisasi</th><th>Status</th><th>Aksi</th></tr></thead>
+                                <tbody>
+                                    ${data && data.length > 0 ? data.map(t => `
+                                        <tr>
+                                            <td><b>${t.nama}</b></td>
+                                            <td>${t.spesialisasi}</td>
+                                            <td><span class="badge badge-success">${t.status}</span></td>
+                                            <td>
+                                                <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormTeknisi('${t.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('teknisi','${t.id}','teknisi')"><i class="fa-solid fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada data teknisi</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else if (pageKey === 'laporan') {
+                    contentEl.innerHTML = `
+                        <div class="card">
+                            <div class="card-title"><i class="fa-solid fa-file-export"></i> Pusat Ekspor Laporan System</div>
+                            <p style="font-size:0.8rem; color:var(--text-sub); margin-bottom:12px;">Pilih jenis laporan yang ingin di-download dalam format PDF atau Excel:</p>
+                            
+                            <div style="display:flex; flex-direction:column; gap:8px;">
+                                <button class="btn btn-primary" onclick="exportLaporanRekap('asset')" style="width:100%; text-align:left; justify-content:flex-start;"><i class="fa-solid fa-boxes-stacked"></i> Laporan Rekap Asset (Excel)</button>
+                                <button class="btn btn-primary" onclick="exportLaporanRekap('utilitas')" style="width:100%; text-align:left; justify-content:flex-start;"><i class="fa-solid fa-bolt"></i> Laporan Rekap Utilitas (Excel)</button>
+                                <button class="btn btn-primary" onclick="exportLaporanRekap('workorder')" style="width:100%; text-align:left; justify-content:flex-start;"><i class="fa-solid fa-clipboard-list"></i> Laporan Work Order (Excel)</button>
+                                <button class="btn btn-danger" onclick="exportPDF()" style="width:100%; text-align:left; justify-content:flex-start;"><i class="fa-solid fa-file-pdf"></i> Laporan Master Kantor (PDF)</button>
+                            </div>
+                        </div>`;
+                } else if (pageKey === 'pengaturan') {
+                    contentEl.innerHTML = `
+                        <div class="card">
+                            <div class="card-title"><i class="fa-solid fa-user-gear"></i> Pengaturan Akun & Profil</div>
+                            <form id="f-profile" style="margin-bottom:20px;">
+                                <div class="form-group"><label>Email Akun</label><input type="email" class="form-control" value="${currentUser ? currentUser.email : ''}" readonly></div>
+                                <div class="form-group"><label>Password Baru</label><input type="password" id="p-new-password" class="form-control" placeholder="Masukkan password baru..."></div>
+                                <button type="submit" class="btn btn-primary" style="width:100%;">Update Password</button>
+                            </form>
+                            
+                            <div class="card-title"><i class="fa-solid fa-sliders"></i> Pengaturan Tampilan</div>
+                            <button class="btn btn-secondary" onclick="document.body.toggleAttribute('data-theme','dark')" style="width:100%;">Ganti Tema (Dark/Light)</button>
+                        </div>`;
+
+                    document.getElementById('f-profile').onsubmit = async (e) => {
+                        e.preventDefault();
+                        const newPass = document.getElementById('p-new-password').value;
+                        if (!newPass || newPass.length < 6) return Swal.fire('Peringatan', 'Password minimal 6 karakter', 'warning');
+                        
+                        Swal.fire({ title: 'Memproses update password...', didOpen: () => Swal.showLoading() });
+                        const { error } = await db.auth.updateUser({ password: newPass });
+                        if (error) Swal.fire('Gagal', error.message, 'error');
+                        else {
+                            Swal.fire('Berhasil', 'Password berhasil diubah!', 'success');
+                            document.getElementById('p-new-password').value = '';
+                        }
+                    };
+                }
+            } catch (err) {
+                contentEl.innerHTML = `<p style="text-align:center; padding:20px; color:#dc3545;"><i class="fa-solid fa-triangle-exclamation"></i> Gagal memuat data: ${err.message}</p>`;
             }
         }
 
@@ -571,7 +626,42 @@
         }
 
         // ==========================================
-        // EXPORT PDF REVISI RAPI: FOTO PRESISI & TTD POLOS
+        // SCANNER QR CAMERA DENGAN WEBCAM AKSI NYATA
+        // ==========================================
+        function scanQRModal() {
+            document.getElementById('modal-title').innerText = "Scan QR Code Asset";
+            document.getElementById('modal-body').innerHTML = `
+                <div id="qr-reader" style="width:100%; border-radius:10px; overflow:hidden;"></div>
+                <div id="qr-result" style="margin-top:10px; font-size:0.85rem; text-align:center; font-weight:600;">Arahkan kamera ke QR Code</div>
+            `;
+            document.getElementById('app-modal').style.display = 'flex';
+
+            qrScanner = new Html5Qrcode("qr-reader");
+            qrScanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 220 },
+                (decodedText) => {
+                    document.getElementById('qr-result').innerHTML = `<span style="color:var(--primary)">Hasil: ${decodedText}</span>`;
+                    stopQRScanner();
+                    Swal.fire('QR Code Terdeteksi', `Kode Asset: <b>${decodedText}</b>`, 'success');
+                },
+                (errorMessage) => {}
+            ).catch(err => {
+                document.getElementById('qr-result').innerHTML = `<span style="color:#dc3545">Akses kamera ditolak atau tidak tersedia.</span>`;
+            });
+        }
+
+        function stopQRScanner() {
+            if (qrScanner) {
+                qrScanner.stop().then(() => {
+                    qrScanner.clear();
+                    qrScanner = null;
+                }).catch(() => {});
+            }
+        }
+
+        // ==========================================
+        // EXPORT PDF REVISI LENGKAP & RAPI
         // ==========================================
         async function exportATMPDF(id) {
             Swal.fire({ title: 'Mencetak PDF Laporan ATM...', didOpen: () => Swal.showLoading() });
@@ -590,7 +680,6 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
 
-            // Header Dokumen
             doc.setFont('Helvetica', 'bold');
             doc.setFontSize(11);
             doc.text("LAPORAN PEMERIKSAAN ATM MINGGUAN", 105, 15, { align: 'center' });
@@ -609,7 +698,6 @@
             doc.text(`Periode Minggu : ${header.periode_minggu}`, 110, 33);
             doc.text(`Tanggal Cek       : ${header.tanggal_pemeriksaan}`, 14, 38);
 
-            // TABEL KRITERIA DENGAN POSISI TEKS & FOTO TERPISAH TIDAK BERTUMPUK
             doc.autoTable({
                 startY: 42,
                 head: [['No', 'Kriteria Pemeriksaan', 'Kondisi', 'Keterangan dan Foto']],
@@ -617,7 +705,7 @@
                     d.no_kriteria,
                     d.kriteria_nama, 
                     d.kondisi === 'BAIK' ? '[ V ] BAIK    [   ] TIDAK BAIK' : '[   ] BAIK    [ V ] TIDAK BAIK',
-                    (d.keterangan || '-') + (d.foto_bukti ? '\n\n\n\n\n' : '') // Beri ruang kosong untuk foto di bawah teks
+                    (d.keterangan || '-') + (d.foto_bukti ? '\n\n\n\n\n' : '')
                 ]),
                 theme: 'grid',
                 styles: { fontSize: 7.5, cellPadding: 2, font: 'Helvetica', valign: 'top' },
@@ -636,7 +724,6 @@
                     }
                 },
                 didDrawCell: function(data) {
-                    // Embed Foto Bukti per Kriteria Presisi di Bawah Teks Keterangan
                     if (data.section === 'body' && data.column.index === 3) {
                         const rowIdx = data.row.index;
                         const detailItem = details[rowIdx];
@@ -656,7 +743,6 @@
             let finalY = doc.lastAutoTable.finalY + 8;
             if (finalY > 210) { doc.addPage(); finalY = 20; }
 
-            // TABEL LAMPIRAN FOTO PEMBERSIHAN (BEFORE & AFTER RAPI DALAM BINGKAI)
             doc.setFont('Helvetica', 'bold');
             doc.setFontSize(8.5);
             doc.text("LAMPIRAN PEMBERSIHAN", 14, finalY);
@@ -691,7 +777,6 @@
             finalY = doc.lastAutoTable.finalY + 12;
             if (finalY > 235) { doc.addPage(); finalY = 20; }
 
-            // PENGESAHAN TANDA TANGAN POLOS (TANPA GARIS BINGKAI KOTAK)
             const vendorTitle = header.vendor_nama || 'PT Binayasa Purabatara Unit ______';
             const bankTitle = header.bank_cabang || 'PT Bank Tabungan Negara Cabang ______';
             const petugasName = header.petugas_nama ? `( ${header.petugas_nama} )` : '(_______________________)';
@@ -700,20 +785,16 @@
             doc.setFont('Helvetica', 'normal');
             doc.setFontSize(8);
             
-            // Sisi Kiri
             doc.text("Dibuat oleh,", 14, finalY);
             doc.text(vendorTitle, 14, finalY + 4);
             
-            // Sisi Kanan
             doc.text("Mengetahui,", 110, finalY);
             doc.text(bankTitle, 110, finalY + 4);
 
-            // Render Gambar TTD Digital Canvas
             if (header.tanda_tangan_petugas) {
                 try { doc.addImage(header.tanda_tangan_petugas, 'PNG', 14, finalY + 6, 35, 16); } catch (e) {}
             }
 
-            // Nama Petugas & Supervisor
             doc.text(petugasName, 14, finalY + 26);
             doc.text(supervisorName, 110, finalY + 26);
 
@@ -721,175 +802,340 @@
             doc.save(`Laporan_ATM_${header.kantor ? header.kantor.nama : 'Unit'}_${Date.now()}.pdf`);
         }
 
-        async function exportATMExcel(id) {
-            Swal.fire({ title: 'Menyiapkan Excel Laporan ATM...', didOpen: () => Swal.showLoading() });
-            const { data: header } = await db.from('pemeriksaan_atm').select('*, kantor(nama, alamat)').eq('id', id).single();
-            const { data: details } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id).order('no_kriteria', {ascending:true});
+        async function exportLaporanRekap(type) {
+            Swal.fire({ title: 'Menyiapkan Rekap Laporan...', didOpen: () => Swal.showLoading() });
+            const { data } = await db.from(type).select('*');
+            if (!data || data.length === 0) return Swal.fire('Informasi', 'Data tidak ditemukan', 'info');
 
-            if (!header || !details) return Swal.fire('Error', 'Gagal mengambil data laporan ATM', 'error');
-
-            const excelRows = [
-                ["LAPORAN PEMERIKSAAN ATM MINGGUAN"],
-                ["Pemeriksaan Rutin Fasilitas & Mesin ATM"],
-                [],
-                ["UNIT", header.kantor ? header.kantor.nama : '-', "KATEGORI ATM", header.kategori_atm],
-                ["LOKASI / KCP", header.kantor ? header.kantor.alamat : '-', "PERIODE MINGGU", header.periode_minggu],
-                ["TANGGAL", header.tanggal_pemeriksaan],
-                [],
-                ["No", "Kriteria Pemeriksaan", "Kondisi", "Keterangan dan URL Foto"]
-            ];
-
-            details.forEach(d => {
-                excelRows.push([d.no_kriteria, d.kriteria_nama, d.kondisi === 'BAIK' ? '[V] BAIK' : '[V] TIDAK BAIK', (d.keterangan || '-') + (d.foto_bukti ? ` | ${d.foto_bukti}` : '')]);
-            });
-
-            excelRows.push([]);
-            excelRows.push(["DIBUAT OLEH", header.vendor_nama || 'PT Binayasa Purabatara Unit ______', "NAMA PETUGAS", header.petugas_nama || '-']);
-            excelRows.push(["MENGETAHUI", header.bank_cabang || 'PT Bank Tabungan Negara Cabang ______', "NAMA SUPERVISOR", header.supervisor_nama || '-']);
-
-            const worksheet = XLSX.utils.aoa_to_sheet(excelRows);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Pemeriksaan_ATM");
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, type.toUpperCase());
 
             Swal.close();
-            XLSX.writeFile(workbook, `Laporan_ATM_${header.kantor ? header.kantor.nama : 'Unit'}_${Date.now()}.xlsx`);
+            XLSX.writeFile(wb, `Laporan_Rekap_${type}_${Date.now()}.xlsx`);
         }
 
-        // MANAGEMENT KRITERIA & UTILS
-        async function openManageKriteria() {
-            Swal.fire({ title: 'Memuat kriteria...', didOpen: () => Swal.showLoading() });
-            const { data: listKriteria } = await db.from('kriteria_atm').select('*').order('no_kriteria', {ascending:true});
-            Swal.close();
+        // ==========================================
+        // FUNGSI FORM EDIT & TAMBAH LENGKAP
+        // ==========================================
 
-            document.getElementById('modal-title').innerText = "Kelola Master Kriteria ATM";
-            document.getElementById('modal-body').innerHTML = `
-                <div style="margin-bottom:15px;">
-                    <button class="btn btn-primary" onclick="formTambahKriteria(${listKriteria ? listKriteria.length + 1 : 1})" style="width:100%;"><i class="fa-solid fa-plus"></i> Tambah Kriteria Baru</button>
-                </div>
-                <div style="font-size:0.8rem;">
-                    ${listKriteria && listKriteria.length > 0 ? listKriteria.map(k => `
-                        <div class="checklist-card" style="display:flex; justify-content:space-between; align-items:center;">
-                            <div>
-                                <b>${k.no_kriteria}. ${k.title}</b>
-                                <div style="color:var(--text-sub); font-size:0.75rem;">${k.deskripsi || '-'}</div>
-                            </div>
-                            <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteKriteria('${k.id}')"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    `).join('') : '<p style="text-align:center;">Belum ada kriteria</p>'}
-                </div>
-            `;
-            document.getElementById('app-modal').style.display = 'flex';
-        }
+        // 1. FORM JADWAL (ADD / EDIT)
+        async function openFormJadwal(id = null) {
+            let editData = { judul: '', kategori: 'Pemeliharaan', tanggal: '', keterangan: '', status: 'Terjadwal' };
+            if (id) {
+                const { data } = await db.from('jadwal').select('*').eq('id', id).single();
+                if (data) editData = data;
+            }
 
-        function formTambahKriteria(nextNo) {
-            document.getElementById('modal-title').innerText = "Tambah Kriteria Baru";
+            document.getElementById('modal-title').innerText = id ? "Edit Jadwal" : "Tambah Jadwal Pemeliharaan";
             document.getElementById('modal-body').innerHTML = `
-                <form id="f-add-kriteria">
-                    <div class="form-group"><label>No. Kriteria</label><input type="number" id="fk-no" class="form-control" value="${nextNo}" required></div>
-                    <div class="form-group"><label>Judul Kriteria</label><input type="text" id="fk-title" class="form-control" placeholder="Kebersihan Neon Box" required></div>
-                    <div class="form-group"><label>Deskripsi Keterangan Kriteria</label><textarea id="fk-desc" class="form-control" placeholder="Tidak ada sampah berserakan..."></textarea></div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Simpan Kriteria</button>
+                <form id="f-jadwal">
+                    <div class="form-group"><label>Judul Kegiatan</label><input type="text" id="fj-judul" class="form-control" value="${editData.judul}" required></div>
+                    <div class="form-group"><label>Kategori</label><input type="text" id="fj-kategori" class="form-control" value="${editData.kategori}" placeholder="Lift, AC, Kebersihan ATM" required></div>
+                    <div class="form-group"><label>Tanggal Pelaksanaan</label><input type="date" id="fj-tanggal" class="form-control" value="${editData.tanggal}" required></div>
+                    <div class="form-group"><label>Status</label>
+                        <select id="fj-status" class="form-control">
+                            <option value="Terjadwal" ${editData.status === 'Terjadwal' ? 'selected':''}>Terjadwal</option>
+                            <option value="Selesai" ${editData.status === 'Selesai' ? 'selected':''}>Selesai</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Keterangan Tambahan</label><textarea id="fj-ket" class="form-control">${editData.keterangan || ''}</textarea></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Jadwal' : 'Simpan Jadwal'}</button>
                 </form>`;
+            document.getElementById('app-modal').style.display = 'flex';
 
-            document.getElementById('f-add-kriteria').onsubmit = async (e) => {
+            document.getElementById('f-jadwal').onsubmit = async (e) => {
                 e.preventDefault();
                 Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-                await db.from('kriteria_atm').insert([{ no_kriteria: document.getElementById('fk-no').value, title: document.getElementById('fk-title').value, deskripsi: document.getElementById('fk-desc').value }]);
-                openManageKriteria();
+                const payload = {
+                    judul: document.getElementById('fj-judul').value,
+                    kategori: document.getElementById('fj-kategori').value,
+                    tanggal: document.getElementById('fj-tanggal').value,
+                    status: document.getElementById('fj-status').value,
+                    keterangan: document.getElementById('fj-ket').value
+                };
+
+                let err = null;
+                if (id) {
+                    const { error } = await db.from('jadwal').update(payload).eq('id', id);
+                    err = error;
+                } else {
+                    const { error } = await db.from('jadwal').insert([payload]);
+                    err = error;
+                }
+
+                if (err) Swal.fire('Gagal', err.message, 'error');
+                else {
+                    Swal.fire('Berhasil', 'Jadwal berhasil disimpan', 'success');
+                    document.getElementById('app-modal').style.display = 'none';
+                    openSubPage('jadwal');
+                }
             };
         }
 
-        async function deleteKriteria(id) {
-            if (confirm('Hapus kriteria ini?')) {
-                await db.from('kriteria_atm').delete().eq('id', id);
-                openManageKriteria();
+        // 2. FORM UTILITAS (ADD / EDIT)
+        async function openFormUtilitas(id = null) {
+            const { data: kantorList } = await db.from('kantor').select('id, nama');
+            if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah data kantor dulu!', 'warning');
+
+            let editData = { kantor_id: '', jenis: 'Listrik', jumlah_pemakaian: 0, satuan: 'kWh', biaya: 0, bulan_tahun: '' };
+            if (id) {
+                const { data } = await db.from('utilitas').select('*').eq('id', id).single();
+                if (data) editData = data;
             }
-        }
 
-        async function viewDetailATM(id, lokasi, periode) {
-            Swal.fire({ title: 'Memuat detail...', didOpen: () => Swal.showLoading() });
-            const { data: header } = await db.from('pemeriksaan_atm').select('*').eq('id', id).single();
-            const { data } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id).order('no_kriteria', {ascending:true});
-            Swal.close();
-
-            document.getElementById('modal-title').innerText = `Detail: ${lokasi} (${periode})`;
+            document.getElementById('modal-title').innerText = id ? "Edit Utilitas" : "Catat Utilitas";
             document.getElementById('modal-body').innerHTML = `
-                <div style="font-size: 0.8rem;">
-                    ${data.map(d => `
-                        <div class="checklist-card">
-                            <div class="checklist-title">${d.no_kriteria}. ${d.kriteria_nama}</div>
-                            <div style="margin-bottom: 4px;">Kondisi: <span class="badge badge-${d.kondisi === 'BAIK' ? 'success' : 'danger'}">${d.kondisi}</span></div>
-                            <div style="color:var(--text-sub); margin-bottom:6px;">Keterangan: ${d.keterangan || '-'}</div>
-                            ${d.foto_bukti ? `<div><a href="${d.foto_bukti}" target="_blank"><img src="${d.foto_bukti}" class="img-thumb" style="width:90px; height:90px;"></a></div>` : ''}
-                        </div>
-                    `).join('')}
-
-                    <div class="checklist-card" style="margin-top:12px;">
-                        <div class="checklist-title">TANDA TANGAN & PENGESAHAN</div>
-                        <div style="display:flex; justify-content:space-between; margin-top:8px;">
-                            <div>
-                                <small><b>Dibuat oleh:</b><br>${header.vendor_nama || 'PT Binayasa Purabatara Unit ______'}</small><br>
-                                <small>Petugas: <b>${header.petugas_nama || '-'}</b></small><br>
-                                ${header.tanda_tangan_petugas ? `<img src="${header.tanda_tangan_petugas}" style="width:100px; height:50px; border:1px solid var(--border); border-radius:4px; margin-top:4px;">` : ''}
-                            </div>
-                            <div>
-                                <small><b>Mengetahui:</b><br>${header.bank_cabang || 'PT Bank Tabungan Negara Cabang ______'}</small><br>
-                                <small>Supervisor: <b>${header.supervisor_nama || '-'}</b></small>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
+                <form id="f-utilitas">
+                    <div class="form-group"><label>Kantor</label><select id="fu-kantor" class="form-control">${kantorList.map(k=>`<option value="${k.id}" ${k.id === editData.kantor_id ? 'selected':''}>${k.nama}</option>`).join('')}</select></div>
+                    <div class="form-group"><label>Jenis Utilitas</label><select id="fu-jenis" class="form-control"><option value="Listrik" ${editData.jenis === 'Listrik' ? 'selected':''}>Listrik</option><option value="Air" ${editData.jenis === 'Air' ? 'selected':''}>Air</option><option value="Gas" ${editData.jenis === 'Gas' ? 'selected':''}>Gas</option></select></div>
+                    <div class="form-group"><label>Pemakaian</label><input type="number" id="fu-jumlah" class="form-control" value="${editData.jumlah_pemakaian}" required></div>
+                    <div class="form-group"><label>Satuan</label><input type="text" id="fu-satuan" class="form-control" value="${editData.satuan}" required></div>
+                    <div class="form-group"><label>Biaya (Rp)</label><input type="number" id="fu-biaya" class="form-control" value="${editData.biaya}" required></div>
+                    <div class="form-group"><label>Tanggal</label><input type="date" id="fu-bulan" class="form-control" value="${editData.bulan_tahun}" required></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Utilitas' : 'Simpan Utilitas'}</button>
+                </form>`;
             document.getElementById('app-modal').style.display = 'flex';
+
+            document.getElementById('f-utilitas').onsubmit = async (e) => {
+                e.preventDefault();
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+                const payload = {
+                    kantor_id: document.getElementById('fu-kantor').value,
+                    jenis: document.getElementById('fu-jenis').value,
+                    jumlah_pemakaian: document.getElementById('fu-jumlah').value,
+                    satuan: document.getElementById('fu-satuan').value,
+                    biaya: document.getElementById('fu-biaya').value,
+                    bulan_tahun: document.getElementById('fu-bulan').value
+                };
+
+                let err = null;
+                if (id) {
+                    const { error } = await db.from('utilitas').update(payload).eq('id', id);
+                    err = error;
+                } else {
+                    const { error } = await db.from('utilitas').insert([payload]);
+                    err = error;
+                }
+
+                if (err) Swal.fire('Gagal', err.message, 'error');
+                else {
+                    Swal.fire('Berhasil', 'Utilitas tersimpan', 'success');
+                    document.getElementById('app-modal').style.display = 'none';
+                    openSubPage('utilitas');
+                }
+            };
         }
 
-        let isDrawing = false;
-        function initCanvasTTD() {
-            const canvas = document.getElementById('canvas-ttd');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = '#000000';
+        // 3. FORM WORK ORDER (ADD / EDIT)
+        async function openFormWO(id = null) {
+            const { data: assetList } = await db.from('asset').select('id, nama_asset');
+            if (!assetList || assetList.length === 0) return Swal.fire('Peringatan', 'Tambah data asset dulu!', 'warning');
 
-            const startDrawing = (e) => {
-                isDrawing = true;
-                ctx.beginPath();
-                const rect = canvas.getBoundingClientRect();
-                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-                ctx.moveTo(x, y);
-            };
-
-            const draw = (e) => {
-                if (!isDrawing) return;
-                const rect = canvas.getBoundingClientRect();
-                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-                ctx.lineTo(x, y);
-                ctx.stroke();
-            };
-
-            const stopDrawing = () => { isDrawing = false; };
-
-            canvas.addEventListener('mousedown', startDrawing);
-            canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('mouseup', stopDrawing);
-
-            canvas.addEventListener('touchstart', startDrawing);
-            canvas.addEventListener('touchmove', draw);
-            canvas.addEventListener('touchend', stopDrawing);
-        }
-
-        function clearCanvasTTD() {
-            const canvas = document.getElementById('canvas-ttd');
-            if (canvas) {
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let editData = { asset_id: '', judul: '', status: 'Pending' };
+            if (id) {
+                const { data } = await db.from('work_orders').select('*').eq('id', id).single();
+                if (data) editData = data;
             }
+
+            document.getElementById('modal-title').innerText = id ? "Edit Work Order" : "Buat Work Order";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="f-wo">
+                    <div class="form-group"><label>Asset</label><select id="fw-asset" class="form-control">${assetList.map(a=>`<option value="${a.id}" ${a.id === editData.asset_id ? 'selected':''}>${a.nama_asset}</option>`).join('')}</select></div>
+                    <div class="form-group"><label>Judul Pekerjaan</label><input type="text" id="fw-judul" class="form-control" value="${editData.judul}" required></div>
+                    <div class="form-group"><label>Status</label>
+                        <select id="fw-status" class="form-control">
+                            <option value="Pending" ${editData.status === 'Pending' ? 'selected':''}>Pending</option>
+                            <option value="Proses" ${editData.status === 'Proses' ? 'selected':''}>Proses</option>
+                            <option value="Selesai" ${editData.status === 'Selesai' ? 'selected':''}>Selesai</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update WO' : 'Simpan Work Order'}</button>
+                </form>`;
+            document.getElementById('app-modal').style.display = 'flex';
+
+            document.getElementById('f-wo').onsubmit = async (e) => {
+                e.preventDefault();
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+                const payload = {
+                    asset_id: document.getElementById('fw-asset').value,
+                    judul: document.getElementById('fw-judul').value,
+                    status: document.getElementById('fw-status').value
+                };
+
+                let err = null;
+                if (id) {
+                    const { error } = await db.from('work_orders').update(payload).eq('id', id);
+                    err = error;
+                } else {
+                    const { error } = await db.from('work_orders').insert([payload]);
+                    err = error;
+                }
+
+                if (err) Swal.fire('Gagal', err.message, 'error');
+                else {
+                    Swal.fire('Berhasil', 'WO tersimpan', 'success');
+                    document.getElementById('app-modal').style.display = 'none';
+                    openSubPage('workorder');
+                    loadDashboardStats();
+                }
+            };
         }
 
-        // FORM LAPORAN PEMERIKSAAN ATM
+        // 4. FORM TEKNISI (ADD / EDIT)
+        async function openFormTeknisi(id = null) {
+            let editData = { nama: '', spesialisasi: '', status: 'Tersedia' };
+            if (id) {
+                const { data } = await db.from('teknisi').select('*').eq('id', id).single();
+                if (data) editData = data;
+            }
+
+            document.getElementById('modal-title').innerText = id ? "Edit Teknisi" : "Tambah Teknisi";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="f-teknisi">
+                    <div class="form-group"><label>Nama Lengkap</label><input type="text" id="ft-nama" class="form-control" value="${editData.nama}" required></div>
+                    <div class="form-group"><label>Spesialisasi</label><input type="text" id="ft-spesialisasi" class="form-control" value="${editData.spesialisasi}" placeholder="AC, Electrical" required></div>
+                    <div class="form-group"><label>Status</label>
+                        <select id="ft-status" class="form-control">
+                            <option value="Tersedia" ${editData.status === 'Tersedia' ? 'selected':''}>Tersedia</option>
+                            <option value="Bertugas" ${editData.status === 'Bertugas' ? 'selected':''}>Bertugas</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Teknisi' : 'Simpan Teknisi'}</button>
+                </form>`;
+            document.getElementById('app-modal').style.display = 'flex';
+
+            document.getElementById('f-teknisi').onsubmit = async (e) => {
+                e.preventDefault();
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+                const payload = {
+                    nama: document.getElementById('ft-nama').value,
+                    spesialisasi: document.getElementById('ft-spesialisasi').value,
+                    status: document.getElementById('ft-status').value
+                };
+
+                let err = null;
+                if (id) {
+                    const { error } = await db.from('teknisi').update(payload).eq('id', id);
+                    err = error;
+                } else {
+                    const { error } = await db.from('teknisi').insert([payload]);
+                    err = error;
+                }
+
+                if (err) Swal.fire('Gagal', err.message, 'error');
+                else {
+                    Swal.fire('Berhasil', 'Teknisi tersimpan', 'success');
+                    document.getElementById('app-modal').style.display = 'none';
+                    openSubPage('teknisi');
+                }
+            };
+        }
+
+        // OTHER FORMS (KANTOR, ASSET, PERAWATAN, KRITERIA, DETAIL ATM, CANVAS TTD)
+        async function openFormKantor(id = null) {
+            let editData = { nama: '', alamat: '' };
+            if (id) {
+                const { data } = await db.from('kantor').select('*').eq('id', id).single();
+                if (data) editData = data;
+            }
+
+            document.getElementById('modal-title').innerText = id ? "Edit Data Kantor" : "Tambah Kantor";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="f-kantor">
+                    <div class="form-group"><label>Nama Kantor</label><input type="text" id="fk-nama" class="form-control" value="${editData.nama}" required></div>
+                    <div class="form-group"><label>Alamat</label><textarea id="fk-alamat" class="form-control" required>${editData.alamat}</textarea></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Kantor' : 'Simpan Kantor'}</button>
+                </form>`;
+            document.getElementById('app-modal').style.display = 'flex';
+
+            document.getElementById('f-kantor').onsubmit = async (e) => {
+                e.preventDefault();
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+                const payload = { nama: document.getElementById('fk-nama').value, alamat: document.getElementById('fk-alamat').value };
+                
+                let err = null;
+                if (id) {
+                    const { error } = await db.from('kantor').update(payload).eq('id', id);
+                    err = error;
+                } else {
+                    const { error } = await db.from('kantor').insert([payload]);
+                    err = error;
+                }
+
+                if (err) Swal.fire('Gagal', err.message, 'error');
+                else {
+                    Swal.fire('Berhasil', 'Data kantor tersimpan', 'success');
+                    document.getElementById('app-modal').style.display = 'none';
+                    openSubPage('kantor');
+                    loadDashboardStats();
+                }
+            };
+        }
+
+        async function openFormAsset(id = null) {
+            const { data: kantorList } = await db.from('kantor').select('id, nama');
+            if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah Data Kantor dulu!', 'warning');
+
+            let editData = { kantor_id: '', kode_asset: `AST-${Date.now().toString().slice(-4)}`, nama_asset: '', kategori: '', status: 'Baik' };
+            if (id) {
+                const { data } = await db.from('asset').select('*').eq('id', id).single();
+                if (data) editData = data;
+            }
+
+            document.getElementById('modal-title').innerText = id ? "Edit Asset" : "Tambah Asset";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="f-asset">
+                    <div class="form-group">
+                        <label>Kantor</label>
+                        <select id="fa-kantor" class="form-control" required>
+                            ${kantorList.map(k => `<option value="${k.id}" ${k.id === editData.kantor_id ? 'selected' : ''}>${k.nama}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Kode Asset</label><input type="text" id="fa-kode" class="form-control" value="${editData.kode_asset}" required></div>
+                    <div class="form-group"><label>Nama Asset</label><input type="text" id="fa-nama" class="form-control" value="${editData.nama_asset}" required></div>
+                    <div class="form-group"><label>Kategori</label><input type="text" id="fa-kat" class="form-control" value="${editData.kategori}" required></div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="fa-status" class="form-control">
+                            <option value="Baik" ${editData.status === 'Baik' ? 'selected' : ''}>Baik</option>
+                            <option value="Rusak" ${editData.status === 'Rusak' ? 'selected' : ''}>Rusak</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Asset' : 'Simpan Asset'}</button>
+                </form>`;
+            document.getElementById('app-modal').style.display = 'flex';
+
+            document.getElementById('f-asset').onsubmit = async (e) => {
+                e.preventDefault();
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+                const payload = {
+                    kantor_id: document.getElementById('fa-kantor').value,
+                    kode_asset: document.getElementById('fa-kode').value,
+                    nama_asset: document.getElementById('fa-nama').value,
+                    kategori: document.getElementById('fa-kat').value,
+                    status: document.getElementById('fa-status').value
+                };
+
+                let err = null;
+                if (id) {
+                    const { error } = await db.from('asset').update(payload).eq('id', id);
+                    err = error;
+                } else {
+                    const { error } = await db.from('asset').insert([payload]);
+                    err = error;
+                }
+
+                if (err) Swal.fire('Gagal', err.message, 'error');
+                else {
+                    Swal.fire('Berhasil', 'Data asset tersimpan', 'success');
+                    document.getElementById('app-modal').style.display = 'none';
+                    openSubPage('asset');
+                    loadDashboardStats();
+                }
+            };
+        }
+
         async function openFormPemeriksaanATM(id = null) {
             const [kantorRes, kriteriaRes] = await Promise.all([
                 db.from('kantor').select('id, nama'),
@@ -1084,177 +1330,6 @@
             };
         }
 
-        async function openFormKantor(id = null) {
-            let editData = { nama: '', alamat: '' };
-            if (id) {
-                const { data } = await db.from('kantor').select('*').eq('id', id).single();
-                if (data) editData = data;
-            }
-
-            document.getElementById('modal-title').innerText = id ? "Edit Data Kantor" : "Tambah Kantor";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="f-kantor">
-                    <div class="form-group"><label>Nama Kantor</label><input type="text" id="fk-nama" class="form-control" value="${editData.nama}" required></div>
-                    <div class="form-group"><label>Alamat</label><textarea id="fk-alamat" class="form-control" required>${editData.alamat}</textarea></div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Kantor' : 'Simpan Kantor'}</button>
-                </form>`;
-            document.getElementById('app-modal').style.display = 'flex';
-
-            document.getElementById('f-kantor').onsubmit = async (e) => {
-                e.preventDefault();
-                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-                const payload = { nama: document.getElementById('fk-nama').value, alamat: document.getElementById('fk-alamat').value };
-                
-                let err = null;
-                if (id) {
-                    const { error } = await db.from('kantor').update(payload).eq('id', id);
-                    err = error;
-                } else {
-                    const { error } = await db.from('kantor').insert([payload]);
-                    err = error;
-                }
-
-                if (err) Swal.fire('Gagal', err.message, 'error');
-                else {
-                    Swal.fire('Berhasil', 'Data kantor tersimpan', 'success');
-                    document.getElementById('app-modal').style.display = 'none';
-                    openSubPage('kantor');
-                    loadDashboardStats();
-                }
-            };
-        }
-
-        async function openFormAsset(id = null) {
-            const { data: kantorList } = await db.from('kantor').select('id, nama');
-            if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah Data Kantor dulu!', 'warning');
-
-            let editData = { kantor_id: '', kode_asset: `AST-${Date.now().toString().slice(-4)}`, nama_asset: '', kategori: '', status: 'Baik' };
-            if (id) {
-                const { data } = await db.from('asset').select('*').eq('id', id).single();
-                if (data) editData = data;
-            }
-
-            document.getElementById('modal-title').innerText = id ? "Edit Asset" : "Tambah Asset";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="f-asset">
-                    <div class="form-group">
-                        <label>Kantor</label>
-                        <select id="fa-kantor" class="form-control" required>
-                            ${kantorList.map(k => `<option value="${k.id}" ${k.id === editData.kantor_id ? 'selected' : ''}>${k.nama}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Kode Asset</label><input type="text" id="fa-kode" class="form-control" value="${editData.kode_asset}" required></div>
-                    <div class="form-group"><label>Nama Asset</label><input type="text" id="fa-nama" class="form-control" value="${editData.nama_asset}" required></div>
-                    <div class="form-group"><label>Kategori</label><input type="text" id="fa-kat" class="form-control" value="${editData.kategori}" required></div>
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select id="fa-status" class="form-control">
-                            <option value="Baik" ${editData.status === 'Baik' ? 'selected' : ''}>Baik</option>
-                            <option value="Rusak" ${editData.status === 'Rusak' ? 'selected' : ''}>Rusak</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Asset' : 'Simpan Asset'}</button>
-                </form>`;
-            document.getElementById('app-modal').style.display = 'flex';
-
-            document.getElementById('f-asset').onsubmit = async (e) => {
-                e.preventDefault();
-                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-                const payload = {
-                    kantor_id: document.getElementById('fa-kantor').value,
-                    kode_asset: document.getElementById('fa-kode').value,
-                    nama_asset: document.getElementById('fa-nama').value,
-                    kategori: document.getElementById('fa-kat').value,
-                    status: document.getElementById('fa-status').value
-                };
-
-                let err = null;
-                if (id) {
-                    const { error } = await db.from('asset').update(payload).eq('id', id);
-                    err = error;
-                } else {
-                    const { error } = await db.from('asset').insert([payload]);
-                    err = error;
-                }
-
-                if (err) Swal.fire('Gagal', err.message, 'error');
-                else {
-                    Swal.fire('Berhasil', 'Data asset tersimpan', 'success');
-                    document.getElementById('app-modal').style.display = 'none';
-                    openSubPage('asset');
-                    loadDashboardStats();
-                }
-            };
-        }
-
-        function openFormUtilitas() {
-            db.from('kantor').select('id, nama').then(({data: kantorList}) => {
-                if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah data kantor dulu!', 'warning');
-                document.getElementById('modal-title').innerText = "Catat Utilitas";
-                document.getElementById('modal-body').innerHTML = `
-                    <form id="f-utilitas">
-                        <div class="form-group"><label>Kantor</label><select id="fu-kantor" class="form-control">${kantorList.map(k=>`<option value="${k.id}">${k.nama}</option>`).join('')}</select></div>
-                        <div class="form-group"><label>Jenis Utilitas</label><select id="fu-jenis" class="form-control"><option value="Listrik">Listrik</option><option value="Air">Air</option><option value="Gas">Gas</option></select></div>
-                        <div class="form-group"><label>Pemakaian</label><input type="number" id="fu-jumlah" class="form-control" required></div>
-                        <div class="form-group"><label>Satuan</label><input type="text" id="fu-satuan" class="form-control" value="kWh" required></div>
-                        <div class="form-group"><label>Biaya (Rp)</label><input type="number" id="fu-biaya" class="form-control" required></div>
-                        <div class="form-group"><label>Tanggal</label><input type="date" id="fu-bulan" class="form-control" required></div>
-                        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Simpan Utilitas</button>
-                    </form>`;
-                document.getElementById('app-modal').style.display = 'flex';
-
-                document.getElementById('f-utilitas').onsubmit = async (e) => {
-                    e.preventDefault();
-                    Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-                    const { error } = await db.from('utilitas').insert([{
-                        kantor_id: document.getElementById('fu-kantor').value,
-                        jenis: document.getElementById('fu-jenis').value,
-                        jumlah_pemakaian: document.getElementById('fu-jumlah').value,
-                        satuan: document.getElementById('fu-satuan').value,
-                        biaya: document.getElementById('fu-biaya').value,
-                        bulan_tahun: document.getElementById('fu-bulan').value
-                    }]);
-                    if (error) Swal.fire('Gagal', error.message, 'error');
-                    else {
-                        Swal.fire('Berhasil', 'Utilitas tersimpan', 'success');
-                        document.getElementById('app-modal').style.display = 'none';
-                        openSubPage('utilitas');
-                    }
-                };
-            });
-        }
-
-        function openFormWO() {
-            db.from('asset').select('id, nama_asset').then(({data: assetList}) => {
-                if (!assetList || assetList.length === 0) return Swal.fire('Peringatan', 'Tambah data asset dulu!', 'warning');
-                document.getElementById('modal-title').innerText = "Buat Work Order";
-                document.getElementById('modal-body').innerHTML = `
-                    <form id="f-wo">
-                        <div class="form-group"><label>Asset</label><select id="fw-asset" class="form-control">${assetList.map(a=>`<option value="${a.id}">${a.nama_asset}</option>`).join('')}</select></div>
-                        <div class="form-group"><label>Judul Pekerjaan</label><input type="text" id="fw-judul" class="form-control" required></div>
-                        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Simpan Work Order</button>
-                    </form>`;
-                document.getElementById('app-modal').style.display = 'flex';
-
-                document.getElementById('f-wo').onsubmit = async (e) => {
-                    e.preventDefault();
-                    Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-                    const { error } = await db.from('work_orders').insert([{
-                        asset_id: document.getElementById('fw-asset').value,
-                        judul: document.getElementById('fw-judul').value,
-                        status: 'Pending'
-                    }]);
-                    if (error) Swal.fire('Gagal', error.message, 'error');
-                    else {
-                        Swal.fire('Berhasil', 'WO tersimpan', 'success');
-                        document.getElementById('app-modal').style.display = 'none';
-                        openSubPage('workorder');
-                        loadDashboardStats();
-                    }
-                };
-            });
-        }
-
         function openFormPerawatan() {
             Promise.all([db.from('work_orders').select('id, judul'), db.from('teknisi').select('id, nama')]).then(([woRes, tekRes]) => {
                 if (!woRes.data || woRes.data.length === 0) return Swal.fire('Peringatan', 'Buat Work Order dulu!', 'warning');
@@ -1308,27 +1383,137 @@
             });
         }
 
-        function openFormTeknisi() {
-            document.getElementById('modal-title').innerText = "Tambah Teknisi";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="f-teknisi">
-                    <div class="form-group"><label>Nama Lengkap</label><input type="text" id="ft-nama" class="form-control" required></div>
-                    <div class="form-group"><label>Spesialisasi</label><input type="text" id="ft-spesialisasi" class="form-control" placeholder="AC, Electrical" required></div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Simpan Teknisi</button>
-                </form>`;
-            document.getElementById('app-modal').style.display = 'flex';
+        async function openManageKriteria() {
+            Swal.fire({ title: 'Memuat kriteria...', didOpen: () => Swal.showLoading() });
+            const { data: listKriteria } = await db.from('kriteria_atm').select('*').order('no_kriteria', {ascending:true});
+            Swal.close();
 
-            document.getElementById('f-teknisi').onsubmit = async (e) => {
+            document.getElementById('modal-title').innerText = "Kelola Master Kriteria ATM";
+            document.getElementById('modal-body').innerHTML = `
+                <div style="margin-bottom:15px;">
+                    <button class="btn btn-primary" onclick="formTambahKriteria(${listKriteria ? listKriteria.length + 1 : 1})" style="width:100%;"><i class="fa-solid fa-plus"></i> Tambah Kriteria Baru</button>
+                </div>
+                <div style="font-size:0.8rem;">
+                    ${listKriteria && listKriteria.length > 0 ? listKriteria.map(k => `
+                        <div class="checklist-card" style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <b>${k.no_kriteria}. ${k.title}</b>
+                                <div style="color:var(--text-sub); font-size:0.75rem;">${k.deskripsi || '-'}</div>
+                            </div>
+                            <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteKriteria('${k.id}')"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `).join('') : '<p style="text-align:center;">Belum ada kriteria</p>'}
+                </div>
+            `;
+            document.getElementById('app-modal').style.display = 'flex';
+        }
+
+        function formTambahKriteria(nextNo) {
+            document.getElementById('modal-title').innerText = "Tambah Kriteria Baru";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="f-add-kriteria">
+                    <div class="form-group"><label>No. Kriteria</label><input type="number" id="fk-no" class="form-control" value="${nextNo}" required></div>
+                    <div class="form-group"><label>Judul Kriteria</label><input type="text" id="fk-title" class="form-control" placeholder="Kebersihan Neon Box" required></div>
+                    <div class="form-group"><label>Deskripsi Keterangan Kriteria</label><textarea id="fk-desc" class="form-control" placeholder="Tidak ada sampah berserakan..."></textarea></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Simpan Kriteria</button>
+                </form>`;
+
+            document.getElementById('f-add-kriteria').onsubmit = async (e) => {
                 e.preventDefault();
                 Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-                const { error } = await db.from('teknisi').insert([{ nama: document.getElementById('ft-nama').value, spesialisasi: document.getElementById('ft-spesialisasi').value, status: 'Tersedia' }]);
-                if (error) Swal.fire('Gagal', error.message, 'error');
-                else {
-                    Swal.fire('Berhasil', 'Teknisi tersimpan', 'success');
-                    document.getElementById('app-modal').style.display = 'none';
-                    openSubPage('teknisi');
-                }
+                await db.from('kriteria_atm').insert([{ no_kriteria: document.getElementById('fk-no').value, title: document.getElementById('fk-title').value, deskripsi: document.getElementById('fk-desc').value }]);
+                openManageKriteria();
             };
+        }
+
+        async function deleteKriteria(id) {
+            if (confirm('Hapus kriteria ini?')) {
+                await db.from('kriteria_atm').delete().eq('id', id);
+                openManageKriteria();
+            }
+        }
+
+        async function viewDetailATM(id, lokasi, periode) {
+            Swal.fire({ title: 'Memuat detail...', didOpen: () => Swal.showLoading() });
+            const { data: header } = await db.from('pemeriksaan_atm').select('*').eq('id', id).single();
+            const { data } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id).order('no_kriteria', {ascending:true});
+            Swal.close();
+
+            document.getElementById('modal-title').innerText = `Detail: ${lokasi} (${periode})`;
+            document.getElementById('modal-body').innerHTML = `
+                <div style="font-size: 0.8rem;">
+                    ${data.map(d => `
+                        <div class="checklist-card">
+                            <div class="checklist-title">${d.no_kriteria}. ${d.kriteria_nama}</div>
+                            <div style="margin-bottom: 4px;">Kondisi: <span class="badge badge-${d.kondisi === 'BAIK' ? 'success' : 'danger'}">${d.kondisi}</span></div>
+                            <div style="color:var(--text-sub); margin-bottom:6px;">Keterangan: ${d.keterangan || '-'}</div>
+                            ${d.foto_bukti ? `<div><a href="${d.foto_bukti}" target="_blank"><img src="${d.foto_bukti}" class="img-thumb" style="width:90px; height:90px;"></a></div>` : ''}
+                        </div>
+                    `).join('')}
+
+                    <div class="checklist-card" style="margin-top:12px;">
+                        <div class="checklist-title">TANDA TANGAN & PENGESAHAN</div>
+                        <div style="display:flex; justify-content:space-between; margin-top:8px;">
+                            <div>
+                                <small><b>Dibuat oleh:</b><br>${header.vendor_nama || 'PT Binayasa Purabatara Unit ______'}</small><br>
+                                <small>Petugas: <b>${header.petugas_nama || '-'}</b></small><br>
+                                ${header.tanda_tangan_petugas ? `<img src="${header.tanda_tangan_petugas}" style="width:100px; height:50px; border:1px solid var(--border); border-radius:4px; margin-top:4px;">` : ''}
+                            </div>
+                            <div>
+                                <small><b>Mengetahui:</b><br>${header.bank_cabang || 'PT Bank Tabungan Negara Cabang ______'}</small><br>
+                                <small>Supervisor: <b>${header.supervisor_nama || '-'}</b></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            document.getElementById('app-modal').style.display = 'flex';
+        }
+
+        let isDrawing = false;
+        function initCanvasTTD() {
+            const canvas = document.getElementById('canvas-ttd');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#000000';
+
+            const startDrawing = (e) => {
+                isDrawing = true;
+                ctx.beginPath();
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                ctx.moveTo(x, y);
+            };
+
+            const draw = (e) => {
+                if (!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            };
+
+            const stopDrawing = () => { isDrawing = false; };
+
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+
+            canvas.addEventListener('touchstart', startDrawing);
+            canvas.addEventListener('touchmove', draw);
+            canvas.addEventListener('touchend', stopDrawing);
+        }
+
+        function clearCanvasTTD() {
+            const canvas = document.getElementById('canvas-ttd');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
         }
 
         async function deleteRecord(table, id, page) {
@@ -1350,10 +1535,6 @@
             document.getElementById('modal-body').innerHTML = `<div id="qrcode" style="display:flex; justify-content:center; padding:15px;"></div>`;
             document.getElementById('app-modal').style.display = 'flex';
             new QRCode(document.getElementById("qrcode"), { text: kode, width: 160, height: 160 });
-        }
-
-        function scanQRModal() {
-            Swal.fire('Scan QR Code', 'Gunakan kamera smartphone untuk memindai QR Code Asset.', 'info');
         }
 
         async function exportExcel() {
