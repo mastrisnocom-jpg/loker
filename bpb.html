@@ -91,7 +91,6 @@
         .badge-success { background: #d1e7dd; color: #0f5132; }
         .badge-danger { background: #f8d7da; color: #842029; }
 
-        /* CHECKLIST STYLING */
         .checklist-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
         .checklist-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; color: var(--primary); }
         .checklist-desc { font-size: 0.75rem; color: var(--text-sub); margin-bottom: 8px; }
@@ -216,6 +215,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
@@ -307,7 +307,7 @@
             });
         }
 
-        // SUB PAGE ROUTER
+        // ROUTER SUB PAGE
         async function openSubPage(pageKey) {
             const overlay = document.getElementById('sub-page-overlay');
             const titleEl = document.getElementById('sub-page-title');
@@ -379,6 +379,8 @@
                                         <td>${atm.periode_minggu}</td>
                                         <td>
                                             <button class="btn btn-info" style="padding:4px 8px;" onclick="viewDetailATM('${atm.id}', '${atm.kantor ? atm.kantor.nama : ''}', '${atm.periode_minggu}')"><i class="fa-solid fa-eye"></i></button>
+                                            <button class="btn btn-primary" style="padding:4px 8px;" onclick="exportATMPDF('${atm.id}')"><i class="fa-solid fa-file-pdf"></i></button>
+                                            <button class="btn btn-warning" style="padding:4px 8px;" onclick="exportATMExcel('${atm.id}')"><i class="fa-solid fa-file-excel"></i></button>
                                             <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('pemeriksaan_atm','${atm.id}','pemeriksaan_atm')"><i class="fa-solid fa-trash"></i></button>
                                         </td>
                                     </tr>
@@ -494,7 +496,141 @@
             document.getElementById('sub-page-overlay').style.display = 'none';
         }
 
-        // --- MANAGEMEN KRITERIA ATM (ADMINISTRATOR CAN ADD KRITERIA) ---
+        // ==========================================
+        // FITUR EXPORT PDF & EXCEL PERSIS FORMULIR ATM
+        // ==========================================
+        async function exportATMPDF(id) {
+            Swal.fire({ title: 'Mencetak PDF Laporan ATM...', didOpen: () => Swal.showLoading() });
+
+            // Fetch Header & Detail Data
+            const { data: header } = await db.from('pemeriksaan_atm').select('*, kantor(nama, alamat)').eq('id', id).single();
+            const { data: details } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id).order('no_kriteria', {ascending:true});
+
+            if (!header || !details) {
+                return Swal.fire('Error', 'Gagal mengambil data laporan ATM', 'error');
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+
+            // 1. HEADER JUDUL SURAT
+            doc.setFont('Helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.text("LAPORAN PEMERIKSAAN ATM MINGGUAN", 105, 15, { align: 'center' });
+            doc.setFont('Helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.text("Pemeriksaan Rutin Fasilitas & Mesin ATM (Onsite & Offsite)", 105, 20, { align: 'center' });
+
+            // 2. ATRIBUT UNIT / KCP
+            doc.setFontSize(8.5);
+            doc.text(`UNIT                  : ${header.kantor ? header.kantor.nama : '-'}`, 14, 28);
+            doc.text(`Kategori ATM  : [ ${header.kategori_atm === 'Onsite' ? 'X' : ' '} ] Onsite   [ ${header.kategori_atm === 'Offsite' ? 'X' : ' '} ] Offsite`, 110, 28);
+
+            doc.text(`Lokasi / KCP     : ${header.kantor ? header.kantor.alamat : '-'}`, 14, 33);
+            doc.text(`Periode Minggu : ${header.periode_minggu}`, 110, 33);
+
+            doc.text(`Tanggal Cek       : ${header.tanggal_pemeriksaan}`, 14, 38);
+
+            // 3. TABEL KRITERIA (AUTOTABLE)
+            const tableBody = details.map(d => [
+                d.no_kriteria,
+                d.kriteria_nama,
+                d.kondisi === 'BAIK' ? '[ X ] BAIK   [   ] TIDAK BAIK' : '[   ] BAIK   [ X ] TIDAK BAIK',
+                d.keterangan || '-'
+            ]);
+
+            doc.autoTable({
+                startY: 42,
+                head: [['No', 'Kriteria Pemeriksaan', 'Kondisi', 'Keterangan']],
+                body: tableBody,
+                theme: 'grid',
+                styles: { fontSize: 7.5, cellPadding: 2, textOverflow: 'clip' },
+                headStyles: { fillColor: [232, 245, 233], textColor: [25, 135, 84], fontStyle: 'bold' },
+                columnStyles: {
+                    0: { cellWidth: 8, halign: 'center' },
+                    1: { cellWidth: 85 },
+                    2: { cellWidth: 45 },
+                    3: { cellWidth: 44 }
+                }
+            });
+
+            // 4. LAMPIRAN PEMBERSIHAN / FOTO
+            let finalY = doc.lastAutoTable.finalY + 8;
+            if (finalY > 260) { doc.addPage(); finalY = 15; }
+
+            doc.setFont('Helvetica', 'bold');
+            doc.setFontSize(9);
+            doc.text("LAMPIRAN FOTO BUKTI PEMERIKSAAN", 14, finalY);
+
+            // Ambil Foto jika ada
+            const fotoItems = details.filter(d => d.foto_bukti);
+            if (fotoItems.length > 0) {
+                let imgX = 14;
+                let imgY = finalY + 4;
+                for (let i = 0; i < fotoItems.length; i++) {
+                    if (imgY > 250) { doc.addPage(); imgY = 15; imgX = 14; }
+                    try {
+                        doc.text(`No. ${fotoItems[i].no_kriteria} (${fotoItems[i].kriteria_nama})`, imgX, imgY);
+                        doc.addImage(fotoItems[i].foto_bukti, 'JPEG', imgX, imgY + 2, 40, 30);
+                        imgX += 45;
+                        if ((i + 1) % 4 === 0) {
+                            imgX = 14;
+                            imgY += 38;
+                        }
+                    } catch (err) {
+                        console.log('Gagal embed foto di PDF:', err);
+                    }
+                }
+            } else {
+                doc.setFont('Helvetica', 'normal');
+                doc.setFontSize(8);
+                doc.text("Tidak ada lampiran foto yang diunggah.", 14, finalY + 6);
+            }
+
+            Swal.close();
+            doc.save(`Laporan_ATM_${header.kantor ? header.kantor.nama : 'Unit'}_${Date.now()}.pdf`);
+        }
+
+        async function exportATMExcel(id) {
+            Swal.fire({ title: 'Menyiapkan Excel Laporan ATM...', didOpen: () => Swal.showLoading() });
+
+            const { data: header } = await db.from('pemeriksaan_atm').select('*, kantor(nama, alamat)').eq('id', id).single();
+            const { data: details } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id).order('no_kriteria', {ascending:true});
+
+            if (!header || !details) {
+                return Swal.fire('Error', 'Gagal mengambil data laporan ATM', 'error');
+            }
+
+            const excelRows = [
+                ["LAPORAN PEMERIKSAAN ATM MINGGUAN"],
+                ["Pemeriksaan Rutin Fasilitas & Mesin ATM"],
+                [],
+                ["UNIT", header.kantor ? header.kantor.nama : '-', "KATEGORI ATM", header.kategori_atm],
+                ["LOKASI / KCP", header.kantor ? header.kantor.alamat : '-', "PERIODE MINGGU", header.periode_minggu],
+                ["TANGGAL", header.tanggal_pemeriksaan],
+                [],
+                ["No", "Kriteria Pemeriksaan", "Kondisi", "Keterangan", "URL Foto Bukti"]
+            ];
+
+            details.forEach(d => {
+                excelRows.push([
+                    d.no_kriteria,
+                    d.kriteria_nama,
+                    d.kondisi,
+                    d.keterangan || '-',
+                    d.foto_bukti || '-'
+                ]);
+            });
+
+            const worksheet = XLSX.utils.aoa_to_sheet(excelRows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Pemeriksaan_ATM");
+
+            Swal.close();
+            XLSX.writeFile(workbook, `Laporan_ATM_${header.kantor ? header.kantor.nama : 'Unit'}_${Date.now()}.xlsx`);
+        }
+
+        // --- MANAGEMEN KRITERIA ATM ---
         async function openManageKriteria() {
             Swal.fire({ title: 'Memuat kriteria...', didOpen: () => Swal.showLoading() });
             const { data: listKriteria } = await db.from('kriteria_atm').select('*').order('no_kriteria', {ascending:true});
@@ -590,7 +726,7 @@
             document.getElementById('app-modal').style.display = 'flex';
         }
 
-        // FORM CEK ATM (READ KRITERIA DYNAMICALLY FROM DATABASE)
+        // FORM CEK ATM
         function openFormPemeriksaanATM() {
             Promise.all([
                 db.from('kantor').select('id, nama'),
@@ -681,7 +817,7 @@
             });
         }
 
-        // CRUD KANTOR, ASSET, UTILITAS, WO, MAINTENANCE, TEKNISI
+        // FORM KANTOR, ASSET, UTILITAS, WO, MAINTENANCE, TEKNISI
         function openFormKantor() {
             document.getElementById('modal-title').innerText = "Tambah Kantor";
             document.getElementById('modal-body').innerHTML = `
