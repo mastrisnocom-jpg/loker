@@ -91,10 +91,13 @@
         .badge-success { background: #d1e7dd; color: #0f5132; }
         .badge-danger { background: #f8d7da; color: #842029; }
 
+        /* CHECKLIST & SIGNATURE STYLING */
         .checklist-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
         .checklist-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; color: var(--primary); }
         .checklist-desc { font-size: 0.75rem; color: var(--text-sub); margin-bottom: 8px; }
         .radio-group { display: flex; gap: 16px; margin-bottom: 8px; font-size: 0.8rem; font-weight: 600; }
+
+        .signature-pad { border: 1px dashed var(--border); border-radius: 8px; background: #fff; width: 100%; height: 120px; touch-action: none; cursor: crosshair; }
 
         /* MODAL */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
@@ -497,12 +500,11 @@
         }
 
         // ==========================================
-        // FITUR EXPORT PDF & EXCEL PERSIS FORMULIR ATM
+        // FITUR EXPORT PDF & EXCEL DENGAN TANDA TANGAN
         // ==========================================
         async function exportATMPDF(id) {
             Swal.fire({ title: 'Mencetak PDF Laporan ATM...', didOpen: () => Swal.showLoading() });
 
-            // Fetch Header & Detail Data
             const { data: header } = await db.from('pemeriksaan_atm').select('*, kantor(nama, alamat)').eq('id', id).single();
             const { data: details } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id).order('no_kriteria', {ascending:true});
 
@@ -518,11 +520,11 @@
             doc.setFontSize(11);
             doc.text("LAPORAN PEMERIKSAAN ATM MINGGUAN", 105, 15, { align: 'center' });
             doc.setFont('Helvetica', 'normal');
-            doc.setFontSize(9);
+            doc.setFontSize(8.5);
             doc.text("Pemeriksaan Rutin Fasilitas & Mesin ATM (Onsite & Offsite)", 105, 20, { align: 'center' });
 
             // 2. ATRIBUT UNIT / KCP
-            doc.setFontSize(8.5);
+            doc.setFontSize(8);
             doc.text(`UNIT                  : ${header.kantor ? header.kantor.nama : '-'}`, 14, 28);
             doc.text(`Kategori ATM  : [ ${header.kategori_atm === 'Onsite' ? 'X' : ' '} ] Onsite   [ ${header.kategori_atm === 'Offsite' ? 'X' : ' '} ] Offsite`, 110, 28);
 
@@ -531,7 +533,7 @@
 
             doc.text(`Tanggal Cek       : ${header.tanggal_pemeriksaan}`, 14, 38);
 
-            // 3. TABEL KRITERIA (AUTOTABLE)
+            // 3. TABEL KRITERIA
             const tableBody = details.map(d => [
                 d.no_kriteria,
                 d.kriteria_nama,
@@ -544,7 +546,7 @@
                 head: [['No', 'Kriteria Pemeriksaan', 'Kondisi', 'Keterangan']],
                 body: tableBody,
                 theme: 'grid',
-                styles: { fontSize: 7.5, cellPadding: 2, textOverflow: 'clip' },
+                styles: { fontSize: 7, cellPadding: 2 },
                 headStyles: { fillColor: [232, 245, 233], textColor: [25, 135, 84], fontStyle: 'bold' },
                 columnStyles: {
                     0: { cellWidth: 8, halign: 'center' },
@@ -554,37 +556,33 @@
                 }
             });
 
-            // 4. LAMPIRAN PEMBERSIHAN / FOTO
-            let finalY = doc.lastAutoTable.finalY + 8;
-            if (finalY > 260) { doc.addPage(); finalY = 15; }
+            // 4. LAMPIRAN TANDA TANGAN DI BAGIAN BAWAH
+            let finalY = doc.lastAutoTable.finalY + 10;
+            if (finalY > 230) { doc.addPage(); finalY = 20; }
 
             doc.setFont('Helvetica', 'bold');
-            doc.setFontSize(9);
-            doc.text("LAMPIRAN FOTO BUKTI PEMERIKSAAN", 14, finalY);
+            doc.setFontSize(8.5);
+            doc.text("LAMPIRAN PEMBERSIHAN & TANDA TANGAN", 14, finalY);
 
-            // Ambil Foto jika ada
-            const fotoItems = details.filter(d => d.foto_bukti);
-            if (fotoItems.length > 0) {
-                let imgX = 14;
-                let imgY = finalY + 4;
-                for (let i = 0; i < fotoItems.length; i++) {
-                    if (imgY > 250) { doc.addPage(); imgY = 15; imgX = 14; }
-                    try {
-                        doc.text(`No. ${fotoItems[i].no_kriteria} (${fotoItems[i].kriteria_nama})`, imgX, imgY);
-                        doc.addImage(fotoItems[i].foto_bukti, 'JPEG', imgX, imgY + 2, 40, 30);
-                        imgX += 45;
-                        if ((i + 1) % 4 === 0) {
-                            imgX = 14;
-                            imgY += 38;
-                        }
-                    } catch (err) {
-                        console.log('Gagal embed foto di PDF:', err);
-                    }
+            // Kotak Tanda Tangan
+            doc.autoTable({
+                startY: finalY + 4,
+                head: [['Petugas Pemeriksa', 'Supervisor / Penanggung Jawab']],
+                body: [['\n\n\n\n_______________________\nNama: ' + (header.petugas_nama || 'Petugas ATM'), '\n\n\n\n_______________________\nNama: ' + (header.supervisor_nama || 'Supervisor')]],
+                theme: 'grid',
+                styles: { fontSize: 8, halign: 'center', cellPadding: 4 },
+                headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' },
+                columnStyles: {
+                    0: { cellWidth: 91 },
+                    1: { cellWidth: 91 }
                 }
-            } else {
-                doc.setFont('Helvetica', 'normal');
-                doc.setFontSize(8);
-                doc.text("Tidak ada lampiran foto yang diunggah.", 14, finalY + 6);
+            });
+
+            // Embed Digital Signature jika ada
+            if (header.tanda_tangan_petugas) {
+                try {
+                    doc.addImage(header.tanda_tangan_petugas, 'PNG', 35, finalY + 12, 35, 18);
+                } catch (e) { console.log('TTD Error', e); }
             }
 
             Swal.close();
@@ -621,6 +619,10 @@
                     d.foto_bukti || '-'
                 ]);
             });
+
+            excelRows.push([]);
+            excelRows.push(["TANDA TANGAN PETUGAS", header.petugas_nama || 'Petugas']);
+            excelRows.push(["TANDA TANGAN SUPERVISOR", header.supervisor_nama || 'Supervisor']);
 
             const worksheet = XLSX.utils.aoa_to_sheet(excelRows);
             const workbook = XLSX.utils.book_new();
@@ -705,6 +707,7 @@
         // VIEW DETAIL ATM
         async function viewDetailATM(id, lokasi, periode) {
             Swal.fire({ title: 'Memuat detail...', didOpen: () => Swal.showLoading() });
+            const { data: header } = await db.from('pemeriksaan_atm').select('*').eq('id', id).single();
             const { data, error } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id).order('no_kriteria', {ascending:true});
             Swal.close();
 
@@ -718,15 +721,28 @@
                             <div class="checklist-title">${d.no_kriteria}. ${d.kriteria_nama}</div>
                             <div style="margin-bottom: 4px;">Kondisi: <span class="badge badge-${d.kondisi === 'BAIK' ? 'success' : 'danger'}">${d.kondisi}</span></div>
                             <div style="color:var(--text-sub); margin-bottom:6px;">Keterangan: ${d.keterangan || '-'}</div>
-                            ${d.foto_bukti ? `<div><a href="${d.foto_bukti}" target="_blank"><img src="${d.foto_bukti}" class="img-thumb" style="width:100px; height:100px;"></a></div>` : ''}
+                            ${d.foto_bukti ? `<div><a href="${d.foto_bukti}" target="_blank"><img src="${d.foto_bukti}" class="img-thumb" style="width:90px; height:90px;"></a></div>` : ''}
                         </div>
                     `).join('')}
+
+                    <div class="checklist-card" style="margin-top:12px;">
+                        <div class="checklist-title">TANDA TANGAN PETUGAS & SUPERVISOR</div>
+                        <div style="display:flex; justify-content:space-between; margin-top:8px;">
+                            <div>
+                                <small>Petugas: <b>${header.petugas_nama || '-'}</b></small><br>
+                                ${header.tanda_tangan_petugas ? `<img src="${header.tanda_tangan_petugas}" style="width:100px; height:50px; border:1px solid var(--border); border-radius:4px; margin-top:4px;">` : ''}
+                            </div>
+                            <div>
+                                <small>Supervisor: <b>${header.supervisor_nama || '-'}</b></small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
             document.getElementById('app-modal').style.display = 'flex';
         }
 
-        // FORM CEK ATM
+        // FORM CEK ATM DENGAN CANVAS TANDA TANGAN PADA BAGIAN BAWAH
         function openFormPemeriksaanATM() {
             Promise.all([
                 db.from('kantor').select('id, nama'),
@@ -770,19 +786,43 @@
                             </div>
                         `).join('')}
 
+                        <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
+                        <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 10px;">LAMPIRAN TANDA TANGAN</div>
+                        
+                        <div class="form-group">
+                            <label>Nama Petugas Pemeriksa</label>
+                            <input type="text" id="fa-petugas" class="form-control" placeholder="Nama Petugas" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nama Supervisor / Penanggung Jawab</label>
+                            <input type="text" id="fa-supervisor" class="form-control" placeholder="Nama Supervisor" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Tanda Tangan Digital Petugas</label>
+                            <canvas id="canvas-ttd" class="signature-pad"></canvas>
+                            <button type="button" class="btn btn-secondary" onclick="clearCanvasTTD()" style="margin-top:4px; font-size:0.7rem; padding:4px 8px;">Clear TTD</button>
+                        </div>
+
                         <button type="submit" class="btn btn-primary" style="width:100%; margin-top:12px;">Simpan Laporan ATM</button>
                     </form>`;
 
                 document.getElementById('app-modal').style.display = 'flex';
+                initCanvasTTD();
 
                 document.getElementById('f-atm').onsubmit = async (e) => {
                     e.preventDefault();
                     Swal.fire({ title: 'Menyimpan Laporan ATM...', didOpen: () => Swal.showLoading() });
 
+                    const canvasEl = document.getElementById('canvas-ttd');
+                    const ttdDataUrl = canvasEl.toDataURL();
+
                     const { data: headerData, error: errH } = await db.from('pemeriksaan_atm').insert([{
                         kantor_id: document.getElementById('fa-kantor').value,
                         kategori_atm: document.getElementById('fa-kat').value,
-                        periode_minggu: document.getElementById('fa-periode').value
+                        periode_minggu: document.getElementById('fa-periode').value,
+                        petugas_nama: document.getElementById('fa-petugas').value,
+                        supervisor_nama: document.getElementById('fa-supervisor').value,
+                        tanda_tangan_petugas: ttdDataUrl
                     }]).select().single();
 
                     if (errH) return Swal.fire('Gagal', errH.message, 'error');
@@ -815,6 +855,54 @@
                     loadDashboardStats();
                 };
             });
+        }
+
+        // DIGITAL SIGNATURE CANVAS CONTROLLER
+        let isDrawing = false;
+        function initCanvasTTD() {
+            const canvas = document.getElementById('canvas-ttd');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#000000';
+
+            const startDrawing = (e) => {
+                isDrawing = true;
+                ctx.beginPath();
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                ctx.moveTo(x, y);
+            };
+
+            const draw = (e) => {
+                if (!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            };
+
+            const stopDrawing = () => { isDrawing = false; };
+
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+
+            canvas.addEventListener('touchstart', startDrawing);
+            canvas.addEventListener('touchmove', draw);
+            canvas.addEventListener('touchend', stopDrawing);
+        }
+
+        function clearCanvasTTD() {
+            const canvas = document.getElementById('canvas-ttd');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
         }
 
         // FORM KANTOR, ASSET, UTILITAS, WO, MAINTENANCE, TEKNISI
