@@ -3,50 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>BBMS - Binayasa Building Management System</title>
+  <title>BBMS Light - PT Binayasa Putra Batara</title>
 
-  <!-- PWA Manifest & Theme -->
+  <!-- PWA Manifest Minimalis -->
   <link rel="manifest" href="data:application/manifest+json;base64,ewogICJzaG9ydF9uYW1lIjogIkJCTVMiLAogICJuYW1lIjogIkJJTkFZQVNBIEJVSUxESU5HIE1BTkFHRU1FTlQgU1lTVEVNIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwQjhGNEQiLAogICJ0aGVtZV9jb2xvcjogIiMwQjhGNEQiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiCn0=">
   <meta name="theme-color" content="#0B8F4D">
 
-  <!-- Material Symbols & Typography -->
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Material Symbols & Typography Slim -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 
-  <!-- Libraries: Supabase, Chart.js, SweetAlert2, FullCalendar, QR Scanner, XLSX, HTML2PDF -->
+  <!-- Core Light CDNs (Supabase, Chart.js, SweetAlert2, QR Scanner, XLSX) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
     /* ========================================================
-       PRECISE STYLING MATCHING USER SCREENSHOT CONCEPT
+       LIGHTWEIGHT & ULTRA-RESPONSIVE MOBILE STYLING
        ======================================================== */
     :root {
       --primary: #0B8F4D;
       --primary-light: #E8F5E9;
-      --accent-blue: #2196F3;
-      --accent-gold: #D4A017;
-      
-      --bg-main: #F8FAF8;
+      --bg-main: #F4F6F5;
       --card-bg: #FFFFFF;
       --text-main: #1C201D;
       --text-sub: #6C7570;
-      --shadow: 0 8px 24px rgba(11, 143, 77, 0.06);
-      --icon-bg: #F0F7F2;
+      --icon-bg: #F0F4F2;
+      --border: #E5E8E6;
     }
 
     [data-theme="dark"] {
       --bg-main: #121413;
-      --card-bg: #1E2220;
+      --card-bg: #1A1D1C;
       --text-main: #F0F4F1;
       --text-sub: #909E96;
-      --shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-      --icon-bg: #272E2A;
+      --icon-bg: #242826;
+      --border: #2D3230;
     }
 
     * {
@@ -63,7 +58,6 @@
       display: flex;
       justify-content: center;
       min-height: 100vh;
-      padding: 0;
     }
 
     .app-container {
@@ -72,27 +66,26 @@
       min-height: 100vh;
       background-color: var(--bg-main);
       position: relative;
-      padding: 20px 16px 100px 16px;
+      padding: 16px 14px 80px 14px;
     }
 
-    /* Top User Header */
+    /* Top User Header Lightweight */
     .user-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
-      padding: 4px;
+      margin-bottom: 16px;
     }
 
     .user-info {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .avatar {
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background: var(--primary-light);
       color: var(--primary);
@@ -103,44 +96,40 @@
     }
 
     .role-badge {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       background: var(--primary-light);
       color: var(--primary);
-      padding: 3px 8px;
-      border-radius: 12px;
+      padding: 2px 6px;
+      border-radius: 8px;
       font-weight: 700;
       text-transform: uppercase;
     }
 
-    /* Section 1: Summary Metric Cards */
+    /* Section 1: Summary Cards Horizontal Scroll */
     .summary-scroll {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      padding-bottom: 8px;
-      margin-bottom: 28px;
-      -ms-overflow-style: none;
+      padding-bottom: 4px;
+      margin-bottom: 20px;
       scrollbar-width: none;
     }
     .summary-scroll::-webkit-scrollbar { display: none; }
 
     .summary-card {
-      min-width: 135px;
+      min-width: 120px;
       flex: 1;
       background: var(--card-bg);
-      border-radius: 20px;
-      padding: 16px 12px;
+      border-radius: 16px;
+      padding: 12px 10px;
       text-align: center;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(0,0,0,0.03);
-      scroll-snap-align: start;
+      border: 1px solid var(--border);
     }
 
     .summary-card .icon-wrap {
-      width: 36px;
-      height: 36px;
-      margin: 0 auto 8px auto;
+      width: 32px;
+      height: 32px;
+      margin: 0 auto 6px auto;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -148,24 +137,21 @@
     }
 
     .summary-card .val {
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: var(--text-main);
-      margin-bottom: 4px;
+      font-size: 1.1rem;
+      font-weight: 700;
     }
 
     .summary-card .lbl {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--text-sub);
-      font-weight: 500;
     }
 
-    /* Section 2: Grid Feature Icons */
+    /* Section 2: Grid Menu Circle Icons */
     .menu-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 20px 12px;
-      margin-bottom: 28px;
+      gap: 16px 8px;
+      margin-bottom: 20px;
     }
 
     .menu-item {
@@ -173,41 +159,38 @@
       flex-direction: column;
       align-items: center;
       cursor: pointer;
-      transition: transform 0.15s ease;
     }
 
     .menu-item:active {
-      transform: scale(0.92);
+      opacity: 0.7;
     }
 
     .menu-icon-circle {
-      width: 64px;
-      height: 64px;
+      width: 58px;
+      height: 58px;
       border-radius: 50%;
       background: var(--icon-bg);
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 8px;
-      box-shadow: var(--shadow);
+      margin-bottom: 6px;
       color: var(--primary);
+      border: 1px solid var(--border);
     }
 
     .menu-label {
-      font-size: 0.78rem;
+      font-size: 0.72rem;
       font-weight: 600;
-      color: var(--text-main);
       text-align: center;
-      line-height: 1.15;
     }
 
-    /* Section Container Views */
+    /* Content Box Views */
     .content-box {
       background: var(--card-bg);
-      border-radius: 24px;
-      padding: 20px;
-      box-shadow: var(--shadow);
-      margin-bottom: 20px;
+      border-radius: 18px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
     }
 
     .page-view {
@@ -217,7 +200,7 @@
       display: block;
     }
 
-    /* Login Screen Overlay */
+    /* Fast Login Overlay */
     #login-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -226,99 +209,84 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 24px;
+      padding: 20px;
     }
 
     .login-card {
       background: var(--card-bg);
-      border-radius: 28px;
-      padding: 28px;
-      box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+      border-radius: 20px;
+      padding: 20px;
     }
 
     .btn-primary {
       width: 100%;
-      padding: 14px;
+      padding: 12px;
       background: var(--primary);
       color: white;
       border: none;
-      border-radius: 16px;
+      border-radius: 12px;
       font-weight: 700;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       cursor: pointer;
     }
 
     .input-field {
       width: 100%;
-      padding: 12px 16px;
-      border: 1px solid rgba(0,0,0,0.1);
-      border-radius: 12px;
-      margin-top: 6px;
-      margin-bottom: 16px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-top: 4px;
+      margin-bottom: 12px;
       outline: none;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
+      background: var(--card-bg);
+      color: var(--text-main);
     }
 
-    /* Item List untuk Arsip & Dokumen */
+    /* Fast Archive List */
     .archive-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px;
+      padding: 10px;
       background: var(--icon-bg);
-      border-radius: 14px;
-      margin-bottom: 10px;
+      border-radius: 12px;
+      margin-bottom: 8px;
     }
 
-    .archive-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .archive-icon {
-      width: 40px; height: 40px;
-      border-radius: 10px;
-      background: var(--primary-light);
-      color: var(--primary);
-      display: flex; align-items: center; justify-content: center;
-    }
-
-    /* Modal Backdrop */
     .modal-backdrop {
       display: none;
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
       z-index: 9999;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      padding: 16px;
     }
   </style>
 </head>
 <body>
 
   <!-- ========================================================
-       1. LOGIN OVERLAY MODULE
+       1. LOGIN OVERLAY
        ======================================================== -->
   <div id="login-overlay">
-    <div style="text-align: center; color: white; margin-bottom: 24px;">
-      <span class="material-symbols-rounded" style="font-size: 56px;">domain</span>
-      <h2 style="font-weight: 800; font-size: 1.5rem;">BBMS MOBILE</h2>
-      <p style="font-size: 0.85rem; opacity: 0.9;">PT. Binayasa Putra Batara (BSN)</p>
+    <div style="text-align: center; color: white; margin-bottom: 20px;">
+      <span class="material-symbols-rounded" style="font-size: 48px;">domain</span>
+      <h2 style="font-size: 1.3rem;">BBMS MOBILE</h2>
+      <p style="font-size: 0.8rem; opacity: 0.9;">PT. Binayasa Putra Batara (BSN)</p>
     </div>
 
     <div class="login-card">
       <form id="login-form">
-        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-sub);">EMAIL AUTHENTICATION</label>
+        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">EMAIL</label>
         <input type="email" id="email" class="input-field" value="admin@bpb.my.id" required>
 
-        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-sub);">PASSWORD</label>
+        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">PASSWORD</label>
         <input type="password" id="password" class="input-field" value="123456" required>
 
-        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-sub);">ROLE SIMULASI</label>
+        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">ROLE SIMULASI</label>
         <select id="role-select" class="input-field">
           <option value="administrator">1. Administrator</option>
           <option value="kepala_unit">2. Kepala Unit</option>
@@ -328,7 +296,7 @@
           <option value="vendor">6. Vendor</option>
         </select>
 
-        <button type="submit" class="btn-primary" style="margin-top: 8px;">MASUK SISTEM BBMS</button>
+        <button type="submit" class="btn-primary" style="margin-top: 4px;">MASUK BBMS</button>
       </form>
     </div>
   </div>
@@ -343,22 +311,20 @@
       <div class="user-info">
         <div class="avatar" id="avatar-initials">AK</div>
         <div>
-          <div style="font-size: 0.95rem; font-weight: 800;" id="user-name">Ahmad K.</div>
+          <div style="font-size: 0.85rem; font-weight: 700;" id="user-name">Ahmad K.</div>
           <span class="role-badge" id="user-role-display">Teknisi</span>
         </div>
       </div>
-      <div style="display: flex; gap: 8px;">
-        <button onclick="toggleTheme()" style="background: var(--card-bg); border: none; padding: 8px; border-radius: 50%; cursor: pointer; box-shadow: var(--shadow);">
-          <span class="material-symbols-rounded" style="color: var(--text-main);">brightness_4</span>
-        </button>
-      </div>
+      <button onclick="toggleTheme()" style="background: var(--card-bg); border: 1px solid var(--border); padding: 6px; border-radius: 50%; cursor: pointer;">
+        <span class="material-symbols-rounded" style="font-size: 20px; color: var(--text-main);">brightness_4</span>
+      </button>
     </header>
 
     <!-- SECTION 1: TOP SUMMARY STAT CARDS -->
     <div class="summary-scroll">
       <div class="summary-card">
         <div class="icon-wrap" style="background: #E8F5E9; color: #0B8F4D;">
-          <span class="material-symbols-rounded">location_city</span>
+          <span class="material-symbols-rounded" style="font-size: 20px;">location_city</span>
         </div>
         <div class="val">10</div>
         <div class="lbl">Kantor BSN</div>
@@ -366,7 +332,7 @@
 
       <div class="summary-card">
         <div class="icon-wrap" style="background: #FFF8E1; color: #D4A017;">
-          <span class="material-symbols-rounded">assignment</span>
+          <span class="material-symbols-rounded" style="font-size: 20px;">assignment</span>
         </div>
         <div class="val">24</div>
         <div class="lbl">Work Order</div>
@@ -374,7 +340,7 @@
 
       <div class="summary-card">
         <div class="icon-wrap" style="background: #E3F2FD; color: #2196F3;">
-          <span class="material-symbols-rounded">folder_open</span>
+          <span class="material-symbols-rounded" style="font-size: 20px;">folder_open</span>
         </div>
         <div class="val" id="val-total-arsip">128</div>
         <div class="lbl">File Arsip</div>
@@ -382,16 +348,15 @@
 
       <div class="summary-card">
         <div class="icon-wrap" style="background: #FFEBEE; color: #E53935;">
-          <span class="material-symbols-rounded">warning</span>
+          <span class="material-symbols-rounded" style="font-size: 20px;">warning</span>
         </div>
         <div class="val">3</div>
         <div class="lbl">AC Overdue</div>
       </div>
     </div>
 
-    <!-- SECTION 2: GRID FEATURE MENUS (TERMASUK ARSIP BARU) -->
+    <!-- SECTION 2: GRID FEATURE MENUS -->
     <div class="menu-grid">
-      
       <div class="menu-item" onclick="showPage('kantor')">
         <div class="menu-icon-circle"><span class="material-symbols-rounded">domain</span></div>
         <span class="menu-label">Kantor</span>
@@ -409,7 +374,7 @@
 
       <div class="menu-item" onclick="showPage('maintenance')">
         <div class="menu-icon-circle"><span class="material-symbols-rounded">build</span></div>
-        <span class="menu-label">Maintenance</span>
+        <span class="menu-label">Perawatan</span>
       </div>
 
       <div class="menu-item" onclick="showPage('workorder')">
@@ -419,10 +384,10 @@
 
       <div class="menu-item" onclick="showPage('cleaning')">
         <div class="menu-icon-circle"><span class="material-symbols-rounded">cleaning_services</span></div>
-        <span class="menu-label">Gen Clean</span>
+        <span class="menu-label">Cleaning</span>
       </div>
 
-      <!-- MENU BARU: SIMPAN ARSIP -->
+      <!-- ARSIP -->
       <div class="menu-item" onclick="showPage('arsip')">
         <div class="menu-icon-circle" style="background: #E0F2F1; color: #00897B;">
           <span class="material-symbols-rounded">folder_zip</span>
@@ -458,7 +423,6 @@
         <div class="menu-icon-circle"><span class="material-symbols-rounded">database</span></div>
         <span class="menu-label">SQL RLS</span>
       </div>
-
     </div>
 
     <!-- ========================================================
@@ -468,47 +432,37 @@
     <!-- DASHBOARD MAIN GRAPH VIEW -->
     <div id="view-dashboard" class="page-view active">
       <div class="content-box">
-        <h4 style="font-size: 0.95rem; margin-bottom: 12px;">Grafik Perawatan Gedung & Utility</h4>
-        <canvas id="mainChart" style="max-height: 220px;"></canvas>
+        <h4 style="font-size: 0.85rem; margin-bottom: 10px;">Grafik Perawatan Gedung</h4>
+        <div style="height: 180px;"><canvas id="mainChart"></canvas></div>
       </div>
     </div>
 
-    <!-- VIEW DEDIKASI BARU: MODUL ARSIP & DOKUMEN -->
+    <!-- ARSIP VIEW -->
     <div id="view-arsip" class="page-view">
       <div class="content-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h4 style="font-size: 1rem;">Penyimpanan Arsip Gedung</h4>
-          <button onclick="openUploadArsipModal()" style="background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 4px;">
-            <span class="material-symbols-rounded" style="font-size: 16px;">upload_file</span> Simpan Arsip
-          </button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="font-size: 0.9rem;">Penyimpanan Arsip Gedung</h4>
+          <button onclick="openUploadArsipModal()" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Simpan Arsip</button>
         </div>
-
-        <!-- Filter / Search Arsip -->
-        <input type="text" id="search-arsip" onkeyup="filterArsip()" placeholder="Cari arsip gedung, SLF, kontrak..." class="input-field" style="margin-bottom: 12px;">
-
-        <!-- Daftar File Arsip -->
-        <div id="arsip-list">
-          <!-- Rendered By JavaScript -->
-        </div>
+        <input type="text" id="search-arsip" onkeyup="filterArsip()" placeholder="Cari arsip..." class="input-field" style="margin-bottom: 10px;">
+        <div id="arsip-list"></div>
       </div>
     </div>
 
-    <!-- VIEW DATA KANTOR -->
+    <!-- DATA KANTOR VIEW -->
     <div id="view-kantor" class="page-view">
       <div class="content-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h4 style="font-size: 1rem;">Master Data 10 Kantor BSN</h4>
-          <button onclick="exportExcel('table-kantor', 'Data_Kantor_BSN')" style="background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">Excel</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="font-size: 0.9rem;">Master 10 Kantor BSN</h4>
+          <button onclick="exportExcel('table-kantor', 'Data_Kantor_BSN')" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">Excel</button>
         </div>
-
         <div style="overflow-x: auto;">
-          <table id="table-kantor" style="width: 100%; border-collapse: collapse; font-size: 0.8rem;">
+          <table id="table-kantor" style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
             <thead>
-              <tr style="text-align: left; border-bottom: 2px solid var(--icon-bg);">
-                <th style="padding: 8px;">Kode</th>
-                <th style="padding: 8px;">Nama Kantor</th>
-                <th style="padding: 8px;">PIC</th>
-                <th style="padding: 8px;">Status</th>
+              <tr style="text-align: left; border-bottom: 1px solid var(--border);">
+                <th style="padding: 6px;">Kode</th>
+                <th style="padding: 6px;">Nama Kantor</th>
+                <th style="padding: 6px;">PIC</th>
               </tr>
             </thead>
             <tbody id="kantor-rows"></tbody>
@@ -517,125 +471,93 @@
       </div>
     </div>
 
-    <!-- VIEW ASSET -->
+    <!-- ASSET VIEW -->
     <div id="view-asset" class="page-view">
       <div class="content-box">
-        <h4 style="font-size: 1rem; margin-bottom: 12px;">Asset Management (25 Kategori)</h4>
+        <h4 style="font-size: 0.9rem; margin-bottom: 10px;">Asset Management</h4>
         <div id="asset-card-list"></div>
       </div>
     </div>
 
-    <!-- VIEW UTILITY BILLS -->
+    <!-- UTILITY VIEW -->
     <div id="view-utility" class="page-view">
       <div class="content-box">
-        <h4 style="font-size: 1rem; margin-bottom: 12px;">Tagihan Utilitas Gedung</h4>
-        <div style="display: flex; flex-direction: column; gap: 12px;">
-          <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--icon-bg); border-radius: 12px;">
-            <div>
-              <div style="font-weight: 700; font-size: 0.85rem;">PLN Kantor Pusat</div>
-              <div style="font-size: 0.75rem; color: var(--text-sub);">Agustus 2026 • ID: 53421109</div>
-            </div>
-            <div style="text-align: right;">
-              <div style="font-weight: 800; color: var(--primary);">Rp 48.500.000</div>
-              <span style="font-size: 0.65rem; background: #E8F5E9; color: green; padding: 2px 6px; border-radius: 4px; font-weight: 700;">LUNAS</span>
-            </div>
-          </div>
+        <h4 style="font-size: 0.9rem; margin-bottom: 10px;">Tagihan Utilitas Gedung</h4>
+        <div style="padding: 10px; background: var(--icon-bg); border-radius: 10px; font-size: 0.8rem;">
+          <b>PLN Kantor Pusat</b>: Rp 48.500.000 <span style="color: green; font-weight: 700;">(LUNAS)</span>
         </div>
       </div>
     </div>
 
-    <!-- VIEW MAINTENANCE & WORK ORDER -->
+    <!-- MAINTENANCE & WO VIEW -->
     <div id="view-maintenance" class="page-view">
       <div class="content-box">
-        <h4 style="font-size: 1rem; margin-bottom: 12px;">Perawatan & Maintenance Routine</h4>
-        <div style="padding: 12px; border: 1px solid var(--icon-bg); border-radius: 12px;">
-          <div style="font-weight: 700; font-size: 0.85rem;">Service AC Precision Server</div>
-          <div style="font-size: 0.75rem; color: var(--text-sub);">Jadwal: Hari Ini • Teknisi: Ahmad</div>
-        </div>
+        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Perawatan Routine</h4>
+        <p style="font-size: 0.75rem; color: var(--text-sub);">Service AC Precision Server • Hari Ini</p>
       </div>
     </div>
 
     <div id="view-workorder" class="page-view">
       <div class="content-box">
-        <h4 style="font-size: 1rem; margin-bottom: 12px;">Work Order Execution</h4>
-        <button onclick="signDigitalWO()" class="btn-primary" style="background: var(--accent-blue);">Input Digital Signature WO</button>
+        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Work Order Execution</h4>
+        <button onclick="signDigitalWO()" class="btn-primary">Signature TTD Digital</button>
       </div>
     </div>
 
     <div id="view-cleaning" class="page-view">
       <div class="content-box">
-        <h4 style="font-size: 1rem; margin-bottom: 12px;">General Cleaning Checklist</h4>
-        <p style="font-size: 0.8rem; color: var(--text-sub);">Checklist: Lobby, Toilet, Kaca, Tangga, Wallsign, Pylon, Canopy, Halaman.</p>
+        <h4 style="font-size: 0.9rem;">General Cleaning Checklist</h4>
+        <p style="font-size: 0.75rem; color: var(--text-sub); margin-top: 4px;">Area: Lobby, Toilet, Kaca, Wallsign.</p>
       </div>
     </div>
 
-    <!-- VIEW SCHEDULE -->
+    <!-- SCHEDULE LIGHT VIEW -->
     <div id="view-schedule" class="page-view">
       <div class="content-box">
-        <h4 style="font-size: 1rem; margin-bottom: 12px;">Kalender Maintenance BBMS</h4>
-        <div id="calendar-element"></div>
+        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Kalender Maintenance</h4>
+        <input type="date" class="input-field" value="2026-08-04">
+        <p style="font-size: 0.75rem; color: var(--text-sub);">AC Maintenance Server Room Pusat</p>
       </div>
     </div>
 
-    <!-- VIEW REPORTS -->
+    <!-- REPORTS VIEW -->
     <div id="view-reports" class="page-view">
       <div class="content-box">
-        <h4 style="font-size: 1rem; margin-bottom: 12px;">Laporan & Export Document</h4>
-        <div style="display: flex; gap: 10px;">
-          <button onclick="exportPDF()" class="btn-primary">Export PDF</button>
-          <button onclick="exportExcel('table-kantor', 'Laporan_BBMS')" class="btn-primary" style="background: #2E7D32;">Export Excel</button>
-        </div>
+        <h4 style="font-size: 0.9rem; margin-bottom: 10px;">Laporan & Export</h4>
+        <button onclick="window.print()" class="btn-primary" style="margin-bottom: 8px;">Print / Export PDF</button>
+        <button onclick="exportExcel('table-kantor', 'Laporan_BBMS')" class="btn-primary" style="background: #2E7D32;">Export Excel</button>
       </div>
     </div>
 
-    <!-- VIEW SQL SUPABASE SCHEMA TERUPDATE (ADA TABEL ARSIP) -->
+    <!-- SQL SUPABASE SCHEMA VIEW -->
     <div id="view-sql" class="page-view">
       <div class="content-box">
-        <h4 style="font-size: 0.95rem; margin-bottom: 8px;">Supabase SQL Schema & RLS Arsip</h4>
-        <pre style="background: #121413; color: #00FF66; padding: 12px; border-radius: 12px; overflow-x: auto; font-size: 0.7rem; font-family: monospace;">
--- SUPABASE POSTGRESQL ARCHIVE & DOCUMENTS RLS
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
-CREATE TABLE public.archives (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    title VARCHAR(200) NOT NULL,
-    category VARCHAR(100) NOT NULL, -- Kontrak, SLF, Garansi, Utilitas, BAST
-    office_id UUID REFERENCES public.offices(id),
-    file_url TEXT NOT NULL,
-    uploaded_by UUID REFERENCES public.profiles(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        <h4 style="font-size: 0.85rem; margin-bottom: 6px;">Supabase SQL Schema</h4>
+        <pre style="background: #121413; color: #00FF66; padding: 10px; border-radius: 8px; font-size: 0.65rem; overflow-x: auto;">
+CREATE TABLE archives (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  category TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
 );
-
--- RLS UNTUK AKSES ARSIP DOKUMEN
-ALTER TABLE public.archives ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "View Archives Authenticated" 
-ON public.archives FOR SELECT USING (auth.role() = 'authenticated');
-
-CREATE POLICY "Manage Archives Admin Supervisor" 
-ON public.archives FOR ALL USING (
-    EXISTS (
-        SELECT 1 FROM public.profiles 
-        WHERE id = auth.uid() AND role IN ('administrator', 'supervisor', 'kepala_unit')
-    )
-);
+ALTER TABLE archives ENABLE ROW LEVEL SECURITY;
         </pre>
       </div>
     </div>
 
   </div>
 
-  <!-- QR SCANNER MODAL -->
+  <!-- MODAL CAMERA SCANNER -->
   <div class="modal-backdrop" id="qr-modal">
-    <div style="background: var(--card-bg); padding: 20px; border-radius: 24px; width: 100%; max-width: 320px; text-align: center;">
-      <h4 style="margin-bottom: 12px;">Scan QR Code Asset</h4>
+    <div style="background: var(--card-bg); padding: 16px; border-radius: 16px; width: 100%; max-width: 300px; text-align: center;">
+      <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Scan QR Asset</h4>
       <div id="reader" style="width: 100%;"></div>
-      <button onclick="closeQRScanner()" class="btn-primary" style="background: #E53935; margin-top: 16px;">Tutup Kamera</button>
+      <button onclick="closeQRScanner()" class="btn-primary" style="background: #E53935; margin-top: 10px;">Tutup</button>
     </div>
   </div>
 
   <!-- ========================================================
-       4. JAVASCRIPT APPLICATION CONTROLLER
+       4. LIGHTWEIGHT JAVASCRIPT LOGIC
        ======================================================== -->
   <script>
     const BBMS_CONFIG = {
@@ -645,33 +567,23 @@ ON public.archives FOR ALL USING (
 
     const supabaseClient = supabase.createClient(BBMS_CONFIG.URL, BBMS_CONFIG.KEY);
 
-    // Mock Arsip Master Data
     let archivesData = [
-      { title: "Sertifikat Laik Fungsi (SLF) Gedung Pusat", cat: "Sertifikat", date: "2026-01-15", url: "#" },
-      { title: "Kontrak Vendor Maintenance Lift 2026", cat: "Kontrak", date: "2026-02-01", url: "#" },
-      { title: "Garansi Resmi Genset Caterpillar 500kVA", cat: "Garansi", date: "2025-11-10", url: "#" },
-      { title: "Bukti Bayar Tagihan PLN Agustus 2026", cat: "Utilitas", date: "2026-08-02", url: "#" },
-      { title: "Berita Acara Service Major AC Precision", cat: "BAST WO", date: "2026-07-28", url: "#" }
+      { title: "Sertifikat Laik Fungsi (SLF) Gedung", cat: "Sertifikat", date: "2026-01-15" },
+      { title: "Kontrak Maintenance Lift 2026", cat: "Kontrak", date: "2026-02-01" },
+      { title: "Garansi Genset Caterpillar 500kVA", cat: "Garansi", date: "2025-11-10" }
     ];
 
     const officesData = [
-      { code: "BSN-001", name: "BSN Kantor Pusat Jakarta", pic: "Ahmad Subarkah", status: "Active" },
-      { code: "BSN-002", name: "BSN KC Surabaya", pic: "Budi Santoso", status: "Active" },
-      { code: "BSN-003", name: "BSN KC Bandung", pic: "Dedi Suhendar", status: "Active" },
-      { code: "BSN-004", name: "BSN KC Medan", pic: "Rahmat Hidayat", status: "Active" },
-      { code: "BSN-005", name: "BSN KC Semarang", pic: "Siti Aminah", status: "Active" },
-      { code: "BSN-006", name: "BSN KC Makassar", pic: "Andi Wijaya", status: "Active" },
-      { code: "BSN-007", name: "BSN KC Palembang", pic: "Fajri Haris", status: "Active" },
-      { code: "BSN-008", name: "BSN KC Balikpapan", pic: "Hendra Gunawan", status: "Active" },
-      { code: "BSN-009", name: "BSN KC Denpasar", pic: "I Made Putra", status: "Active" },
-      { code: "BSN-010", name: "BSN KC Yogyakarta", pic: "Eko Prasetyo", status: "Active" }
-    ];
-
-    const assetsData = [
-      { name: "AC Precision Server Room", cat: "AC", status: "Operational" },
-      { name: "Genset Caterpillar 500kVA", cat: "Genset", status: "Needs Service" },
-      { name: "Pompa Hydrant Utama", cat: "Hydrant", status: "Operational" },
-      { name: "Lift Passenger 1", cat: "Lift", status: "Operational" }
+      { code: "BSN-001", name: "BSN Pusat Jakarta", pic: "Ahmad" },
+      { code: "BSN-002", name: "BSN KC Surabaya", pic: "Budi" },
+      { code: "BSN-003", name: "BSN KC Bandung", pic: "Dedi" },
+      { code: "BSN-004", name: "BSN KC Medan", pic: "Rahmat" },
+      { code: "BSN-005", name: "BSN KC Semarang", pic: "Siti" },
+      { code: "BSN-006", name: "BSN KC Makassar", pic: "Andi" },
+      { code: "BSN-007", name: "BSN KC Palembang", pic: "Fajri" },
+      { code: "BSN-008", name: "BSN KC Balikpapan", pic: "Hendra" },
+      { code: "BSN-009", name: "BSN KC Denpasar", pic: "Made" },
+      { code: "BSN-010", name: "BSN KC Yogyakarta", pic: "Eko" }
     ];
 
     let html5QrCode = null;
@@ -679,224 +591,106 @@ ON public.archives FOR ALL USING (
     document.addEventListener("DOMContentLoaded", () => {
       initLogin();
       renderKantorTable();
-      renderAssets();
       renderArsipList(archivesData);
       initChart();
-      initCalendar();
     });
 
-    // Login Form Handler
     function initLogin() {
       document.getElementById("login-form").addEventListener("submit", (e) => {
         e.preventDefault();
-        const role = document.getElementById("role-select").value;
-        document.getElementById("user-role-display").innerText = role.replace('_', ' ');
         document.getElementById("login-overlay").style.display = "none";
-
-        Swal.fire({
-          icon: 'success',
-          title: 'Login Berhasil',
-          text: `Selamat datang di BBMS (${role})`,
-          toast: true,
-          position: 'top',
-          showConfirmButton: false,
-          timer: 1500
-        });
       });
     }
 
-    function logout() {
-      document.getElementById("login-overlay").style.display = "flex";
-    }
-
-    // Dynamic Page Switcher
     function showPage(pageId) {
       document.querySelectorAll(".page-view").forEach(p => p.classList.remove("active"));
       document.getElementById(`view-${pageId}`).classList.add("active");
     }
 
-    // Render Arsip List & Functionalities
     function renderArsipList(items) {
       const container = document.getElementById("arsip-list");
       document.getElementById("val-total-arsip").innerText = items.length;
-      
       container.innerHTML = items.map(a => `
         <div class="archive-item">
-          <div class="archive-info">
-            <div class="archive-icon">
-              <span class="material-symbols-rounded">description</span>
-            </div>
-            <div>
-              <div style="font-weight: 700; font-size: 0.85rem;">${a.title}</div>
-              <div style="font-size: 0.72rem; color: var(--text-sub);">${a.cat} • ${a.date}</div>
-            </div>
+          <div>
+            <div style="font-weight: 700; font-size: 0.8rem;">${a.title}</div>
+            <div style="font-size: 0.7rem; color: var(--text-sub);">${a.cat} • ${a.date}</div>
           </div>
-          <button onclick="downloadArsip('${a.title}')" style="background: none; border: none; color: var(--primary); cursor: pointer;">
-            <span class="material-symbols-rounded">download</span>
-          </button>
+          <span class="material-symbols-rounded" style="color: var(--primary); font-size: 18px; cursor: pointer;">download</span>
         </div>
       `).join('');
     }
 
     function filterArsip() {
       const query = document.getElementById("search-arsip").value.toLowerCase();
-      const filtered = archivesData.filter(a => 
-        a.title.toLowerCase().includes(query) || a.cat.toLowerCase().includes(query)
-      );
-      renderArsipList(filtered);
+      renderArsipList(archivesData.filter(a => a.title.toLowerCase().includes(query)));
     }
 
     function openUploadArsipModal() {
       Swal.fire({
         title: 'Simpan Arsip Baru',
-        html: `
-          <input id="swal-title" class="swal2-input" placeholder="Nama Dokumen Arsip">
-          <select id="swal-cat" class="swal2-input">
-            <option value="Kontrak">Kontrak Vendor</option>
-            <option value="Sertifikat">Sertifikat Laik Fungsi (SLF)</option>
-            <option value="Garansi">Garansi Asset</option>
-            <option value="Utilitas">Bukti Bayar Utilitas</option>
-            <option value="BAST WO">BAST / Work Order</option>
-          </select>
-          <input type="file" id="swal-file" class="swal2-input">
-        `,
-        focusConfirm: false,
+        input: 'text',
+        inputPlaceholder: 'Judul Dokumen Arsip...',
         showCancelButton: true,
-        confirmButtonText: 'Upload Ke Supabase',
-        confirmButtonColor: '#0B8F4D',
-        preConfirm: () => {
-          return {
-            title: document.getElementById('swal-title').value,
-            cat: document.getElementById('swal-cat').value
-          }
-        }
-      }).then((result) => {
-        if (result.value && result.value.title) {
-          archivesData.unshift({
-            title: result.value.title,
-            cat: result.value.cat,
-            date: new Date().toISOString().split('T')[0],
-            url: "#"
-          });
+        confirmButtonText: 'Simpan',
+        confirmButtonColor: '#0B8F4D'
+      }).then((res) => {
+        if (res.value) {
+          archivesData.unshift({ title: res.value, cat: "Dokumen", date: "2026-08-04" });
           renderArsipList(archivesData);
-          Swal.fire('Berhasil', 'Dokumen Arsip tersimpan aman di Supabase Storage', 'success');
         }
       });
     }
 
-    function downloadArsip(title) {
-      Swal.fire('Unduh Arsip', `Mengunduh file: ${title}`, 'info');
-    }
-
-    // Render Master Data Tables & Cards
     function renderKantorTable() {
-      const tbody = document.getElementById("kantor-rows");
-      tbody.innerHTML = officesData.map(o => `
-        <tr style="border-bottom: 1px solid var(--icon-bg);">
-          <td style="padding: 8px;"><b>${o.code}</b></td>
-          <td style="padding: 8px;">${o.name}</td>
-          <td style="padding: 8px;">${o.pic}</td>
-          <td style="padding: 8px;"><span style="color: green; font-weight: 700;">● ${o.status}</span></td>
+      document.getElementById("kantor-rows").innerHTML = officesData.map(o => `
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 6px;"><b>${o.code}</b></td>
+          <td style="padding: 6px;">${o.name}</td>
+          <td style="padding: 6px;">${o.pic}</td>
         </tr>
       `).join('');
     }
 
-    function renderAssets() {
-      const list = document.getElementById("asset-card-list");
-      list.innerHTML = assetsData.map(a => `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--icon-bg); border-radius: 12px; margin-bottom: 8px;">
-          <div>
-            <div style="font-weight: 700; font-size: 0.85rem;">${a.name}</div>
-            <div style="font-size: 0.75rem; color: var(--text-sub);">Kategori: ${a.cat}</div>
-          </div>
-          <span style="font-size: 0.65rem; background: #E8F5E9; color: green; padding: 2px 6px; border-radius: 4px; font-weight: 700;">${a.status}</span>
-        </div>
-      `).join('');
-    }
-
-    // Chart.js & Calendar Init
     function initChart() {
       new Chart(document.getElementById('mainChart'), {
         type: 'bar',
         data: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
-          datasets: [
-            { label: 'AC Maintenance', data: [12, 19, 15, 17, 22, 20], backgroundColor: '#0B8F4D', borderRadius: 6 },
-            { label: 'Genset & Lift', data: [5, 4, 6, 5, 8, 7], backgroundColor: '#2196F3', borderRadius: 6 }
-          ]
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei'],
+          datasets: [{ label: 'Maintenance', data: [12, 19, 15, 17, 22], backgroundColor: '#0B8F4D' }]
         },
         options: { responsive: true, maintainAspectRatio: false }
       });
     }
 
-    function initCalendar() {
-      const calendarEl = document.getElementById('calendar-element');
-      const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        events: [
-          { title: 'AC Service Pusat', start: new Date().toISOString().split('T')[0], color: '#0B8F4D' }
-        ]
-      });
-      calendar.render();
-    }
-
-    // QR Code Scanner
     function openQRScanner() {
       document.getElementById("qr-modal").style.display = "flex";
       html5QrCode = new Html5Qrcode("reader");
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 180, height: 180 } },
-        (decodedText) => {
-          closeQRScanner();
-          Swal.fire('Asset Terdeteksi', `Tag QR: ${decodedText}`, 'success');
-        },
+      html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 160, height: 160 } },
+        (decodedText) => { closeQRScanner(); Swal.fire('QR Code', decodedText, 'success'); },
         () => {}
       ).catch(() => closeQRScanner());
     }
 
     function closeQRScanner() {
-      if(html5QrCode) {
-        html5QrCode.stop().then(() => {
-          document.getElementById("qr-modal").style.display = "none";
-        }).catch(() => {
-          document.getElementById("qr-modal").style.display = "none";
-        });
+      if (html5QrCode) {
+        html5QrCode.stop().then(() => document.getElementById("qr-modal").style.display = "none")
+        .catch(() => document.getElementById("qr-modal").style.display = "none");
       } else {
         document.getElementById("qr-modal").style.display = "none";
       }
     }
 
-    // AI Bot Assistant
     function openAIChat() {
-      Swal.fire({
-        title: 'AI Assistant BBMS',
-        input: 'text',
-        inputPlaceholder: 'Ketik: status, jadwal, arsip...',
-        confirmButtonText: 'Tanya AI',
-        confirmButtonColor: '#0B8F4D'
-      }).then((res) => {
-        if(res.value) {
-          Swal.fire('Rekomendasi AI', `Hasil analisis untuk "${res.value}": Seluruh dokumen SLF Gedung BSN telah diarsipkan dengan aman.`, 'info');
-        }
-      });
+      Swal.fire({ title: 'AI Assistant', input: 'text', inputPlaceholder: 'Tanyakan sesuatu...', confirmButtonColor: '#0B8F4D' });
     }
 
-    // Export Helpers
     function exportExcel(tableID, filename) {
-      const table = document.getElementById(tableID);
-      const wb = XLSX.utils.table_to_book(table, { sheet: "BBMS_Report" });
+      const wb = XLSX.utils.table_to_book(document.getElementById(tableID));
       XLSX.writeFile(wb, `${filename}.xlsx`);
     }
 
-    function exportPDF() {
-      const element = document.getElementById('view-kantor');
-      html2pdf().from(element).save('Laporan_BBMS.pdf');
-    }
-
-    function signDigitalWO() {
-      Swal.fire('Digital Signature', 'Tanda tangan verifikasi pekerjaan tersimpan.', 'success');
-    }
+    function signDigitalWO() { Swal.fire('Signature', 'Tanda tangan disetujui', 'success'); }
 
     function toggleTheme() {
       const cur = document.documentElement.getAttribute("data-theme");
