@@ -2,692 +2,783 @@
 <html lang="id" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>BBMS Android - PT. Binayasa Putra Batara</title>
-  
-  <!-- Manifest (PWA Android Native) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>BBMS - Binayasa Building Management System</title>
+
+  <!-- PWA Manifest & Theme -->
   <link rel="manifest" href="data:application/manifest+json;base64,ewogICJzaG9ydF9uYW1lIjogIkJCTVMiLAogICJuYW1lIjogIkJJTkFZQVNBIEJVSUxESU5HIE1BTkFHRU1FTlQgU1lTVEVNIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwQjhGNEQiLAogICJ0aGVtZV9jb2xvcjogIiMwQjhGNEQiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiCn0=">
   <meta name="theme-color" content="#0B8F4D">
 
-  <!-- Material Symbols & Google Fonts (Roboto / Plus Jakarta Sans) -->
+  <!-- Material Symbols & Typography -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <!-- Mobile Libraries -->
+  <!-- Libraries: Chart.js, SweetAlert2, FullCalendar, QR Scanner, XLSX, HTML2PDF, Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
     /* ========================================================
-       MATERIAL DESIGN 3 (ANDROID NATIVE STYLE)
+       PRECISE STYLING MATCHING USER SCREENSHOT CONCEPT
        ======================================================== */
     :root {
-      --md-sys-color-primary: #0B8F4D;
-      --md-sys-color-on-primary: #FFFFFF;
-      --md-sys-color-primary-container: #D2E8D4;
-      --md-sys-color-on-primary-container: #00210B;
+      --primary: #0B8F4D;
+      --primary-light: #E8F5E9;
+      --accent-blue: #2196F3;
+      --accent-gold: #D4A017;
       
-      --md-sys-color-surface: #F8FBF6;
-      --md-sys-color-on-surface: #191C19;
-      --md-sys-color-surface-variant: #DEE5DA;
-      --md-sys-color-on-surface-variant: #424940;
-      --md-sys-color-outline: #72796F;
-
-      --bg-card: #FFFFFF;
-      --bottom-nav-bg: #EEF4EB;
+      --bg-main: #F8FAF8;
+      --card-bg: #FFFFFF;
+      --text-main: #1C201D;
+      --text-sub: #6C7570;
+      --shadow: 0 8px 24px rgba(11, 143, 77, 0.06);
+      --icon-bg: #F0F7F2;
     }
 
     [data-theme="dark"] {
-      --md-sys-color-primary: #76DC90;
-      --md-sys-color-on-primary: #00391A;
-      --md-sys-color-primary-container: #005228;
-      --md-sys-color-on-primary-container: #92FAAB;
-
-      --md-sys-color-surface: #111412;
-      --md-sys-color-on-surface: #E1E3DF;
-      --md-sys-color-surface-variant: #424940;
-      --md-sys-color-on-surface-variant: #C2C9BD;
-      --md-sys-color-outline: #8C9388;
-
-      --bg-card: #1A1C1A;
-      --bottom-nav-bg: #1E211F;
+      --bg-main: #121413;
+      --card-bg: #1E2220;
+      --text-main: #F0F4F1;
+      --text-sub: #909E96;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      --icon-bg: #272E2A;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Roboto', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
     }
 
     body {
-      background-color: var(--md-sys-color-surface);
-      color: var(--md-sys-color-on-surface);
+      background-color: var(--bg-main);
+      color: var(--text-main);
       display: flex;
       justify-content: center;
       min-height: 100vh;
-      overflow-x: hidden;
+      padding: 0;
     }
 
-    .android-screen {
+    .app-container {
       width: 100%;
       max-width: 480px;
       min-height: 100vh;
-      background-color: var(--md-sys-color-surface);
+      background-color: var(--bg-main);
       position: relative;
-      padding-bottom: 80px;
+      padding: 20px 16px 100px 16px;
     }
 
-    /* Android Top App Bar */
-    .top-app-bar {
-      position: sticky;
-      top: 0;
-      z-index: 90;
-      height: 64px;
-      background-color: var(--md-sys-color-surface);
+    /* Top User Header */
+    .user-header {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
-      border-bottom: 1px solid var(--md-sys-color-surface-variant);
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 4px;
     }
 
-    .app-bar-title {
-      font-size: 1.25rem;
-      font-weight: 500;
+    .user-info {
       display: flex;
       align-items: center;
       gap: 12px;
-      color: var(--md-sys-color-on-surface);
     }
 
-    .icon-btn {
-      background: none;
-      border: none;
-      color: var(--md-sys-color-on-surface);
-      width: 40px;
-      height: 40px;
+    .avatar {
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
+      background: var(--primary-light);
+      color: var(--primary);
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-    }
-
-    .icon-btn:active {
-      background-color: var(--md-sys-color-surface-variant);
-    }
-
-    /* Android Navigation Drawer (Menu Samping Geser) */
-    .drawer-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-    }
-
-    .drawer-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .android-drawer {
-      position: fixed;
-      top: 0; left: -300px;
-      width: 280px; height: 100%;
-      background: var(--md-sys-color-surface);
-      z-index: 1001;
-      transition: all 0.3s cubic-bezier(0, 0, 0.2, 1);
-      padding: 24px 12px;
-      box-shadow: 2px 0 12px rgba(0,0,0,0.2);
-    }
-
-    .drawer-overlay.active .android-drawer {
-      left: 0;
-    }
-
-    .drawer-header {
-      padding: 16px;
-      margin-bottom: 16px;
-      border-bottom: 1px solid var(--md-sys-color-surface-variant);
-    }
-
-    .drawer-menu-item {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 14px 16px;
-      border-radius: 28px;
-      color: var(--md-sys-color-on-surface-variant);
-      font-size: 0.95rem;
-      font-weight: 500;
-      cursor: pointer;
-      margin-bottom: 4px;
-    }
-
-    .drawer-menu-item.active {
-      background-color: var(--md-sys-color-primary-container);
-      color: var(--md-sys-color-on-primary-container);
-    }
-
-    /* Android Floating Action Button (FAB) */
-    .fab {
-      position: fixed;
-      bottom: 96px;
-      right: calc(50% - 220px);
-      width: 56px;
-      height: 56px;
-      background-color: var(--md-sys-color-primary-container);
-      color: var(--md-sys-color-on-primary-container);
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.18);
-      z-index: 99;
-      cursor: pointer;
-      border: none;
-    }
-
-    @media (max-width: 480px) {
-      .fab { right: 20px; }
-    }
-
-    /* Android Navigation Bar (Bottom) */
-    .android-bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 480px;
-      height: 80px;
-      background-color: var(--bottom-nav-bg);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      z-index: 100;
-      border-top: 1px solid var(--md-sys-color-surface-variant);
-    }
-
-    .nav-pill {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-      color: var(--md-sys-color-on-surface-variant);
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
-
-    .nav-pill .icon-container {
-      width: 64px;
-      height: 32px;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-
-    .nav-pill.active .icon-container {
-      background-color: var(--md-sys-color-primary-container);
-      color: var(--md-sys-color-on-primary-container);
-    }
-
-    .nav-pill.active {
-      color: var(--md-sys-color-on-surface);
       font-weight: 700;
     }
 
-    /* Material Cards */
-    .material-card {
-      background-color: var(--bg-card);
-      border-radius: 20px;
-      padding: 16px;
-      margin: 16px;
-      border: 1px solid var(--md-sys-color-surface-variant);
+    .role-badge {
+      font-size: 0.68rem;
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
     }
 
-    /* Android List Item */
-    .list-item {
+    /* Section 1: Summary Metric Cards (Matching Top Screenshot Row) */
+    .summary-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 8px;
+      margin-bottom: 28px;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .summary-scroll::-webkit-scrollbar { display: none; }
+
+    .summary-card {
+      min-width: 135px;
+      flex: 1;
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 16px 12px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(0,0,0,0.03);
+      scroll-snap-align: start;
+    }
+
+    .summary-card .icon-wrap {
+      width: 36px;
+      height: 36px;
+      margin: 0 auto 8px auto;
       display: flex;
       align-items: center;
-      gap: 16px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--md-sys-color-surface-variant);
-    }
-    .list-item:last-child { border-bottom: none; }
-
-    .list-avatar {
-      width: 40px; height: 40px;
+      justify-content: center;
       border-radius: 50%;
-      background-color: var(--md-sys-color-primary-container);
-      color: var(--md-sys-color-on-primary-container);
-      display: flex; align-items: center; justify-content: center;
     }
 
-    /* Android Bottom Sheet Modal */
-    .bottom-sheet {
-      position: fixed;
-      bottom: -100%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 480px;
-      background: var(--bg-card);
-      border-top-left-radius: 28px;
-      border-top-right-radius: 28px;
-      padding: 24px;
-      z-index: 1002;
-      transition: all 0.3s cubic-bezier(0, 0, 0.2, 1);
+    .summary-card .val {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 4px;
     }
 
-    .bottom-sheet.active {
-      bottom: 0;
+    .summary-card .lbl {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      font-weight: 500;
     }
 
-    .sheet-handle {
-      width: 32px; height: 4px;
-      background-color: var(--md-sys-color-outline);
-      border-radius: 2px;
-      margin: 0 auto 16px auto;
+    /* Section 2: Grid Feature Icons (Matching Bottom Screenshot Grid) */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px 12px;
+      margin-bottom: 28px;
     }
 
-    /* View Switcher */
-    .android-view { display: none; }
-    .android-view.active { display: block; }
+    .menu-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
 
-    /* Login Screen Android */
-    #android-login {
+    .menu-item:active {
+      transform: scale(0.92);
+    }
+
+    .menu-icon-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--icon-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+      box-shadow: var(--shadow);
+      color: var(--primary);
+    }
+
+    .menu-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-main);
+      text-align: center;
+      line-height: 1.15;
+    }
+
+    /* Section Container / Modal Drawer Views */
+    .content-box {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .page-view {
+      display: none;
+    }
+    .page-view.active {
+      display: block;
+    }
+
+    /* Login Screen Overlay */
+    #login-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: var(--md-sys-color-surface);
-      z-index: 9999;
+      background: var(--primary);
+      z-index: 10000;
       display: flex;
       flex-direction: column;
       justify-content: center;
       padding: 24px;
     }
 
-    .input-group {
-      margin-bottom: 16px;
+    .login-card {
+      background: var(--card-bg);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.2);
     }
 
-    .input-group label {
-      font-size: 0.8rem;
-      color: var(--md-sys-color-primary);
-      font-weight: 500;
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    .material-input {
+    .btn-primary {
       width: 100%;
       padding: 14px;
-      border: 1px solid var(--md-sys-color-outline);
-      border-radius: 8px;
-      background: transparent;
-      color: var(--md-sys-color-on-surface);
-      font-size: 1rem;
-      outline: none;
-    }
-
-    .material-btn {
-      width: 100%;
-      padding: 14px;
-      background-color: var(--md-sys-color-primary);
-      color: var(--md-sys-color-on-primary);
+      background: var(--primary);
+      color: white;
       border: none;
-      border-radius: 20px;
+      border-radius: 16px;
+      font-weight: 700;
       font-size: 0.95rem;
-      font-weight: 500;
       cursor: pointer;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 12px;
+      margin-top: 6px;
+      margin-bottom: 16px;
+      outline: none;
+      font-size: 0.9rem;
+    }
+
+    /* Modal Scanner & AI Sheet */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
     }
   </style>
 </head>
 <body>
 
   <!-- ========================================================
-       1. ANDROID LOGIN SCREEN
+       1. LOGIN OVERLAY MODULE
        ======================================================== -->
-  <div id="android-login">
-    <div style="text-align: center; margin-bottom: 32px;">
-      <span class="material-symbols-rounded" style="font-size: 64px; color: var(--md-sys-color-primary);">domain</span>
-      <h2 style="font-weight: 700; margin-top: 8px;">BBMS Mobile</h2>
-      <p style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant);">PT. Binayasa Putra Batara - BSN</p>
+  <div id="login-overlay">
+    <div style="text-align: center; color: white; margin-bottom: 24px;">
+      <span class="material-symbols-rounded" style="font-size: 56px;">domain</span>
+      <h2 style="font-weight: 800; font-size: 1.5rem;">BBMS MOBILE</h2>
+      <p style="font-size: 0.85rem; opacity: 0.9;">PT. Binayasa Putra Batara (BSN)</p>
     </div>
 
-    <form id="form-android-login">
-      <div class="input-group">
-        <label>Email Pengguna</label>
-        <input type="email" class="material-input" value="teknisi@bpb.my.id" required>
-      </div>
+    <div class="login-card">
+      <form id="login-form">
+        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-sub);">EMAIL AUTHENTICATION</label>
+        <input type="email" id="email" class="input-field" value="admin@bpb.my.id" required>
 
-      <div class="input-group">
-        <label>Kata Sandi</label>
-        <input type="password" class="material-input" value="123456" required>
-      </div>
+        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-sub);">PASSWORD</label>
+        <input type="password" id="password" class="input-field" value="123456" required>
 
-      <div class="input-group">
-        <label>Role Akses Android</label>
-        <select id="android-role" class="material-input" style="background: var(--bg-card);">
-          <option value="teknisi">Teknisi Lapangan</option>
-          <option value="cleaning_service">Cleaning Service</option>
-          <option value="supervisor">Supervisor Area</option>
-          <option value="kepala_unit">Kepala Unit</option>
-          <option value="administrator">Administrator</option>
-          <option value="vendor">Vendor Outsource</option>
+        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-sub);">ROLE SIMULASI</label>
+        <select id="role-select" class="input-field">
+          <option value="administrator">1. Administrator</option>
+          <option value="kepala_unit">2. Kepala Unit</option>
+          <option value="supervisor">3. Supervisor</option>
+          <option value="teknisi" selected>4. Teknisi</option>
+          <option value="cleaning_service">5. Cleaning Service</option>
+          <option value="vendor">6. Vendor</option>
         </select>
-      </div>
 
-      <button type="submit" class="material-btn" style="margin-top: 16px;">MASUK APLIKASI</button>
-    </form>
+        <button type="submit" class="btn-primary" style="margin-top: 8px;">MASUK SISTEM BBMS</button>
+      </form>
+    </div>
   </div>
 
   <!-- ========================================================
-       2. ANDROID MAIN APP SCREEN
+       2. MAIN APP CONTAINER (UI EXACT MATCHING SCREENSHOT)
        ======================================================== -->
-  <div class="android-screen">
+  <div class="app-container">
 
-    <!-- Top App Bar Khas Android -->
-    <header class="top-app-bar">
-      <div class="app-bar-title">
-        <button class="icon-btn" onclick="toggleDrawer()">
-          <span class="material-symbols-rounded">menu</span>
-        </button>
-        <span id="app-bar-heading">Beranda BBMS</span>
+    <!-- Top Header Bar -->
+    <header class="user-header">
+      <div class="user-info">
+        <div class="avatar" id="avatar-initials">AK</div>
+        <div>
+          <div style="font-size: 0.95rem; font-weight: 800;" id="user-name">Ahmad K.</div>
+          <span class="role-badge" id="user-role-display">Teknisi</span>
+        </div>
       </div>
-
-      <div style="display: flex; gap: 4px;">
-        <button class="icon-btn" onclick="openBottomSheet()">
-          <span class="material-symbols-rounded">more_vert</span>
+      <div style="display: flex; gap: 8px;">
+        <button onclick="toggleTheme()" style="background: var(--card-bg); border: none; padding: 8px; border-radius: 50%; cursor: pointer; box-shadow: var(--shadow);">
+          <span class="material-symbols-rounded" style="color: var(--text-main);">brightness_4</span>
         </button>
       </div>
     </header>
 
-    <!-- Navigation Drawer (Menu Geser Android) -->
-    <div class="drawer-overlay" id="drawer-overlay" onclick="toggleDrawer()">
-      <div class="android-drawer" onclick="event.stopPropagation()">
-        <div class="drawer-header">
-          <span class="material-symbols-rounded" style="font-size: 40px; color: var(--md-sys-color-primary);">domain</span>
-          <h3 style="font-size: 1.1rem; margin-top: 8px;">BBMS Android</h3>
-          <p style="font-size: 0.75rem; color: var(--md-sys-color-on-surface-variant);" id="drawer-user-role">Role: Teknisi Lapangan</p>
+    <!-- SECTION 1: TOP SUMMARY STAT CARDS (MATCHING TOP ROW SCREENSHOT) -->
+    <div class="summary-scroll">
+      
+      <!-- Card 1: Total Kantor -->
+      <div class="summary-card">
+        <div class="icon-wrap" style="background: #E8F5E9; color: #0B8F4D;">
+          <span class="material-symbols-rounded">location_city</span>
+        </div>
+        <div class="val">10</div>
+        <div class="lbl">Kantor BSN</div>
+      </div>
+
+      <!-- Card 2: Work Orders -->
+      <div class="summary-card">
+        <div class="icon-wrap" style="background: #FFF8E1; color: #D4A017;">
+          <span class="material-symbols-rounded">assignment</span>
+        </div>
+        <div class="val">24</div>
+        <div class="lbl">Work Order</div>
+      </div>
+
+      <!-- Card 3: Tagihan PLN -->
+      <div class="summary-card">
+        <div class="icon-wrap" style="background: #E3F2FD; color: #2196F3;">
+          <span class="material-symbols-rounded">payments</span>
+        </div>
+        <div class="val">Rp 48.5M</div>
+        <div class="lbl">PLN (IDR)</div>
+      </div>
+
+      <!-- Card 4: Asset Overdue -->
+      <div class="summary-card">
+        <div class="icon-wrap" style="background: #FFEBEE; color: #E53935;">
+          <span class="material-symbols-rounded">warning</span>
+        </div>
+        <div class="val">3</div>
+        <div class="lbl">AC Overdue</div>
+      </div>
+
+    </div>
+
+    <!-- SECTION 2: GRID FEATURE MENUS (MATCHING BOTTOM CIRCULAR GRID SCREENSHOT) -->
+    <div class="menu-grid">
+      
+      <!-- Item 1: Master Kantor -->
+      <div class="menu-item" onclick="showPage('kantor')">
+        <div class="menu-icon-circle">
+          <span class="material-symbols-rounded">domain</span>
+        </div>
+        <span class="menu-label">Kantor</span>
+      </div>
+
+      <!-- Item 2: Asset Management -->
+      <div class="menu-item" onclick="showPage('asset')">
+        <div class="menu-icon-circle">
+          <span class="material-symbols-rounded">inventory_2</span>
+        </div>
+        <span class="menu-label">Asset</span>
+      </div>
+
+      <!-- Item 3: Utility Bills -->
+      <div class="menu-item" onclick="showPage('utility')">
+        <div class="menu-icon-circle">
+          <span class="material-symbols-rounded">receipt_long</span>
+        </div>
+        <span class="menu-label">Utilitas</span>
+      </div>
+
+      <!-- Item 4: Maintenance -->
+      <div class="menu-item" onclick="showPage('maintenance')">
+        <div class="menu-icon-circle">
+          <span class="material-symbols-rounded">build</span>
+        </div>
+        <span class="menu-label">Maintenance</span>
+      </div>
+
+      <!-- Item 5: Work Order -->
+      <div class="menu-item" onclick="showPage('workorder')">
+        <div class="menu-icon-circle">
+          <span class="material-symbols-rounded">assignment_turned_in</span>
+        </div>
+        <span class="menu-label">Work Order</span>
+      </div>
+
+      <!-- Item 6: General Cleaning -->
+      <div class="menu-item" onclick="showPage('cleaning')">
+        <div class="menu-icon-circle">
+          <span class="material-symbols-rounded">cleaning_services</span>
+        </div>
+        <span class="menu-label">Gen Clean</span>
+      </div>
+
+      <!-- Item 7: Schedule FullCalendar -->
+      <div class="menu-item" onclick="showPage('schedule')">
+        <div class="menu-icon-circle">
+          <span class="material-symbols-rounded">calendar_month</span>
+        </div>
+        <span class="menu-label">Jadwal</span>
+      </div>
+
+      <!-- Item 8: Scan QR Code -->
+      <div class="menu-item" onclick="openQRScanner()">
+        <div class="menu-icon-circle" style="background: #EDE7F6; color: #673AB7;">
+          <span class="material-symbols-rounded">qr_code_scanner</span>
+        </div>
+        <span class="menu-label">Scan QR</span>
+      </div>
+
+      <!-- Item 9: AI Assistant -->
+      <div class="menu-item" onclick="openAIChat()">
+        <div class="menu-icon-circle" style="background: #E3F2FD; color: #2196F3;">
+          <span class="material-symbols-rounded">smart_toy</span>
+        </div>
+        <span class="menu-label">AI Assistant</span>
+      </div>
+
+      <!-- Item 10: Reports & Export -->
+      <div class="menu-item" onclick="showPage('reports')">
+        <div class="menu-icon-circle">
+          <span class="material-symbols-rounded">assessment</span>
+        </div>
+        <span class="menu-label">Laporan</span>
+      </div>
+
+      <!-- Item 11: SQL Schema Supabase -->
+      <div class="menu-item" onclick="showPage('sql')">
+        <div class="menu-icon-circle">
+          <span class="material-symbols-rounded">database</span>
+        </div>
+        <span class="menu-label">SQL RLS</span>
+      </div>
+
+      <!-- Item 12: Logout (Matching screenshot 'Keluar' icon position) -->
+      <div class="menu-item" onclick="logout()">
+        <div class="menu-icon-circle" style="background: #FFEBEE; color: #E53935;">
+          <span class="material-symbols-rounded">logout</span>
+        </div>
+        <span class="menu-label">Keluar</span>
+      </div>
+
+    </div>
+
+    <!-- ========================================================
+         3. DYNAMIC CONTENT DYNAMIC VIEWS
+         ======================================================== -->
+    
+    <!-- DASHBOARD MAIN GRAPH VIEW -->
+    <div id="view-dashboard" class="page-view active">
+      <div class="content-box">
+        <h4 style="font-size: 0.95rem; margin-bottom: 12px;">Grafik Perawatan Gedung & Utility</h4>
+        <canvas id="mainChart" style="max-height: 220px;"></canvas>
+      </div>
+    </div>
+
+    <!-- VIEW 1: DATA KANTOR (MIN. 10 OFFICES BSN) -->
+    <div id="view-kantor" class="page-view">
+      <div class="content-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h4 style="font-size: 1rem;">Master Data 10 Kantor BSN</h4>
+          <button onclick="exportExcel('table-kantor', 'Data_Kantor_BSN')" style="background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">Excel</button>
         </div>
 
-        <div class="drawer-menu-item active" onclick="navigateFromDrawer('home', 'Beranda BBMS')">
-          <span class="material-symbols-rounded">home</span> Beranda Utilitas
-        </div>
-        <div class="drawer-menu-item" onclick="navigateFromDrawer('offices', 'Daftar Kantor BSN')">
-          <span class="material-symbols-rounded">location_city</span> Master 10 Kantor
-        </div>
-        <div class="drawer-menu-item" onclick="navigateFromDrawer('maintenance', 'Jadwal Maintenance')">
-          <span class="material-symbols-rounded">build</span> Schedule Maintenance
-        </div>
-        <div class="drawer-menu-item" onclick="navigateFromDrawer('cleaning', 'General Cleaning')">
-          <span class="material-symbols-rounded">cleaning_services</span> General Cleaning
-        </div>
-        <div class="drawer-menu-item" onclick="toggleTheme()">
-          <span class="material-symbols-rounded">dark_mode</span> Ganti Mode Tampilan
-        </div>
-        <div class="drawer-menu-item" onclick="logout()" style="color: red; margin-top: 20px;">
-          <span class="material-symbols-rounded">logout</span> Keluar Akun
+        <div style="overflow-x: auto;">
+          <table id="table-kantor" style="width: 100%; border-collapse: collapse; font-size: 0.8rem;">
+            <thead>
+              <tr style="text-align: left; border-bottom: 2px solid var(--icon-bg);">
+                <th style="padding: 8px;">Kode</th>
+                <th style="padding: 8px;">Nama Kantor</th>
+                <th style="padding: 8px;">PIC</th>
+                <th style="padding: 8px;">Status</th>
+              </tr>
+            </thead>
+            <tbody id="kantor-rows">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
 
-    <!-- Floating Action Button (FAB Android) -->
-    <button class="fab" onclick="startQRScan()">
-      <span class="material-symbols-rounded" style="font-size: 28px;">qr_code_scanner</span>
-    </button>
-
-    <!-- Content Views Stack Android -->
-    <main style="padding-bottom: 24px;">
-
-      <!-- VIEW 1: BERANDA -->
-      <div id="view-home" class="android-view active">
-        <div class="material-card" style="background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);">
-          <div style="font-size: 0.8rem; font-weight: 500;">PT. BINAYASA PUTRA BATARA</div>
-          <div style="font-size: 1.2rem; font-weight: 700; margin-top: 4px;">Operational Building BSN</div>
-          <p style="font-size: 0.75rem; margin-top: 8px; opacity: 0.9;">Sistem terhubung otomatis ke 10 Lokasi Gedung Bank Syariah Nasional.</p>
+    <!-- VIEW 2: ASSET MANAGEMENT -->
+    <div id="view-asset" class="page-view">
+      <div class="content-box">
+        <h4 style="font-size: 1rem; margin-bottom: 12px;">Asset Management (25 Kategori)</h4>
+        <p style="font-size: 0.8rem; color: var(--text-sub); margin-bottom: 16px;">AC, Genset, Pompa, Panel Listrik, Lift, Escalator, PABX, CCTV, Hydrant, APAR, Server, Router, UPS, dll.</p>
+        <div id="asset-card-list">
+          <!-- Rendered by JS -->
         </div>
-
-        <div class="material-card">
-          <h4 style="font-size: 0.9rem; margin-bottom: 12px; color: var(--md-sys-color-on-surface);">Status Ringkasan Gedung</h4>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div style="background: var(--md-sys-color-surface-variant); padding: 12px; border-radius: 12px;">
-              <div style="font-size: 0.7rem; color: var(--md-sys-color-on-surface-variant);">WORK ORDER</div>
-              <div style="font-size: 1.3rem; font-weight: 700; color: var(--md-sys-color-primary);">12 Aktif</div>
-            </div>
-            <div style="background: var(--md-sys-color-surface-variant); padding: 12px; border-radius: 12px;">
-              <div style="font-size: 0.7rem; color: var(--md-sys-color-on-surface-variant);">ASSET OVERDUE</div>
-              <div style="font-size: 1.3rem; font-weight: 700; color: red;">3 Unit</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="material-card">
-          <h4 style="font-size: 0.9rem; margin-bottom: 12px;">Grafik Progress Pekerjaan</h4>
-          <canvas id="androidChart" style="height: 180px;"></canvas>
-        </div>
-      </div>
-
-      <!-- VIEW 2: WORK ORDER -->
-      <div id="view-wo" class="android-view">
-        <div class="material-card">
-          <h4 style="margin-bottom: 12px;">Daftar Tugas Work Order</h4>
-
-          <div class="list-item">
-            <div class="list-avatar"><span class="material-symbols-rounded">ac_unit</span></div>
-            <div style="flex: 1;">
-              <div style="font-size: 0.85rem; font-weight: 700;">Service AC Precision Room</div>
-              <div style="font-size: 0.75rem; color: var(--md-sys-color-on-surface-variant);">BSN KC Jakarta • Lt. 3</div>
-            </div>
-            <button onclick="takePicture()" style="background: var(--md-sys-color-primary); color: white; border: none; padding: 6px 12px; border-radius: 16px; font-size: 0.7rem;">Foto</button>
-          </div>
-
-          <div class="list-item">
-            <div class="list-avatar"><span class="material-symbols-rounded">electric_bolt</span></div>
-            <div style="flex: 1;">
-              <div style="font-size: 0.85rem; font-weight: 700;">Perawatan Panel Listrik</div>
-              <div style="font-size: 0.75rem; color: var(--md-sys-color-on-surface-variant);">BSN KC Surabaya • Lt. 1</div>
-            </div>
-            <button onclick="signWO()" style="background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); border: none; padding: 6px 12px; border-radius: 16px; font-size: 0.7rem;">TTD</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- VIEW 3: MASTER KANTOR -->
-      <div id="view-offices" class="android-view">
-        <div class="material-card">
-          <h4 style="margin-bottom: 12px;">10 Lokasi Kantor BSN</h4>
-          <div id="android-office-list">
-            <!-- Filled Javascript -->
-          </div>
-        </div>
-      </div>
-
-      <!-- VIEW 4: AKUN -->
-      <div id="view-account" class="android-view">
-        <div class="material-card" style="text-align: center; padding: 24px;">
-          <span class="material-symbols-rounded" style="font-size: 64px; color: var(--md-sys-color-primary);">account_circle</span>
-          <h3 style="margin-top: 8px;">Ahmad Teknisi</h3>
-          <p style="font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant);">PT. Binayasa Putra Batara</p>
-          <button onclick="logout()" class="material-btn" style="background-color: #BA1A1A; color: white; margin-top: 24px;">Keluar Sesi</button>
-        </div>
-      </div>
-
-    </main>
-
-    <!-- Bottom Sheet Dialog Android -->
-    <div class="bottom-sheet" id="bottom-sheet">
-      <div class="sheet-handle"></div>
-      <h4 style="margin-bottom: 16px;">Opsi Aplikasi Android</h4>
-      <div class="drawer-menu-item" onclick="openAIChat(); closeBottomSheet();">
-        <span class="material-symbols-rounded">smart_toy</span> Tanya AI Assistant Gedung
-      </div>
-      <div class="drawer-menu-item" onclick="startQRScan(); closeBottomSheet();">
-        <span class="material-symbols-rounded">qr_code_scanner</span> Scan QR Code Asset
-      </div>
-      <div class="drawer-menu-item" onclick="toggleTheme(); closeBottomSheet();">
-        <span class="material-symbols-rounded">dark_mode</span> Ganti Mode Gelap / Terang
       </div>
     </div>
 
-    <!-- Android Navigation Bar (Bottom) -->
-    <nav class="android-bottom-nav">
-      <div class="nav-pill active" onclick="switchAndroidTab('home', 'Beranda BBMS', this)">
-        <div class="icon-container"><span class="material-symbols-rounded">home</span></div>
-        <span>Beranda</span>
+    <!-- VIEW 3: UTILITY BILLS -->
+    <div id="view-utility" class="page-view">
+      <div class="content-box">
+        <h4 style="font-size: 1rem; margin-bottom: 12px;">Tagihan Utilitas Gedung</h4>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--icon-bg); border-radius: 12px;">
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem;">PLN Kantor Pusat</div>
+              <div style="font-size: 0.75rem; color: var(--text-sub);">Agustus 2026 • ID: 53421109</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 800; color: var(--primary);">Rp 48.500.000</div>
+              <span style="font-size: 0.65rem; background: #E8F5E9; color: green; padding: 2px 6px; border-radius: 4px; font-weight: 700;">LUNAS</span>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--icon-bg); border-radius: 12px;">
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem;">PDAM Gedung A</div>
+              <div style="font-size: 0.75rem; color: var(--text-sub);">Agustus 2026 • ID: 00984123</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 800; color: var(--primary);">Rp 12.300.000</div>
+              <span style="font-size: 0.65rem; background: #E8F5E9; color: green; padding: 2px 6px; border-radius: 4px; font-weight: 700;">LUNAS</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="nav-pill" onclick="switchAndroidTab('wo', 'Work Order Teknisi', this)">
-        <div class="icon-container"><span class="material-symbols-rounded">assignment</span></div>
-        <span>Tugas WO</span>
+    </div>
+
+    <!-- VIEW 4: MAINTENANCE & WORK ORDER -->
+    <div id="view-maintenance" class="page-view">
+      <div class="content-box">
+        <h4 style="font-size: 1rem; margin-bottom: 12px;">Perawatan & Maintenance Routine</h4>
+        <div style="padding: 12px; border: 1px solid var(--icon-bg); border-radius: 12px; margin-bottom: 8px;">
+          <div style="font-weight: 700; font-size: 0.85rem;">Service AC Precision Server</div>
+          <div style="font-size: 0.75rem; color: var(--text-sub);">Jadwal: Hari Ini, 10:00 WIB • Teknisi: Ahmad</div>
+        </div>
       </div>
-      <div class="nav-pill" onclick="switchAndroidTab('offices', 'Daftar Kantor BSN', this)">
-        <div class="icon-container"><span class="material-symbols-rounded">location_city</span></div>
-        <span>Kantor</span>
+    </div>
+
+    <div id="view-workorder" class="page-view">
+      <div class="content-box">
+        <h4 style="font-size: 1rem; margin-bottom: 12px;">Work Order Execution</h4>
+        <button onclick="signDigitalWO()" class="btn-primary" style="background: var(--accent-blue);">Input Digital Signature WO</button>
       </div>
-      <div class="nav-pill" onclick="switchAndroidTab('account', 'Profil Pengguna', this)">
-        <div class="icon-container"><span class="material-symbols-rounded">person</span></div>
-        <span>Akun</span>
+    </div>
+
+    <div id="view-cleaning" class="page-view">
+      <div class="content-box">
+        <h4 style="font-size: 1rem; margin-bottom: 12px;">General Cleaning Checklist</h4>
+        <p style="font-size: 0.8rem; color: var(--text-sub);">Checklist: Lobby, Toilet, Kaca, Tangga, Wallsign, Pylon, Canopy, Halaman.</p>
       </div>
-    </nav>
+    </div>
+
+    <!-- VIEW 5: FULLCALENDAR SCHEDULE -->
+    <div id="view-schedule" class="page-view">
+      <div class="content-box">
+        <h4 style="font-size: 1rem; margin-bottom: 12px;">Kalender Maintenance BBMS</h4>
+        <div id="calendar-element"></div>
+      </div>
+    </div>
+
+    <!-- VIEW 6: REPORTS & EXPORT -->
+    <div id="view-reports" class="page-view">
+      <div class="content-box">
+        <h4 style="font-size: 1rem; margin-bottom: 12px;">Laporan & Export Document</h4>
+        <div style="display: flex; gap: 10px;">
+          <button onclick="exportPDF()" class="btn-primary">Export PDF</button>
+          <button onclick="exportExcel('table-kantor', 'Laporan_BBMS')" class="btn-primary" style="background: #2E7D32;">Export Excel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 7: SQL SUPABASE SCHEMA -->
+    <div id="view-sql" class="page-view">
+      <div class="content-box">
+        <h4 style="font-size: 0.95rem; margin-bottom: 8px;">Supabase SQL Schema & RLS</h4>
+        <pre style="background: #121413; color: #00FF66; padding: 12px; border-radius: 12px; overflow-x: auto; font-size: 0.7rem; font-family: monospace;">
+-- SUPABASE POSTGRESQL RLS BBMS
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TYPE user_role AS ENUM (
+  'administrator', 'kepala_unit', 'supervisor', 
+  'teknisi', 'cleaning_service', 'vendor'
+);
+
+CREATE TABLE public.profiles (
+    id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
+    full_name TEXT NOT NULL,
+    role user_role DEFAULT 'teknisi'
+);
+
+CREATE TABLE public.offices (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    code VARCHAR(20) UNIQUE NOT NULL,
+    name VARCHAR(150) NOT NULL
+);
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public profiles viewable by auth users" 
+ON public.profiles FOR SELECT USING (auth.role() = 'authenticated');
+        </pre>
+      </div>
+    </div>
 
   </div>
 
-  <!-- QR Camera Modal Sheet -->
-  <div id="qr-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; flex-direction:column; justify-content:center; align-items:center; padding:20px;">
-    <div style="background:var(--bg-card); padding:20px; border-radius:28px; width:100%; max-width:320px; text-align:center;">
-      <h4 style="margin-bottom:12px;">Scan QR Asset</h4>
-      <div id="reader" style="width:100%;"></div>
-      <button onclick="stopQRScan()" class="material-btn" style="margin-top:16px; background-color:#BA1A1A; color:white;">Tutup Kamera</button>
+  <!-- QR SCANNER MODAL -->
+  <div class="modal-backdrop" id="qr-modal">
+    <div style="background: var(--card-bg); padding: 20px; border-radius: 24px; width: 100%; max-width: 320px; text-align: center;">
+      <h4 style="margin-bottom: 12px;">Scan QR Code Asset</h4>
+      <div id="reader" style="width: 100%;"></div>
+      <button onclick="closeQRScanner()" class="btn-primary" style="background: #E53935; margin-top: 16px;">Tutup Kamera</button>
     </div>
   </div>
 
   <!-- ========================================================
-       3. JAVASCRIPT LOGIC
+       4. JAVASCRIPT APPLICATION CONTROLLER
        ======================================================== -->
   <script>
-    let html5QrCode = null;
+    // Configuration Setup Supabase
+    const BBMS_CONFIG = {
+      URL: "https://your-supabase-project.supabase.co",
+      KEY: "YOUR_SUPABASE_ANON_KEY"
+    };
 
-    const mockOffices = [
-      "BSN Kantor Pusat Jakarta", "BSN KC Surabaya", "BSN KC Bandung",
-      "BSN KC Medan", "BSN KC Semarang", "BSN KC Makassar",
-      "BSN KC Palembang", "BSN KC Balikpapan", "BSN KC Denpasar", "BSN KC Yogyakarta"
+    const supabaseClient = supabase.createClient(BBMS_CONFIG.URL, BBMS_CONFIG.KEY);
+
+    // Mock Office Data (Min. 10 Offices BSN)
+    const officesData = [
+      { code: "BSN-001", name: "BSN Kantor Pusat Jakarta", pic: "Ahmad Subarkah", status: "Active" },
+      { code: "BSN-002", name: "BSN KC Surabaya", pic: "Budi Santoso", status: "Active" },
+      { code: "BSN-003", name: "BSN KC Bandung", pic: "Dedi Suhendar", status: "Active" },
+      { code: "BSN-004", name: "BSN KC Medan", pic: "Rahmat Hidayat", status: "Active" },
+      { code: "BSN-005", name: "BSN KC Semarang", pic: "Siti Aminah", status: "Active" },
+      { code: "BSN-006", name: "BSN KC Makassar", pic: "Andi Wijaya", status: "Active" },
+      { code: "BSN-007", name: "BSN KC Palembang", pic: "Fajri Haris", status: "Active" },
+      { code: "BSN-008", name: "BSN KC Balikpapan", pic: "Hendra Gunawan", status: "Active" },
+      { code: "BSN-009", name: "BSN KC Denpasar", pic: "I Made Putra", status: "Active" },
+      { code: "BSN-010", name: "BSN KC Yogyakarta", pic: "Eko Prasetyo", status: "Active" }
     ];
+
+    const assetsData = [
+      { name: "AC Precision Server Room", cat: "AC", status: "Operational" },
+      { name: "Genset Caterpillar 500kVA", cat: "Genset", status: "Needs Service" },
+      { name: "Pompa Hydrant Utama", cat: "Hydrant", status: "Operational" },
+      { name: "Lift Passenger 1", cat: "Lift", status: "Operational" }
+    ];
+
+    let html5QrCode = null;
 
     document.addEventListener("DOMContentLoaded", () => {
       initLogin();
+      renderKantorTable();
+      renderAssets();
       initChart();
-      renderOffices();
+      initCalendar();
     });
 
+    // Login Form Handler
     function initLogin() {
-      document.getElementById("form-android-login").addEventListener("submit", (e) => {
+      document.getElementById("login-form").addEventListener("submit", (e) => {
         e.preventDefault();
-        const role = document.getElementById("android-role").value;
-        document.getElementById("drawer-user-role").innerText = `Role: ${role.toUpperCase()}`;
-        document.getElementById("android-login").style.display = "none";
+        const role = document.getElementById("role-select").value;
+        document.getElementById("user-role-display").innerText = role.replace('_', ' ');
+        document.getElementById("login-overlay").style.display = "none";
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Login Berhasil',
+          text: `Selamat datang di BBMS (${role})`,
+          toast: true,
+          position: 'top',
+          showConfirmButton: false,
+          timer: 1500
+        });
       });
     }
 
     function logout() {
-      document.getElementById("android-login").style.display = "flex";
-      closeDrawer();
+      document.getElementById("login-overlay").style.display = "flex";
     }
 
-    // Android Navigation Drawer Controls
-    function toggleDrawer() {
-      document.getElementById("drawer-overlay").classList.toggle("active");
+    // Dynamic Page Switcher
+    function showPage(pageId) {
+      document.querySelectorAll(".page-view").forEach(p => p.classList.remove("active"));
+      document.getElementById(`view-${pageId}`).classList.add("active");
     }
 
-    function closeDrawer() {
-      document.getElementById("drawer-overlay").classList.remove("active");
+    // Render Tables & Cards
+    function renderKantorTable() {
+      const tbody = document.getElementById("kantor-rows");
+      tbody.innerHTML = officesData.map(o => `
+        <tr style="border-bottom: 1px solid var(--icon-bg);">
+          <td style="padding: 8px;"><b>${o.code}</b></td>
+          <td style="padding: 8px;">${o.name}</td>
+          <td style="padding: 8px;">${o.pic}</td>
+          <td style="padding: 8px;"><span style="color: green; font-weight: 700;">● ${o.status}</span></td>
+        </tr>
+      `).join('');
     }
 
-    function navigateFromDrawer(viewId, title) {
-      closeDrawer();
-      document.getElementById("app-bar-heading").innerText = title;
-      document.querySelectorAll(".android-view").forEach(v => v.classList.remove("active"));
-      document.getElementById(`view-${viewId}`).classList.add("active");
-    }
-
-    // Bottom Navigation Switcher
-    function switchAndroidTab(viewId, title, el) {
-      document.querySelectorAll(".nav-pill").forEach(p => p.classList.remove("active"));
-      document.querySelectorAll(".android-view").forEach(v => v.classList.remove("active"));
-
-      el.classList.add("active");
-      document.getElementById(`view-${viewId}`).classList.add("active");
-      document.getElementById("app-bar-heading").innerText = title;
-    }
-
-    // Bottom Sheet Controls
-    function openBottomSheet() {
-      document.getElementById("bottom-sheet").classList.add("active");
-    }
-
-    function closeBottomSheet() {
-      document.getElementById("bottom-sheet").classList.remove("active");
-    }
-
-    // Render Office List Items Android
-    function renderOffices() {
-      const container = document.getElementById("android-office-list");
-      container.innerHTML = mockOffices.map((o, idx) => `
-        <div class="list-item">
-          <div class="list-avatar"><span class="material-symbols-rounded">domain</span></div>
-          <div style="flex:1;">
-            <div style="font-size:0.85rem; font-weight:700;">${o}</div>
-            <div style="font-size:0.75rem; color:var(--md-sys-color-on-surface-variant);">Kode: BSN-00${idx+1} • Operational</div>
+    function renderAssets() {
+      const list = document.getElementById("asset-card-list");
+      list.innerHTML = assetsData.map(a => `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--icon-bg); border-radius: 12px; margin-bottom: 8px;">
+          <div>
+            <div style="font-weight: 700; font-size: 0.85rem;">${a.name}</div>
+            <div style="font-size: 0.75rem; color: var(--text-sub);">Kategori: ${a.cat}</div>
           </div>
-          <span class="material-symbols-rounded" style="color:var(--md-sys-color-outline);">chevron_right</span>
+          <span style="font-size: 0.65rem; background: #E8F5E9; color: green; padding: 2px 6px; border-radius: 4px; font-weight: 700;">${a.status}</span>
         </div>
       `).join('');
     }
 
-    // Chart.js Android
+    // Chart.js Setup
     function initChart() {
-      new Chart(document.getElementById('androidChart'), {
+      new Chart(document.getElementById('mainChart'), {
         type: 'bar',
         data: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei'],
-          datasets: [{
-            label: 'Maintenance Done',
-            data: [12, 19, 15, 17, 22],
-            backgroundColor: '#0B8F4D',
-            borderRadius: 8
-          }]
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+          datasets: [
+            { label: 'AC Maintenance', data: [12, 19, 15, 17, 22, 20], backgroundColor: '#0B8F4D', borderRadius: 6 },
+            { label: 'Genset & Lift', data: [5, 4, 6, 5, 8, 7], backgroundColor: '#2196F3', borderRadius: 6 }
+          ]
         },
         options: { responsive: true, maintainAspectRatio: false }
       });
     }
 
-    // Camera QR Code Scanner
-    function startQRScan() {
+    // FullCalendar Setup
+    function initCalendar() {
+      const calendarEl = document.getElementById('calendar-element');
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        events: [
+          { title: 'AC Service Pusat', start: new Date().toISOString().split('T')[0], color: '#0B8F4D' }
+        ]
+      });
+      calendar.render();
+    }
+
+    // QR Code Scanner Camera
+    function openQRScanner() {
       document.getElementById("qr-modal").style.display = "flex";
       html5QrCode = new Html5Qrcode("reader");
       html5QrCode.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 200, height: 200 } },
+        { fps: 10, qrbox: { width: 180, height: 180 } },
         (decodedText) => {
-          stopQRScan();
-          Swal.fire('Asset Terdeteksi', `Kode Tag Asset: ${decodedText}`, 'success');
+          closeQRScanner();
+          Swal.fire('Asset Terdeteksi', `Tag QR: ${decodedText}`, 'success');
         },
         () => {}
-      ).catch(() => stopQRScan());
+      ).catch(() => closeQRScanner());
     }
 
-    function stopQRScan() {
+    function closeQRScanner() {
       if(html5QrCode) {
         html5QrCode.stop().then(() => {
           document.getElementById("qr-modal").style.display = "none";
@@ -699,28 +790,35 @@
       }
     }
 
-    // AI Chat Dialog
+    // AI Assistant Bot
     function openAIChat() {
       Swal.fire({
-        title: 'AI Mobile Assistant',
+        title: 'AI Assistant BBMS',
         input: 'text',
-        inputPlaceholder: 'Tanyakan status maintenance...',
-        confirmButtonText: 'Kirim',
+        inputPlaceholder: 'Ketik: status, jadwal, rekomendasi...',
+        confirmButtonText: 'Tanya AI',
         confirmButtonColor: '#0B8F4D'
       }).then((res) => {
         if(res.value) {
-          Swal.fire('AI Response', `Rekomendasi untuk: "${res.value}" telah dikirim ke sistem central BBMS.`, 'info');
+          Swal.fire('Rekomendasi AI', `Hasil analisis untuk "${res.value}": Seluruh unit AC di Gedung B BSN siap di-service berkala.`, 'info');
         }
       });
     }
 
-    // Actions
-    function takePicture() {
-      Swal.fire('Kamera Android', 'Foto hasil pekerjaan berhasil diambil.', 'success');
+    // Export Utils
+    function exportExcel(tableID, filename) {
+      const table = document.getElementById(tableID);
+      const wb = XLSX.utils.table_to_book(table, { sheet: "BBMS_Report" });
+      XLSX.writeFile(wb, `${filename}.xlsx`);
     }
 
-    function signWO() {
-      Swal.fire('Digital Signature', 'Tanda tangan verifikasi berhasil disimpan.', 'success');
+    function exportPDF() {
+      const element = document.getElementById('view-kantor');
+      html2pdf().from(element).save('Laporan_BBMS.pdf');
+    }
+
+    function signDigitalWO() {
+      Swal.fire('Digital Signature', 'Tanda tangan verifikasi pekerjaan telah tersimpan.', 'success');
     }
 
     function toggleTheme() {
