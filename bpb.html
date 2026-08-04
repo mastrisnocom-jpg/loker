@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id" data-theme="light">
 <head>
@@ -67,9 +68,11 @@
     .page-view { display: none; }
     .page-view.active { display: block; }
 
-    #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 10000; display: flex; flex-direction: column; justify-content: center; padding: 20px; }
-    .login-card { background: var(--card-bg); border-radius: 20px; padding: 20px; }
+    #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 10000; display: flex; flex-direction: column; justify-content: center; padding: 20px; overflow-y: auto; }
+    .auth-card { background: var(--card-bg); border-radius: 20px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
     .btn-primary { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; }
+    .btn-secondary { width: 100%; padding: 10px; background: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 12px; font-weight: 600; font-size: 0.85rem; cursor: pointer; margin-top: 8px; }
+    
     .input-field { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; margin-bottom: 12px; outline: none; font-size: 0.85rem; background: var(--card-bg); color: var(--text-main); }
     .archive-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: var(--icon-bg); border-radius: 12px; margin-bottom: 8px; }
     .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; padding: 16px; }
@@ -77,24 +80,41 @@
 </head>
 <body>
 
-  <!-- LOGIN OVERLAY -->
-  <div id="login-overlay">
-    <div style="text-align: center; color: white; margin-bottom: 20px;">
+  <!-- AUTH OVERLAY (LOGIN & REGISTER) -->
+  <div id="auth-overlay">
+    <div style="text-align: center; color: white; margin-bottom: 16px;">
       <span class="material-symbols-rounded" style="font-size: 48px;">domain</span>
       <h2 style="font-size: 1.3rem;">BBMS MOBILE</h2>
       <p style="font-size: 0.8rem; opacity: 0.9;">PT. Binayasa Putra Batara (BSN)</p>
     </div>
 
-    <div class="login-card">
+    <!-- LOGIN FORM -->
+    <div class="auth-card" id="login-box">
+      <h3 style="font-size: 1rem; margin-bottom: 12px; text-align: center;">Masuk ke Akun</h3>
       <form id="login-form">
         <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">EMAIL</label>
-        <input type="email" id="email" class="input-field" value="admin@bpb.my.id" required>
+        <input type="email" id="login-email" class="input-field" placeholder="email@domain.com" required>
 
         <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">PASSWORD</label>
-        <input type="password" id="password" class="input-field" value="123456" required>
+        <input type="password" id="login-password" class="input-field" placeholder="******" required>
 
-        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">ROLE SIMULASI</label>
-        <select id="role-select" class="input-field">
+        <button type="submit" class="btn-primary">MASUK SISTEM</button>
+      </form>
+      <button onclick="toggleAuthMode('register')" class="btn-secondary">Belum punya akun? Daftar Akun Baru</button>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div class="auth-card" id="register-box" style="display: none;">
+      <h3 style="font-size: 1rem; margin-bottom: 12px; text-align: center;">Daftar Akun Baru</h3>
+      <form id="register-form">
+        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">NAMA LENGKAP</label>
+        <input type="text" id="reg-fullname" class="input-field" placeholder="Nama Lengkap" required>
+
+        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">NOMOR HP/WHATSAPP</label>
+        <input type="tel" id="reg-phone" class="input-field" placeholder="08123456789" required>
+
+        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">ROLE HAK AKSES</label>
+        <select id="reg-role" class="input-field" required>
           <option value="administrator">1. Administrator</option>
           <option value="kepala_unit">2. Kepala Unit</option>
           <option value="supervisor">3. Supervisor</option>
@@ -103,8 +123,15 @@
           <option value="vendor">6. Vendor</option>
         </select>
 
-        <button type="submit" class="btn-primary" style="margin-top: 4px;">MASUK BBMS</button>
+        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">EMAIL</label>
+        <input type="email" id="reg-email" class="input-field" placeholder="email@domain.com" required>
+
+        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-sub);">PASSWORD</label>
+        <input type="password" id="reg-password" class="input-field" placeholder="Minimal 6 Karakter" minlength="6" required>
+
+        <button type="submit" class="btn-primary">DAFTAR AKUN</button>
       </form>
+      <button onclick="toggleAuthMode('login')" class="btn-secondary">Sudah punya akun? Masuk</button>
     </div>
   </div>
 
@@ -113,33 +140,38 @@
 
     <header class="user-header">
       <div class="user-info">
-        <div class="avatar" id="avatar-initials">AK</div>
+        <div class="avatar" id="avatar-initials">--</div>
         <div>
-          <div style="font-size: 0.85rem; font-weight: 700;" id="user-name">Ahmad K.</div>
-          <span class="role-badge" id="user-role-display">Teknisi</span>
+          <div style="font-size: 0.85rem; font-weight: 700;" id="user-name">Pengguna</div>
+          <span class="role-badge" id="user-role-display">Guest</span>
         </div>
       </div>
-      <button onclick="toggleTheme()" style="background: var(--card-bg); border: 1px solid var(--border); padding: 6px; border-radius: 50%; cursor: pointer;">
-        <span class="material-symbols-rounded" style="font-size: 20px; color: var(--text-main);">brightness_4</span>
-      </button>
+      <div style="display: flex; gap: 6px;">
+        <button onclick="toggleTheme()" style="background: var(--card-bg); border: 1px solid var(--border); padding: 6px; border-radius: 50%; cursor: pointer;">
+          <span class="material-symbols-rounded" style="font-size: 20px; color: var(--text-main);">brightness_4</span>
+        </button>
+        <button onclick="logout()" style="background: var(--card-bg); border: 1px solid var(--border); padding: 6px; border-radius: 50%; cursor: pointer; color: #E53935;">
+          <span class="material-symbols-rounded" style="font-size: 20px;">logout</span>
+        </button>
+      </div>
     </header>
 
     <div class="summary-scroll">
       <div class="summary-card">
         <div class="icon-wrap" style="background: #E8F5E9; color: #0B8F4D;"><span class="material-symbols-rounded" style="font-size: 20px;">location_city</span></div>
-        <div class="val">10</div><div class="lbl">Kantor BSN</div>
+        <div class="val" id="val-total-kantor">0</div><div class="lbl">Kantor BSN</div>
       </div>
       <div class="summary-card">
         <div class="icon-wrap" style="background: #FFF8E1; color: #D4A017;"><span class="material-symbols-rounded" style="font-size: 20px;">assignment</span></div>
-        <div class="val">24</div><div class="lbl">Work Order</div>
+        <div class="val" id="val-total-wo">0</div><div class="lbl">Work Order</div>
       </div>
       <div class="summary-card">
         <div class="icon-wrap" style="background: #E3F2FD; color: #2196F3;"><span class="material-symbols-rounded" style="font-size: 20px;">folder_open</span></div>
-        <div class="val" id="val-total-arsip">128</div><div class="lbl">File Arsip</div>
+        <div class="val" id="val-total-arsip">0</div><div class="lbl">File Arsip</div>
       </div>
       <div class="summary-card">
-        <div class="icon-wrap" style="background: #FFEBEE; color: #E53935;"><span class="material-symbols-rounded" style="font-size: 20px;">warning</span></div>
-        <div class="val">3</div><div class="lbl">AC Overdue</div>
+        <div class="icon-wrap" style="background: #FFEBEE; color: #E53935;"><span class="material-symbols-rounded" style="font-size: 20px;">inventory_2</span></div>
+        <div class="val" id="val-total-asset">0</div><div class="lbl">Asset Gedung</div>
       </div>
     </div>
 
@@ -161,16 +193,15 @@
 
     <!-- VIEWS -->
     <div id="view-dashboard" class="page-view active">
-      <div class="content-box"><h4 style="font-size: 0.85rem; margin-bottom: 10px;">Grafik Perawatan Gedung</h4><div style="height: 180px;"><canvas id="mainChart"></canvas></div></div>
+      <div class="content-box"><h4 style="font-size: 0.85rem; margin-bottom: 10px;">Grafik Perawatan Gedung Realtime</h4><div style="height: 180px;"><canvas id="mainChart"></canvas></div></div>
     </div>
 
     <div id="view-arsip" class="page-view">
       <div class="content-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h4 style="font-size: 0.9rem;">Penyimpanan Arsip Supabase</h4>
+          <h4 style="font-size: 0.9rem;">Penyimpanan Arsip</h4>
           <button onclick="openUploadArsipModal()" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Simpan Arsip</button>
         </div>
-        <input type="text" id="search-arsip" onkeyup="filterArsip()" placeholder="Cari arsip..." class="input-field" style="margin-bottom: 10px;">
         <div id="arsip-list"></div>
       </div>
     </div>
@@ -178,8 +209,8 @@
     <div id="view-kantor" class="page-view">
       <div class="content-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h4 style="font-size: 0.9rem;">Master 10 Kantor BSN</h4>
-          <button onclick="fetchOfficesFromSupabase()" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">Load Supabase</button>
+          <h4 style="font-size: 0.9rem;">Master Data Kantor BSN</h4>
+          <button onclick="exportExcel('table-kantor', 'Data_Kantor')" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">Export Excel</button>
         </div>
         <div style="overflow-x: auto;">
           <table id="table-kantor" style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
@@ -190,18 +221,18 @@
       </div>
     </div>
 
-    <div id="view-asset" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem;">Asset Management</h4><p style="font-size: 0.75rem; color: var(--text-sub); margin-top: 4px;">Terhubung ke tabel Supabase `assets`</p></div></div>
-    <div id="view-utility" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem;">Utilitas Gedung</h4><div style="padding: 10px; background: var(--icon-bg); border-radius: 10px; font-size: 0.8rem;"><b>PLN Kantor Pusat</b>: Rp 48.500.000 (LUNAS)</div></div></div>
-    <div id="view-maintenance" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem;">Perawatan Routine</h4><p style="font-size: 0.75rem; color: var(--text-sub);">AC Precision Server • Overdue 3 Unit</p></div></div>
-    <div id="view-workorder" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 8px;">Work Order Execution</h4><button onclick="Swal.fire('Signature', 'Tanda tangan disetujui', 'success')" class="btn-primary">Signature TTD Digital</button></div></div>
-    <div id="view-cleaning" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem;">General Cleaning</h4><p style="font-size: 0.75rem; color: var(--text-sub);">Checklist: Lobby, Toilet, Kaca, Wallsign.</p></div></div>
-    <div id="view-schedule" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 8px;">Kalender Maintenance</h4><input type="date" class="input-field" value="2026-08-04"></div></div>
+    <div id="view-asset" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 8px;">Asset Management</h4><div id="asset-card-list"></div></div></div>
+    <div id="view-utility" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 10px;">Utilitas Gedung</h4><div id="utility-list"></div></div></div>
+    <div id="view-maintenance" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 8px;">Perawatan Routine</h4><div id="maintenance-list"></div></div></div>
+    <div id="view-workorder" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 8px;">Work Order Execution</h4><div id="wo-list"></div></div></div>
+    <div id="view-cleaning" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem;">General Cleaning</h4><p style="font-size: 0.75rem; color: var(--text-sub); margin-top: 4px;">Area: Lobby, Toilet, Kaca, Wallsign.</p></div></div>
+    <div id="view-schedule" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 8px;">Jadwal Gedung</h4><input type="date" class="input-field"></div></div>
     <div id="view-reports" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 10px;">Laporan & Export</h4><button onclick="window.print()" class="btn-primary">Export PDF / Print</button></div></div>
     <div id="view-sql" class="page-view"><div class="content-box"><h4 style="font-size: 0.85rem; margin-bottom: 6px;">Supabase Connected</h4><p style="font-size:0.7rem;">https://pykkfcszdihobpwhqinq.supabase.co</p></div></div>
 
   </div>
 
-  <!-- MODAL SCANNER -->
+  <!-- MODAL CAMERA SCANNER -->
   <div class="modal-backdrop" id="qr-modal">
     <div style="background: var(--card-bg); padding: 16px; border-radius: 16px; width: 100%; max-width: 300px; text-align: center;">
       <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Scan QR Asset</h4>
@@ -210,47 +241,126 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT CONNECTED TO SUPABASE -->
   <script>
-    // YOUR SUPABASE CONFIGURATION
     const SUPABASE_URL = "https://pykkfcszdihobpwhqinq.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_OjVJCDPK0vIV7SEErNxoug_tr-ABUug";
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    let archivesData = [
-      { title: "Sertifikat Laik Fungsi (SLF) Gedung", cat: "Sertifikat", date: "2026-01-15" },
-      { title: "Kontrak Maintenance Lift 2026", cat: "Kontrak", date: "2026-02-01" },
-      { title: "Garansi Genset Caterpillar 500kVA", cat: "Garansi", date: "2025-11-10" }
-    ];
-
     let html5QrCode = null;
 
-    document.addEventListener("DOMContentLoaded", () => {
-      initLogin();
-      fetchOfficesFromSupabase();
-      renderArsipList(archivesData);
+    document.addEventListener("DOMContentLoaded", async () => {
+      initAuthListeners();
+      await checkCurrentSession();
       initChart();
     });
 
-    function initLogin() {
-      document.getElementById("login-form").addEventListener("submit", (e) => {
+    function toggleAuthMode(mode) {
+      if (mode === 'register') {
+        document.getElementById('login-box').style.display = 'none';
+        document.getElementById('register-box').style.display = 'block';
+      } else {
+        document.getElementById('login-box').style.display = 'block';
+        document.getElementById('register-box').style.display = 'none';
+      }
+    }
+
+    function initAuthListeners() {
+      // HANDLE REGISTER
+      document.getElementById("register-form").addEventListener("submit", async (e) => {
         e.preventDefault();
-        document.getElementById("login-overlay").style.display = "none";
+        const email = document.getElementById("reg-email").value;
+        const password = document.getElementById("reg-password").value;
+        const fullName = document.getElementById("reg-fullname").value;
+        const phone = document.getElementById("reg-phone").value;
+        const role = document.getElementById("reg-role").value;
+
+        Swal.fire({ title: 'Mendaftarkan Akun...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+        const { data, error } = await supabaseClient.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: { full_name: fullName, phone: phone, role: role }
+          }
+        });
+
+        if (error) {
+          Swal.fire('Registrasi Gagal', error.message, 'error');
+        } else {
+          Swal.fire({
+            icon: 'success',
+            title: 'Pendaftaran Berhasil',
+            text: 'Akun telah terbuat. Silakan login dengan akun baru Anda.',
+            confirmButtonColor: '#0B8F4D'
+          }).then(() => {
+            toggleAuthMode('login');
+          });
+        }
+      });
+
+      // HANDLE LOGIN
+      document.getElementById("login-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("login-email").value;
+        const password = document.getElementById("login-password").value;
+
+        Swal.fire({ title: 'Memverifikasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+        if (error) {
+          Swal.fire('Login Gagal', error.message, 'error');
+        } else {
+          Swal.close();
+          await checkCurrentSession();
+        }
       });
     }
 
-    function showPage(pageId) {
-      document.querySelectorAll(".page-view").forEach(p => p.classList.remove("active"));
-      document.getElementById(`view-${pageId}`).classList.add("active");
+    async function checkCurrentSession() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      
+      if (session) {
+        document.getElementById("auth-overlay").style.display = "none";
+        
+        // Fetch User Profile
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profile) {
+          document.getElementById("user-name").innerText = profile.full_name;
+          document.getElementById("user-role-display").innerText = profile.role.replace('_', ' ');
+          document.getElementById("avatar-initials").innerText = profile.full_name.substring(0, 2).toUpperCase();
+        } else {
+          document.getElementById("user-name").innerText = session.user.email.split('@')[0];
+        }
+
+        // Fetch Real Database Tables Data
+        loadDatabaseData();
+      } else {
+        document.getElementById("auth-overlay").style.display = "flex";
+      }
     }
 
-    async function fetchOfficesFromSupabase() {
-      const { data, error } = await supabaseClient.from('offices').select('*');
-      const tbody = document.getElementById("kantor-rows");
+    async function logout() {
+      await supabaseClient.auth.signOut();
+      document.getElementById("auth-overlay").style.display = "flex";
+    }
+
+    async function loadDatabaseData() {
+      // 1. Fetch Offices
+      const { data: offices, count: officeCount } = await supabaseClient.from('offices').select('*', { count: 'exact' });
+      document.getElementById('val-total-kantor').innerText = officeCount || 0;
       
-      if (data && data.length > 0) {
-        tbody.innerHTML = data.map(o => `
+      const tbody = document.getElementById("kantor-rows");
+      if (offices && offices.length > 0) {
+        tbody.innerHTML = offices.map(o => `
           <tr style="border-bottom: 1px solid var(--border);">
             <td style="padding: 6px;"><b>${o.code}</b></td>
             <td style="padding: 6px;">${o.name}</td>
@@ -258,43 +368,77 @@
           </tr>
         `).join('');
       } else {
-        tbody.innerHTML = `<tr><td colspan="3" style="padding:10px; text-align:center; color:gray;">Jalankan SQL Schema di Supabase Editor dahulu.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="3" style="padding:10px; text-align:center; color:gray;">Belum ada data kantor di database.</td></tr>`;
       }
+
+      // 2. Fetch Work Orders
+      const { data: wos, count: woCount } = await supabaseClient.from('work_orders').select('*', { count: 'exact' });
+      document.getElementById('val-total-wo').innerText = woCount || 0;
+
+      // 3. Fetch Archives
+      const { data: archives, count: archiveCount } = await supabaseClient.from('archives').select('*', { count: 'exact' });
+      document.getElementById('val-total-arsip').innerText = archiveCount || 0;
+      renderArsipList(archives || []);
+
+      // 4. Fetch Assets
+      const { data: assets, count: assetCount } = await supabaseClient.from('assets').select('*', { count: 'exact' });
+      document.getElementById('val-total-asset').innerText = assetCount || 0;
     }
 
     function renderArsipList(items) {
       const container = document.getElementById("arsip-list");
-      document.getElementById("val-total-arsip").innerText = items.length;
+      if (items.length === 0) {
+        container.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center; padding:10px;">Belum ada file arsip tersimpan.</p>`;
+        return;
+      }
+
       container.innerHTML = items.map(a => `
         <div class="archive-item">
           <div>
             <div style="font-weight: 700; font-size: 0.8rem;">${a.title}</div>
-            <div style="font-size: 0.7rem; color: var(--text-sub);">${a.cat} • ${a.date}</div>
+            <div style="font-size: 0.7rem; color: var(--text-sub);">${a.category}</div>
           </div>
           <span class="material-symbols-rounded" style="color: var(--primary); font-size: 18px; cursor: pointer;">download</span>
         </div>
       `).join('');
     }
 
-    function filterArsip() {
-      const query = document.getElementById("search-arsip").value.toLowerCase();
-      renderArsipList(archivesData.filter(a => a.title.toLowerCase().includes(query)));
-    }
-
-    function openUploadArsipModal() {
-      Swal.fire({
+    async function openUploadArsipModal() {
+      const { value: formValues } = await Swal.fire({
         title: 'Simpan Arsip Baru',
-        input: 'text',
-        inputPlaceholder: 'Judul Dokumen Arsip...',
+        html:
+          '<input id="swal-title" class="swal2-input" placeholder="Judul Dokumen">' +
+          '<input id="swal-cat" class="swal2-input" placeholder="Kategori (misal: Kontrak/SLF)">',
+        focusConfirm: false,
         showCancelButton: true,
-        confirmButtonText: 'Simpan',
-        confirmButtonColor: '#0B8F4D'
-      }).then((res) => {
-        if (res.value) {
-          archivesData.unshift({ title: res.value, cat: "Dokumen", date: "2026-08-04" });
-          renderArsipList(archivesData);
+        confirmButtonText: 'Simpan ke Database',
+        confirmButtonColor: '#0B8F4D',
+        preConfirm: () => {
+          return [
+            document.getElementById('swal-title').value,
+            document.getElementById('swal-cat').value
+          ]
         }
       });
+
+      if (formValues && formValues[0]) {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const { error } = await supabaseClient.from('archives').insert([
+          { title: formValues[0], category: formValues[1] || 'Dokumen', uploaded_by: user.id }
+        ]);
+
+        if (error) {
+          Swal.fire('Gagal Simpan', error.message, 'error');
+        } else {
+          Swal.fire('Tersimpan', 'Arsip baru berhasil disimpan di database', 'success');
+          loadDatabaseData();
+        }
+      }
+    }
+
+    function showPage(pageId) {
+      document.querySelectorAll(".page-view").forEach(p => p.classList.remove("active"));
+      document.getElementById(`view-${pageId}`).classList.add("active");
     }
 
     function initChart() {
@@ -328,6 +472,11 @@
 
     function openAIChat() {
       Swal.fire({ title: 'AI Assistant', input: 'text', inputPlaceholder: 'Tanyakan sesuatu...', confirmButtonColor: '#0B8F4D' });
+    }
+
+    function exportExcel(tableID, filename) {
+      const wb = XLSX.utils.table_to_book(document.getElementById(tableID));
+      XLSX.writeFile(wb, `${filename}.xlsx`);
     }
 
     function toggleTheme() {
