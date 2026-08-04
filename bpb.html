@@ -118,6 +118,7 @@
         .pay-banner { background: var(--primary-light); border: 1px dashed var(--primary); border-radius: 12px; padding: 12px; margin-bottom: 14px; text-align: center; }
         .pay-banner-title { font-size: 0.8rem; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
         .pay-banner-btns { display: flex; gap: 8px; justify-content: center; }
+        .action-group { display: flex; gap: 4px; flex-wrap: wrap; }
     </style>
 </head>
 <body>
@@ -310,7 +311,7 @@
             });
         }
 
-        // FUNGSI COPY ID DAN BUKA PEMBAYARAN DI TAB BARU
+        // FUNGSI COPY ID DAN REDIRECT KE SEPULSA (TAB BARU)
         function processPaymentRedirect(type, idPelanggan) {
             const cleanId = (idPelanggan || '').trim();
             const targetUrl = type === 'Listrik' 
@@ -323,19 +324,17 @@
                         toast: true,
                         position: 'top-end',
                         icon: 'success',
-                        title: `ID ${cleanId} disalin!`,
-                        text: 'Tempelkan ID di halaman Sepulsa',
+                        title: `ID ${cleanId} berhasil disalin!`,
+                        text: 'Silakan paste di situs Sepulsa',
                         showConfirmButton: false,
                         timer: 2000
                     });
-                }).catch(() => {
-                    console.log('Gagal menyalin otomatis');
-                });
+                }).catch(() => {});
             }
             window.open(targetUrl, '_blank');
         }
 
-        // FUNGSI SHARE LEWAT PERANGKAT
+        // FUNGSI SHARE DATA UNIVERSAL
         async function shareData(title, text, url = null) {
             if (navigator.share) {
                 try {
@@ -437,7 +436,7 @@
             });
         }
 
-        // ROUTER SUB PAGE
+        // ROUTER SUB PAGE LENGKAP
         async function openSubPage(pageKey) {
             const overlay = document.getElementById('sub-page-overlay');
             const titleEl = document.getElementById('sub-page-title');
@@ -461,18 +460,22 @@
                             <table class="table">
                                 <thead><tr><th>Nama</th><th>Alamat</th><th>Aksi</th></tr></thead>
                                 <tbody>
-                                    ${data && data.length > 0 ? data.map(k => `
+                                    ${data && data.length > 0 ? data.map(k => {
+                                        const detailStr = `Nama: ${k.nama}\nAlamat: ${k.alamat}\nID PLN: ${k.id_pelanggan_pln || '-'}\nID PDAM: ${k.id_pelanggan_pdam || '-'}`;
+                                        return `
                                         <tr>
                                             <td><b>${k.nama}</b></td>
                                             <td>${k.alamat}</td>
                                             <td>
-                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Kantor', '${k.nama}', 'Alamat: ${k.alamat}\\nPLN ID: ${k.id_pelanggan_pln || '-'}\\nPDAM ID: ${k.id_pelanggan_pdam || '-'}')"><i class="fa-solid fa-eye"></i></button>
-                                                <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormKantor('${k.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Kantor', 'Kantor: ${k.nama}\nAlamat: ${k.alamat}')"><i class="fa-solid fa-share-nodes"></i></button>
-                                                <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('kantor','${k.id}','kantor')"><i class="fa-solid fa-trash"></i></button>
+                                                <div class="action-group">
+                                                    <button class="btn btn-info" style="padding:4px 8px;" title="Lihat Detail" onclick="viewGenericDetail('Kantor', '${k.nama}', \`${detailStr}\`)"><i class="fa-solid fa-eye"></i></button>
+                                                    <button class="btn btn-share" style="padding:4px 8px;" title="Bagikan Data" onclick="shareData('Data Kantor', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes"></i></button>
+                                                    <button class="btn btn-warning" style="padding:4px 8px;" title="Edit Data" onclick="openFormKantor('${k.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                    <button class="btn btn-danger" style="padding:4px 8px;" title="Hapus Data" onclick="deleteRecord('kantor','${k.id}','kantor')"><i class="fa-solid fa-trash"></i></button>
+                                                </div>
                                             </td>
                                         </tr>
-                                    `).join('') : '<tr><td colspan="3" style="text-align:center;">Belum ada data kantor</td></tr>'}
+                                    `}).join('') : '<tr><td colspan="3" style="text-align:center;">Belum ada data kantor</td></tr>'}
                                 </tbody>
                             </table>
                         </div>`;
@@ -485,19 +488,23 @@
                             <table class="table">
                                 <thead><tr><th>Kode</th><th>Nama Asset</th><th>Status</th><th>Aksi</th></tr></thead>
                                 <tbody>
-                                    ${data && data.length > 0 ? data.map(a => `
+                                    ${data && data.length > 0 ? data.map(a => {
+                                        const detailStr = `Kode Asset: ${a.kode_asset}\nNama Asset: ${a.nama_asset}\nKantor: ${a.kantor ? a.kantor.nama : '-'}\nKategori: ${a.kategori}\nStatus: ${a.status}`;
+                                        return `
                                         <tr>
                                             <td><b>${a.kode_asset}</b></td>
                                             <td>${a.nama_asset}</td>
                                             <td><span class="badge badge-${a.status === 'Baik' ? 'success' : 'danger'}">${a.status}</span></td>
                                             <td>
-                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Asset', '${a.nama_asset}', 'Kode: ${a.kode_asset}\nKategori: ${a.kategori}\nStatus: ${a.status}')"><i class="fa-solid fa-eye"></i></button>
-                                                <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormAsset('${a.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Asset', 'Asset: ${a.nama_asset}\nKode: ${a.kode_asset}\nStatus: ${a.status}')"><i class="fa-solid fa-share-nodes"></i></button>
-                                                <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('asset','${a.id}','asset')"><i class="fa-solid fa-trash"></i></button>
+                                                <div class="action-group">
+                                                    <button class="btn btn-info" style="padding:4px 8px;" title="Lihat Detail" onclick="viewGenericDetail('Asset', '${a.nama_asset}', \`${detailStr}\`)"><i class="fa-solid fa-eye"></i></button>
+                                                    <button class="btn btn-share" style="padding:4px 8px;" title="Bagikan Data" onclick="shareData('Data Asset', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes"></i></button>
+                                                    <button class="btn btn-warning" style="padding:4px 8px;" title="Edit Data" onclick="openFormAsset('${a.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                    <button class="btn btn-danger" style="padding:4px 8px;" title="Hapus Data" onclick="deleteRecord('asset','${a.id}','asset')"><i class="fa-solid fa-trash"></i></button>
+                                                </div>
                                             </td>
                                         </tr>
-                                    `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada data asset</td></tr>'}
+                                    `}).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada data asset</td></tr>'}
                                 </tbody>
                             </table>
                         </div>`;
@@ -511,20 +518,24 @@
                             <table class="table">
                                 <thead><tr><th>Lokasi/KCP</th><th>Kategori</th><th>Periode</th><th>Aksi</th></tr></thead>
                                 <tbody>
-                                    ${data && data.length > 0 ? data.map(atm => `
+                                    ${data && data.length > 0 ? data.map(atm => {
+                                        const detailStr = `Lokasi/KCP: ${atm.kantor ? atm.kantor.nama : '-'}\nKategori: ${atm.kategori_atm}\nPeriode: ${atm.periode_minggu}\nPetugas: ${atm.petugas_nama || '-'}\nSupervisor: ${atm.supervisor_nama || '-'}`;
+                                        return `
                                         <tr>
                                             <td><b>${atm.kantor ? atm.kantor.nama : '-'}</b></td>
                                             <td><span class="badge badge-success">${atm.kategori_atm}</span></td>
                                             <td>${atm.periode_minggu}</td>
                                             <td>
-                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewDetailATM('${atm.id}', '${atm.kantor ? atm.kantor.nama : ''}', '${atm.periode_minggu}')"><i class="fa-solid fa-eye"></i></button>
-                                                <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormPemeriksaanATM('${atm.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                <button class="btn btn-primary" style="padding:4px 8px;" onclick="exportATMPDF('${atm.id}')"><i class="fa-solid fa-file-pdf"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Laporan Pemeriksaan ATM', 'Lokasi: ${atm.kantor ? atm.kantor.nama : '-'}\nKategori: ${atm.kategori_atm}\nPeriode: ${atm.periode_minggu}')"><i class="fa-solid fa-share-nodes"></i></button>
-                                                <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('pemeriksaan_atm','${atm.id}','pemeriksaan_atm')"><i class="fa-solid fa-trash"></i></button>
+                                                <div class="action-group">
+                                                    <button class="btn btn-info" style="padding:4px 8px;" title="Lihat Rincian Pemeriksaan" onclick="viewDetailATM('${atm.id}', '${atm.kantor ? atm.kantor.nama : ''}', '${atm.periode_minggu}')"><i class="fa-solid fa-eye"></i></button>
+                                                    <button class="btn btn-share" style="padding:4px 8px;" title="Bagikan Laporan" onclick="shareData('Laporan Pemeriksaan ATM', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes"></i></button>
+                                                    <button class="btn btn-primary" style="padding:4px 8px;" title="Unduh PDF" onclick="exportATMPDF('${atm.id}')"><i class="fa-solid fa-file-pdf"></i></button>
+                                                    <button class="btn btn-warning" style="padding:4px 8px;" title="Edit Form" onclick="openFormPemeriksaanATM('${atm.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                    <button class="btn btn-danger" style="padding:4px 8px;" title="Hapus Data" onclick="deleteRecord('pemeriksaan_atm','${atm.id}','pemeriksaan_atm')"><i class="fa-solid fa-trash"></i></button>
+                                                </div>
                                             </td>
                                         </tr>
-                                    `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada pemeriksaan ATM</td></tr>'}
+                                    `}).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada pemeriksaan ATM</td></tr>'}
                                 </tbody>
                             </table>
                         </div>`;
@@ -546,27 +557,146 @@
                             <table class="table">
                                 <thead><tr><th>Jenis</th><th>ID Pelanggan</th><th>Pemakaian</th><th>Biaya (Rp)</th><th>Aksi</th></tr></thead>
                                 <tbody>
-                                    ${data && data.length > 0 ? data.map(u => `
+                                    ${data && data.length > 0 ? data.map(u => {
+                                        const detailStr = `Jenis Utilitas: ${u.jenis}\nKantor: ${u.kantor ? u.kantor.nama : '-'}\nID Pelanggan: ${u.id_pelanggan || '-'}\nPemakaian: ${u.jumlah_pemakaian} ${u.satuan}\nBiaya: Rp ${Number(u.biaya).toLocaleString('id-ID')}\nTanggal: ${u.bulan_tahun || '-'}`;
+                                        return `
                                         <tr>
                                             <td><b>${u.jenis}</b><br><small style="color:var(--text-sub);">${u.kantor ? u.kantor.nama : '-'}</small></td>
                                             <td><span class="badge badge-warning">${u.id_pelanggan || '-'}</span></td>
                                             <td>${u.jumlah_pemakaian} ${u.satuan}</td>
                                             <td>Rp ${Number(u.biaya).toLocaleString('id-ID')}</td>
                                             <td>
-                                                <div style="display:flex; gap:4px;">
+                                                <div class="action-group">
                                                     ${(u.jenis === 'Listrik' || u.jenis === 'Air') ? `
-                                                        <button class="btn btn-pay" style="padding:4px 8px;" title="Salin ID & Bayar di Sepulsa" onclick="processPaymentRedirect('${u.jenis}', '${u.id_pelanggan}')">
+                                                        <button class="btn btn-pay" style="padding:4px 8px;" title="Salin ID & Bayar Sepulsa" onclick="processPaymentRedirect('${u.jenis}', '${u.id_pelanggan}')">
                                                             <i class="fa-solid fa-credit-card"></i>
                                                         </button>
                                                     ` : ''}
-                                                    <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Utilitas', '${u.jenis}', 'ID Pelanggan: ${u.id_pelanggan || '-'}\nPemakaian: ${u.jumlah_pemakaian} ${u.satuan}\nBiaya: Rp ${u.biaya}')"><i class="fa-solid fa-eye"></i></button>
-                                                    <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormUtilitas('${u.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                    <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Utilitas', 'Jenis: ${u.jenis}\nID Pelanggan: ${u.id_pelanggan || '-'}\nPemakaian: ${u.jumlah_pemakaian} ${u.satuan}\nBiaya: Rp ${u.biaya}')"><i class="fa-solid fa-share-nodes"></i></button>
-                                                    <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('utilitas','${u.id}','utilitas')"><i class="fa-solid fa-trash"></i></button>
+                                                    <button class="btn btn-info" style="padding:4px 8px;" title="Lihat Detail Utilitas" onclick="viewGenericDetail('Utilitas', '${u.jenis}', \`${detailStr}\`)"><i class="fa-solid fa-eye"></i></button>
+                                                    <button class="btn btn-share" style="padding:4px 8px;" title="Bagikan Data" onclick="shareData('Data Utilitas', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes"></i></button>
+                                                    <button class="btn btn-warning" style="padding:4px 8px;" title="Edit Data" onclick="openFormUtilitas('${u.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                    <button class="btn btn-danger" style="padding:4px 8px;" title="Hapus Data" onclick="deleteRecord('utilitas','${u.id}','utilitas')"><i class="fa-solid fa-trash"></i></button>
                                                 </div>
                                             </td>
                                         </tr>
-                                    `).join('') : '<tr><td colspan="5" style="text-align:center;">Belum ada data utilitas</td></tr>'}
+                                    `}).join('') : '<tr><td colspan="5" style="text-align:center;">Belum ada data utilitas</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else if (pageKey === 'workorder') {
+                    actionBtn.style.display = 'inline-flex';
+                    actionBtn.onclick = () => openFormWO();
+                    const { data } = await db.from('work_orders').select('*, asset(nama_asset)').order('created_at', {ascending:false});
+                    contentEl.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead><tr><th>Judul</th><th>Asset</th><th>Status</th><th>Aksi</th></tr></thead>
+                                <tbody>
+                                    ${data && data.length > 0 ? data.map(w => {
+                                        const detailStr = `Judul Work Order: ${w.judul}\nAsset Terkait: ${w.asset ? w.asset.nama_asset : '-'}\nStatus: ${w.status}`;
+                                        return `
+                                        <tr>
+                                            <td><b>${w.judul}</b></td>
+                                            <td>${w.asset ? w.asset.nama_asset : '-'}</td>
+                                            <td><span class="badge badge-warning">${w.status}</span></td>
+                                            <td>
+                                                <div class="action-group">
+                                                    <button class="btn btn-info" style="padding:4px 8px;" title="Lihat Detail Work Order" onclick="viewGenericDetail('Work Order', '${w.judul}', \`${detailStr}\`)"><i class="fa-solid fa-eye"></i></button>
+                                                    <button class="btn btn-share" style="padding:4px 8px;" title="Bagikan WO" onclick="shareData('Work Order', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes"></i></button>
+                                                    <button class="btn btn-warning" style="padding:4px 8px;" title="Edit WO" onclick="openFormWO('${w.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                    <button class="btn btn-danger" style="padding:4px 8px;" title="Hapus WO" onclick="deleteRecord('work_orders','${w.id}','workorder')"><i class="fa-solid fa-trash"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `}).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada Work Order</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else if (pageKey === 'perawatan') {
+                    actionBtn.style.display = 'inline-flex';
+                    actionBtn.onclick = () => openFormPerawatan();
+                    const { data } = await db.from('maintenances').select('*, work_orders(judul), teknisi(nama)').order('created_at', {ascending:false});
+                    contentEl.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead><tr><th>WO</th><th>Before</th><th>After</th><th>Biaya</th><th>Aksi</th></tr></thead>
+                                <tbody>
+                                    ${data && data.length > 0 ? data.map(m => {
+                                        const detailStr = `Work Order: ${m.work_orders ? m.work_orders.judul : '-'}\nTeknisi: ${m.teknisi ? m.teknisi.nama : '-'}\nBiaya Perawatan: Rp ${Number(m.biaya).toLocaleString('id-ID')}\nFoto Before: ${m.foto_before ? 'Ada' : 'Tidak Ada'}\nFoto After: ${m.foto_after ? 'Ada' : 'Tidak Ada'}`;
+                                        return `
+                                        <tr>
+                                            <td><b>${m.work_orders ? m.work_orders.judul : '-'}</b><br><small>Teknisi: ${m.teknisi ? m.teknisi.nama : '-'}</small></td>
+                                            <td>${m.foto_before ? `<img src="${m.foto_before}" class="img-thumb">` : '-'}</td>
+                                            <td>${m.foto_after ? `<img src="${m.foto_after}" class="img-thumb">` : '-'}</td>
+                                            <td>Rp ${Number(m.biaya).toLocaleString('id-ID')}</td>
+                                            <td>
+                                                <div class="action-group">
+                                                    <button class="btn btn-info" style="padding:4px 8px;" title="Lihat Detail Pengerjaan" onclick="viewGenericDetail('Hasil Perawatan', '${m.work_orders ? m.work_orders.judul : '-'}', \`${detailStr}\`)"><i class="fa-solid fa-eye"></i></button>
+                                                    <button class="btn btn-share" style="padding:4px 8px;" title="Bagikan Laporan Perawatan" onclick="shareData('Laporan Perawatan', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes"></i></button>
+                                                    <button class="btn btn-danger" style="padding:4px 8px;" title="Hapus Record" onclick="deleteRecord('maintenances','${m.id}','perawatan')"><i class="fa-solid fa-trash"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `}).join('') : '<tr><td colspan="5" style="text-align:center;">Belum ada data pengerjaan</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else if (pageKey === 'teknisi') {
+                    actionBtn.style.display = 'inline-flex';
+                    actionBtn.onclick = () => openFormTeknisi();
+                    const { data } = await db.from('teknisi').select('*').order('created_at', {ascending:false});
+                    contentEl.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead><tr><th>Nama</th><th>Spesialisasi</th><th>Status</th><th>Aksi</th></tr></thead>
+                                <tbody>
+                                    ${data && data.length > 0 ? data.map(t => {
+                                        const detailStr = `Nama Teknisi: ${t.nama}\nSpesialisasi: ${t.spesialisasi}\nStatus Saat Ini: ${t.status}`;
+                                        return `
+                                        <tr>
+                                            <td><b>${t.nama}</b></td>
+                                            <td>${t.spesialisasi}</td>
+                                            <td><span class="badge badge-success">${t.status}</span></td>
+                                            <td>
+                                                <div class="action-group">
+                                                    <button class="btn btn-info" style="padding:4px 8px;" title="Lihat Profile Teknisi" onclick="viewGenericDetail('Teknisi', '${t.nama}', \`${detailStr}\`)"><i class="fa-solid fa-eye"></i></button>
+                                                    <button class="btn btn-share" style="padding:4px 8px;" title="Bagikan Profile" onclick="shareData('Data Teknisi', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes"></i></button>
+                                                    <button class="btn btn-warning" style="padding:4px 8px;" title="Edit Data Teknisi" onclick="openFormTeknisi('${t.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                    <button class="btn btn-danger" style="padding:4px 8px;" title="Hapus Teknisi" onclick="deleteRecord('teknisi','${t.id}','teknisi')"><i class="fa-solid fa-trash"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `}).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada data teknisi</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else if (pageKey === 'jadwal') {
+                    actionBtn.style.display = 'inline-flex';
+                    actionBtn.onclick = () => openFormJadwal();
+                    const { data } = await db.from('jadwal').select('*').order('tanggal', {ascending:true});
+                    contentEl.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead><tr><th>Judul Kegiatan</th><th>Kategori</th><th>Tanggal</th><th>Status</th><th>Aksi</th></tr></thead>
+                                <tbody>
+                                    ${data && data.length > 0 ? data.map(j => {
+                                        const detailStr = `Kegiatan: ${j.judul}\nKategori: ${j.kategori || '-'}\nTanggal: ${j.tanggal || '-'}\nStatus: ${j.status}\nKeterangan: ${j.keterangan || '-'}`;
+                                        return `
+                                        <tr>
+                                            <td><b>${j.judul}</b><br><small style="color:var(--text-sub);">${j.keterangan || ''}</small></td>
+                                            <td>${j.kategori || '-'}</td>
+                                            <td>${j.tanggal || '-'}</td>
+                                            <td><span class="badge badge-${j.status === 'Selesai' ? 'success' : 'warning'}">${j.status}</span></td>
+                                            <td>
+                                                <div class="action-group">
+                                                    <button class="btn btn-info" style="padding:4px 8px;" title="Lihat Rincian Jadwal" onclick="viewGenericDetail('Jadwal', '${j.judul}', \`${detailStr}\`)"><i class="fa-solid fa-eye"></i></button>
+                                                    <button class="btn btn-share" style="padding:4px 8px;" title="Bagikan Jadwal" onclick="shareData('Jadwal Kegiatan', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes"></i></button>
+                                                    <button class="btn btn-warning" style="padding:4px 8px;" title="Edit Jadwal" onclick="openFormJadwal('${j.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                    <button class="btn btn-danger" style="padding:4px 8px;" title="Hapus Jadwal" onclick="deleteRecord('jadwal','${j.id}','jadwal')"><i class="fa-solid fa-trash"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `}).join('') : '<tr><td colspan="5" style="text-align:center;">Belum ada jadwal pemeliharaan</td></tr>'}
                                 </tbody>
                             </table>
                         </div>`;
@@ -646,7 +776,6 @@
                             document.getElementById('res-status').innerHTML = `<span class="badge badge-danger">BELUM DIBAYAR</span>`;
                             document.getElementById('res-total').innerText = `TOTAL TAGIHAN: Rp ${totalAmount.toLocaleString('id-ID')}`;
                             
-                            // ACTION BAYAR DENGAN OTOMATIS COPY ID
                             const payBtn = document.getElementById('btn-redirect-pay');
                             payBtn.onclick = () => processPaymentRedirect(layanan === 'PLN' ? 'Listrik' : 'Air', idPel);
 
@@ -658,107 +787,6 @@
                             };
                         }, 1200);
                     };
-                } else if (pageKey === 'jadwal') {
-                    actionBtn.style.display = 'inline-flex';
-                    actionBtn.onclick = () => openFormJadwal();
-                    const { data } = await db.from('jadwal').select('*').order('tanggal', {ascending:true});
-                    contentEl.innerHTML = `
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead><tr><th>Judul Kegiatan</th><th>Kategori</th><th>Tanggal</th><th>Status</th><th>Aksi</th></tr></thead>
-                                <tbody>
-                                    ${data && data.length > 0 ? data.map(j => `
-                                        <tr>
-                                            <td><b>${j.judul}</b><br><small style="color:var(--text-sub);">${j.keterangan || ''}</small></td>
-                                            <td>${j.kategori || '-'}</td>
-                                            <td>${j.tanggal || '-'}</td>
-                                            <td><span class="badge badge-${j.status === 'Selesai' ? 'success' : 'warning'}">${j.status}</span></td>
-                                            <td>
-                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Jadwal', '${j.judul}', 'Kategori: ${j.kategori}\nTanggal: ${j.tanggal}\nStatus: ${j.status}\nKet: ${j.keterangan}')"><i class="fa-solid fa-eye"></i></button>
-                                                <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormJadwal('${j.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Jadwal Kegiatan', 'Judul: ${j.judul}\nTanggal: ${j.tanggal}\nStatus: ${j.status}')"><i class="fa-solid fa-share-nodes"></i></button>
-                                                <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('jadwal','${j.id}','jadwal')"><i class="fa-solid fa-trash"></i></button>
-                                            </td>
-                                        </tr>
-                                    `).join('') : '<tr><td colspan="5" style="text-align:center;">Belum ada jadwal pemeliharaan</td></tr>'}
-                                </tbody>
-                            </table>
-                        </div>`;
-                } else if (pageKey === 'workorder') {
-                    actionBtn.style.display = 'inline-flex';
-                    actionBtn.onclick = () => openFormWO();
-                    const { data } = await db.from('work_orders').select('*, asset(nama_asset)').order('created_at', {ascending:false});
-                    contentEl.innerHTML = `
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead><tr><th>Judul</th><th>Asset</th><th>Status</th><th>Aksi</th></tr></thead>
-                                <tbody>
-                                    ${data && data.length > 0 ? data.map(w => `
-                                        <tr>
-                                            <td><b>${w.judul}</b></td>
-                                            <td>${w.asset ? w.asset.nama_asset : '-'}</td>
-                                            <td><span class="badge badge-warning">${w.status}</span></td>
-                                            <td>
-                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Work Order', '${w.judul}', 'Asset: ${w.asset ? w.asset.nama_asset : '-'}\nStatus: ${w.status}')"><i class="fa-solid fa-eye"></i></button>
-                                                <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormWO('${w.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Work Order', 'Judul: ${w.judul}\nAsset: ${w.asset ? w.asset.nama_asset : '-'}\nStatus: ${w.status}')"><i class="fa-solid fa-share-nodes"></i></button>
-                                                <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('work_orders','${w.id}','workorder')"><i class="fa-solid fa-trash"></i></button>
-                                            </td>
-                                        </tr>
-                                    `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada Work Order</td></tr>'}
-                                </tbody>
-                            </table>
-                        </div>`;
-                } else if (pageKey === 'perawatan') {
-                    actionBtn.style.display = 'inline-flex';
-                    actionBtn.onclick = () => openFormPerawatan();
-                    const { data } = await db.from('maintenances').select('*, work_orders(judul), teknisi(nama)').order('created_at', {ascending:false});
-                    contentEl.innerHTML = `
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead><tr><th>WO</th><th>Before</th><th>After</th><th>Biaya</th><th>Aksi</th></tr></thead>
-                                <tbody>
-                                    ${data && data.length > 0 ? data.map(m => `
-                                        <tr>
-                                            <td><b>${m.work_orders ? m.work_orders.judul : '-'}</b><br><small>Teknisi: ${m.teknisi ? m.teknisi.nama : '-'}</small></td>
-                                            <td>${m.foto_before ? `<img src="${m.foto_before}" class="img-thumb">` : '-'}</td>
-                                            <td>${m.foto_after ? `<img src="${m.foto_after}" class="img-thumb">` : '-'}</td>
-                                            <td>Rp ${Number(m.biaya).toLocaleString('id-ID')}</td>
-                                            <td>
-                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Hasil Perawatan', '${m.work_orders ? m.work_orders.judul : '-'}', 'Teknisi: ${m.teknisi ? m.teknisi.nama : '-'}\nBiaya: Rp ${m.biaya}')"><i class="fa-solid fa-eye"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Laporan Perawatan', 'WO: ${m.work_orders ? m.work_orders.judul : '-'}\nTeknisi: ${m.teknisi ? m.teknisi.nama : '-'}\nBiaya: Rp ${m.biaya}')"><i class="fa-solid fa-share-nodes"></i></button>
-                                                <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('maintenances','${m.id}','perawatan')"><i class="fa-solid fa-trash"></i></button>
-                                            </td>
-                                        </tr>
-                                    `).join('') : '<tr><td colspan="5" style="text-align:center;">Belum ada data pengerjaan</td></tr>'}
-                                </tbody>
-                            </table>
-                        </div>`;
-                } else if (pageKey === 'teknisi') {
-                    actionBtn.style.display = 'inline-flex';
-                    actionBtn.onclick = () => openFormTeknisi();
-                    const { data } = await db.from('teknisi').select('*').order('created_at', {ascending:false});
-                    contentEl.innerHTML = `
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead><tr><th>Nama</th><th>Spesialisasi</th><th>Status</th><th>Aksi</th></tr></thead>
-                                <tbody>
-                                    ${data && data.length > 0 ? data.map(t => `
-                                        <tr>
-                                            <td><b>${t.nama}</b></td>
-                                            <td>${t.spesialisasi}</td>
-                                            <td><span class="badge badge-success">${t.status}</span></td>
-                                            <td>
-                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Teknisi', '${t.nama}', 'Spesialisasi: ${t.spesialisasi}\nStatus: ${t.status}')"><i class="fa-solid fa-eye"></i></button>
-                                                <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormTeknisi('${t.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Teknisi', 'Nama: ${t.nama}\nSpesialisasi: ${t.spesialisasi}\nStatus: ${t.status}')"><i class="fa-solid fa-share-nodes"></i></button>
-                                                <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('teknisi','${t.id}','teknisi')"><i class="fa-solid fa-trash"></i></button>
-                                            </td>
-                                        </tr>
-                                    `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada data teknisi</td></tr>'}
-                                </tbody>
-                            </table>
-                        </div>`;
                 } else if (pageKey === 'laporan') {
                     contentEl.innerHTML = `
                         <div class="card">
@@ -833,7 +861,7 @@
                     <div class="checklist-title">${subject}</div>
                     <div style="white-space: pre-line; font-size:0.85rem; margin-top:8px;">${bodyText}</div>
                 </div>
-                <button class="btn btn-share" style="width:100%;" onclick="shareData('${title} - ${subject}', '${bodyText}')"><i class="fa-solid fa-share-nodes"></i> Bagikan Data Ini</button>
+                <button class="btn btn-share" style="width:100%;" onclick="shareData('${title} - ${subject}', \`${bodyText}\`)"><i class="fa-solid fa-share-nodes"></i> Bagikan Data Ini</button>
             `;
             document.getElementById('app-modal').style.display = 'flex';
         }
@@ -1083,7 +1111,6 @@
                 if (data) editData = data;
             }
 
-            // Simpan peta ID pelanggan di window
             window.kantorMap = {};
             kantorList.forEach(k => {
                 window.kantorMap[k.id] = { pln: k.id_pelanggan_pln || '', pdam: k.id_pelanggan_pdam || '' };
@@ -1710,6 +1737,8 @@
             const { data } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id).order('no_kriteria', {ascending:true});
             Swal.close();
 
+            const shareText = `Laporan ATM: ${lokasi}\nPeriode: ${periode}\nPetugas: ${header.petugas_nama || '-'}\nSupervisor: ${header.supervisor_nama || '-'}`;
+
             document.getElementById('modal-title').innerText = `Detail: ${lokasi} (${periode})`;
             document.getElementById('modal-body').innerHTML = `
                 <div style="font-size: 0.8rem;">
@@ -1736,6 +1765,8 @@
                             </div>
                         </div>
                     </div>
+
+                    <button class="btn btn-share" style="width:100%; margin-top:12px;" onclick="shareData('Laporan ATM - ${lokasi}', \`${shareText}\`)"><i class="fa-solid fa-share-nodes"></i> Bagikan Laporan Ini</button>
                 </div>`;
             document.getElementById('app-modal').style.display = 'flex';
         }
