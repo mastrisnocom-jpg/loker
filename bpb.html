@@ -162,7 +162,7 @@
       </div>
     </header>
 
-    <!-- SUMMARY CARDS ATAS -->
+    <!-- SUMMARY CARDS -->
     <div class="summary-scroll">
       <div class="summary-card">
         <div class="icon-wrap" style="background: #E8F5E9; color: #0B8F4D;"><span class="material-symbols-rounded" style="font-size: 20px;">location_city</span></div>
@@ -182,7 +182,7 @@
       </div>
     </div>
 
-    <!-- GRID MENU (SEMUA DI-KLIK MENAMPILKAN POP-UP MODAL) -->
+    <!-- GRID MENU (DENGAN MENU PENGATURAN KHUSUS ADMIN) -->
     <div class="menu-grid">
       <div class="menu-item" onclick="openMenuPopup('kantor')"><div class="menu-icon-circle"><span class="material-symbols-rounded">domain</span></div><span class="menu-label">Kantor</span></div>
       <div class="menu-item" onclick="openMenuPopup('asset')"><div class="menu-icon-circle"><span class="material-symbols-rounded">inventory_2</span></div><span class="menu-label">Asset</span></div>
@@ -195,7 +195,7 @@
       <div class="menu-item" onclick="openQRScanner()"><div class="menu-icon-circle" style="background: #EDE7F6; color: #673AB7;"><span class="material-symbols-rounded">qr_code_scanner</span></div><span class="menu-label">Scan QR</span></div>
       <div class="menu-item" onclick="openAIChat()"><div class="menu-icon-circle" style="background: #E3F2FD; color: #2196F3;"><span class="material-symbols-rounded">smart_toy</span></div><span class="menu-label">AI Bot</span></div>
       <div class="menu-item" onclick="openMenuPopup('reports')"><div class="menu-icon-circle"><span class="material-symbols-rounded">assessment</span></div><span class="menu-label">Laporan</span></div>
-      <div class="menu-item" onclick="openMenuPopup('sql')"><div class="menu-icon-circle"><span class="material-symbols-rounded">database</span></div><span class="menu-label">SQL RLS</span></div>
+      <div class="menu-item" onclick="openMenuPopup('settings')"><div class="menu-icon-circle" style="background: #FFF3E0; color: #E65100;"><span class="material-symbols-rounded">settings</span></div><span class="menu-label">Pengaturan</span></div>
     </div>
 
     <!-- DASHBOARD GRAFIK REALTIME -->
@@ -206,7 +206,7 @@
 
   </div>
 
-  <!-- POP-UP DIALOG UNTUK SEMUA MENU -->
+  <!-- POP-UP DIALOG MENU -->
   <div class="menu-popup-backdrop" id="menu-popup-modal">
     <div class="menu-popup-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
@@ -214,10 +214,7 @@
         <span class="material-symbols-rounded" onclick="closeMenuPopup()" style="cursor: pointer; color: #E53935;">close</span>
       </div>
 
-      <!-- POP-UP HEADER ACTION (ADMINISTRATOR BUTTON) -->
       <div id="popup-admin-action" style="margin-bottom: 12px; text-align: right;"></div>
-
-      <!-- POP-UP CONTENT DATA BODY -->
       <div id="popup-body-content"></div>
     </div>
   </div>
@@ -401,10 +398,7 @@
       document.getElementById('val-total-asset').innerText = assetCount || 0;
     }
 
-    // =========================================================
-    // POP-UP MENU DIALOG GENERATOR (UNTUK SEMUA MENU GRID)
-    // =========================================================
-
+    // POP-UP MENU POPUP MODALS
     async function openMenuPopup(menuType) {
       const popupModal = document.getElementById("menu-popup-modal");
       const titleEl = document.getElementById("popup-title");
@@ -412,7 +406,7 @@
       const contentEl = document.getElementById("popup-body-content");
 
       popupModal.style.display = "flex";
-      contentEl.innerHTML = `<p style="font-size:0.8rem; text-align:center; color:gray; padding:20px;">Memuat data ${menuType}...</p>`;
+      contentEl.innerHTML = `<p style="font-size:0.8rem; text-align:center; color:gray; padding:20px;">Memuat data...</p>`;
       adminActionEl.innerHTML = "";
 
       if (menuType === 'kantor') {
@@ -489,14 +483,55 @@
           </div>
         `;
       }
-      else if (menuType === 'sql') {
-        titleEl.innerText = "Supabase Database & RLS";
+      else if (menuType === 'settings') {
+        titleEl.innerText = "Pengaturan Sistem (Admin)";
+        
+        // PROTEKSI KHUSUS ADMIN
+        if (currentUserRole !== 'administrator') {
+          contentEl.innerHTML = `<p style="font-size:0.8rem; color:#E53935; text-align:center; padding:20px;">Akses Ditolak. Menu Pengaturan hanya dapat diakses oleh Administrator.</p>`;
+          return;
+        }
+
+        const { data: set } = await supabaseClient.from('settings').select('*').limit(1).single();
+        const s = set || { app_name: 'BBMS', company_name: 'PT. Binayasa Putra Batara', client_name: 'Bank Syariah Nasional (BSN)', support_phone: '021-5550101' };
+
         contentEl.innerHTML = `
-          <div style="background:#121413; color:#00FF66; padding:12px; border-radius:12px; font-size:0.7rem; font-family:monospace;">
-            Connected: https://pykkfcszdihobpwhqinq.supabase.co<br>
-            Tables: offices, assets, utility_bills, maintenances, work_orders, cleanings, archives, profiles
+          <div style="text-align:left;">
+            <label style="font-size:0.7rem; font-weight:700;">NAMA APLIKASI</label>
+            <input id="set-app" class="input-field" value="${s.app_name}">
+
+            <label style="font-size:0.7rem; font-weight:700;">NAMA PERUSAHAAN</label>
+            <input id="set-comp" class="input-field" value="${s.company_name}">
+
+            <label style="font-size:0.7rem; font-weight:700;">NAMA KLIEN / PENGELOLA</label>
+            <input id="set-client" class="input-field" value="${s.client_name}">
+
+            <label style="font-size:0.7rem; font-weight:700;">HOTLINE SUPPORT PHONE</label>
+            <input id="set-phone" class="input-field" value="${s.support_phone}">
+
+            <button onclick="saveSettings()" class="btn-primary" style="margin-top:8px;">Simpan Pengaturan</button>
           </div>
         `;
+      }
+    }
+
+    async function saveSettings() {
+      const appName = document.getElementById("set-app").value;
+      const compName = document.getElementById("set-comp").value;
+      const clientName = document.getElementById("set-client").value;
+      const phone = document.getElementById("set-phone").value;
+
+      Swal.fire({ title: 'Menyimpan Pengaturan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+      const { error } = await supabaseClient.from('settings').upsert([
+        { app_name: appName, company_name: compName, client_name: clientName, support_phone: phone }
+      ]);
+
+      if (error) {
+        Swal.fire('Gagal', error.message, 'error');
+      } else {
+        Swal.fire('Tersimpan', 'Pengaturan sistem berhasil diperbarui.', 'success');
+        closeMenuPopup();
       }
     }
 
@@ -504,7 +539,7 @@
       document.getElementById("menu-popup-modal").style.display = "none";
     }
 
-    // POP-UP RENDER CONTENT HELPERS
+    // POP-UP RENDER CONTENT
     function renderKantorPopupContent(data, el) {
       if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada data kantor.</p>`; return; }
       el.innerHTML = data.map(o => `
@@ -599,7 +634,7 @@
       `).join('');
     }
 
-    // FORM INPUTS MODAL ADMINISTRATOR
+    // ADMIN CRUD FORM MODALS
     async function addOfficeModal() {
       const { value: f } = await Swal.fire({
         title: 'Tambah Kantor BSN',
