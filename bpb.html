@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>BBMS Light - PT Binayasa Putra Batara</title>
+  <title>BBMS - Binayasa Building Management System</title>
 
-  <!-- PWA Manifest Minimalis -->
+  <!-- PWA Manifest & Theme -->
   <link rel="manifest" href="data:application/manifest+json;base64,ewogICJzaG9ydF9uYW1lIjogIkJCTVMiLAogICJuYW1lIjogIkJJTkFZQVNBIEJVSUxESU5HIE1BTkFHRU1FTlQgU1lTVEVNIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwQjhGNEQiLAogICJ0aGVtZV9jb2xvcjogIiMwQjhGNEQiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiCn0=">
   <meta name="theme-color" content="#0B8F4D">
 
-  <!-- Material Symbols & Typography Slim -->
+  <!-- Material Symbols & Typography -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 
-  <!-- Core Light CDNs (Supabase, Chart.js, SweetAlert2, QR Scanner, XLSX) -->
+  <!-- Core CDNs -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -21,9 +21,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
-    /* ========================================================
-       LIGHTWEIGHT & ULTRA-RESPONSIVE MOBILE STYLING
-       ======================================================== */
     :root {
       --primary: #0B8F4D;
       --primary-light: #E8F5E9;
@@ -44,233 +41,43 @@
       --border: #2D3230;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-main); color: var(--text-main); display: flex; justify-content: center; min-height: 100vh; }
 
-    body {
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
-    }
+    .app-container { width: 100%; max-width: 480px; min-height: 100vh; background-color: var(--bg-main); position: relative; padding: 16px 14px 80px 14px; }
+    .user-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .role-badge { font-size: 0.65rem; background: var(--primary-light); color: var(--primary); padding: 2px 6px; border-radius: 8px; font-weight: 700; text-transform: uppercase; }
 
-    .app-container {
-      width: 100%;
-      max-width: 480px;
-      min-height: 100vh;
-      background-color: var(--bg-main);
-      position: relative;
-      padding: 16px 14px 80px 14px;
-    }
-
-    /* Top User Header Lightweight */
-    .user-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: var(--primary-light);
-      color: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-    }
-
-    .role-badge {
-      font-size: 0.65rem;
-      background: var(--primary-light);
-      color: var(--primary);
-      padding: 2px 6px;
-      border-radius: 8px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-
-    /* Section 1: Summary Cards Horizontal Scroll */
-    .summary-scroll {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-      margin-bottom: 20px;
-      scrollbar-width: none;
-    }
+    .summary-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 20px; scrollbar-width: none; }
     .summary-scroll::-webkit-scrollbar { display: none; }
+    .summary-card { min-width: 120px; flex: 1; background: var(--card-bg); border-radius: 16px; padding: 12px 10px; text-align: center; border: 1px solid var(--border); }
+    .summary-card .icon-wrap { width: 32px; height: 32px; margin: 0 auto 6px auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+    .summary-card .val { font-size: 1.1rem; font-weight: 700; }
+    .summary-card .lbl { font-size: 0.7rem; color: var(--text-sub); }
 
-    .summary-card {
-      min-width: 120px;
-      flex: 1;
-      background: var(--card-bg);
-      border-radius: 16px;
-      padding: 12px 10px;
-      text-align: center;
-      border: 1px solid var(--border);
-    }
+    .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 8px; margin-bottom: 20px; }
+    .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+    .menu-item:active { opacity: 0.7; }
+    .menu-icon-circle { width: 58px; height: 58px; border-radius: 50%; background: var(--icon-bg); display: flex; align-items: center; justify-content: center; margin-bottom: 6px; color: var(--primary); border: 1px solid var(--border); }
+    .menu-label { font-size: 0.72rem; font-weight: 600; text-align: center; }
 
-    .summary-card .icon-wrap {
-      width: 32px;
-      height: 32px;
-      margin: 0 auto 6px auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-    }
+    .content-box { background: var(--card-bg); border-radius: 18px; padding: 16px; border: 1px solid var(--border); margin-bottom: 16px; }
+    .page-view { display: none; }
+    .page-view.active { display: block; }
 
-    .summary-card .val {
-      font-size: 1.1rem;
-      font-weight: 700;
-    }
-
-    .summary-card .lbl {
-      font-size: 0.7rem;
-      color: var(--text-sub);
-    }
-
-    /* Section 2: Grid Menu Circle Icons */
-    .menu-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px 8px;
-      margin-bottom: 20px;
-    }
-
-    .menu-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      cursor: pointer;
-    }
-
-    .menu-item:active {
-      opacity: 0.7;
-    }
-
-    .menu-icon-circle {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      background: var(--icon-bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 6px;
-      color: var(--primary);
-      border: 1px solid var(--border);
-    }
-
-    .menu-label {
-      font-size: 0.72rem;
-      font-weight: 600;
-      text-align: center;
-    }
-
-    /* Content Box Views */
-    .content-box {
-      background: var(--card-bg);
-      border-radius: 18px;
-      padding: 16px;
-      border: 1px solid var(--border);
-      margin-bottom: 16px;
-    }
-
-    .page-view {
-      display: none;
-    }
-    .page-view.active {
-      display: block;
-    }
-
-    /* Fast Login Overlay */
-    #login-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: var(--primary);
-      z-index: 10000;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .login-card {
-      background: var(--card-bg);
-      border-radius: 20px;
-      padding: 20px;
-    }
-
-    .btn-primary {
-      width: 100%;
-      padding: 12px;
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-
-    .input-field {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      margin-top: 4px;
-      margin-bottom: 12px;
-      outline: none;
-      font-size: 0.85rem;
-      background: var(--card-bg);
-      color: var(--text-main);
-    }
-
-    /* Fast Archive List */
-    .archive-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px;
-      background: var(--icon-bg);
-      border-radius: 12px;
-      margin-bottom: 8px;
-    }
-
-    .modal-backdrop {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
-      padding: 16px;
-    }
+    #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 10000; display: flex; flex-direction: column; justify-content: center; padding: 20px; }
+    .login-card { background: var(--card-bg); border-radius: 20px; padding: 20px; }
+    .btn-primary { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; }
+    .input-field { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; margin-bottom: 12px; outline: none; font-size: 0.85rem; background: var(--card-bg); color: var(--text-main); }
+    .archive-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: var(--icon-bg); border-radius: 12px; margin-bottom: 8px; }
+    .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; padding: 16px; }
   </style>
 </head>
 <body>
 
-  <!-- ========================================================
-       1. LOGIN OVERLAY
-       ======================================================== -->
+  <!-- LOGIN OVERLAY -->
   <div id="login-overlay">
     <div style="text-align: center; color: white; margin-bottom: 20px;">
       <span class="material-symbols-rounded" style="font-size: 48px;">domain</span>
@@ -301,12 +108,9 @@
     </div>
   </div>
 
-  <!-- ========================================================
-       2. MAIN APP CONTAINER
-       ======================================================== -->
+  <!-- MAIN APP CONTAINER -->
   <div class="app-container">
 
-    <!-- Top Header Bar -->
     <header class="user-header">
       <div class="user-info">
         <div class="avatar" id="avatar-initials">AK</div>
@@ -320,128 +124,50 @@
       </button>
     </header>
 
-    <!-- SECTION 1: TOP SUMMARY STAT CARDS -->
     <div class="summary-scroll">
       <div class="summary-card">
-        <div class="icon-wrap" style="background: #E8F5E9; color: #0B8F4D;">
-          <span class="material-symbols-rounded" style="font-size: 20px;">location_city</span>
-        </div>
-        <div class="val">10</div>
-        <div class="lbl">Kantor BSN</div>
+        <div class="icon-wrap" style="background: #E8F5E9; color: #0B8F4D;"><span class="material-symbols-rounded" style="font-size: 20px;">location_city</span></div>
+        <div class="val">10</div><div class="lbl">Kantor BSN</div>
       </div>
-
       <div class="summary-card">
-        <div class="icon-wrap" style="background: #FFF8E1; color: #D4A017;">
-          <span class="material-symbols-rounded" style="font-size: 20px;">assignment</span>
-        </div>
-        <div class="val">24</div>
-        <div class="lbl">Work Order</div>
+        <div class="icon-wrap" style="background: #FFF8E1; color: #D4A017;"><span class="material-symbols-rounded" style="font-size: 20px;">assignment</span></div>
+        <div class="val">24</div><div class="lbl">Work Order</div>
       </div>
-
       <div class="summary-card">
-        <div class="icon-wrap" style="background: #E3F2FD; color: #2196F3;">
-          <span class="material-symbols-rounded" style="font-size: 20px;">folder_open</span>
-        </div>
-        <div class="val" id="val-total-arsip">128</div>
-        <div class="lbl">File Arsip</div>
+        <div class="icon-wrap" style="background: #E3F2FD; color: #2196F3;"><span class="material-symbols-rounded" style="font-size: 20px;">folder_open</span></div>
+        <div class="val" id="val-total-arsip">128</div><div class="lbl">File Arsip</div>
       </div>
-
       <div class="summary-card">
-        <div class="icon-wrap" style="background: #FFEBEE; color: #E53935;">
-          <span class="material-symbols-rounded" style="font-size: 20px;">warning</span>
-        </div>
-        <div class="val">3</div>
-        <div class="lbl">AC Overdue</div>
+        <div class="icon-wrap" style="background: #FFEBEE; color: #E53935;"><span class="material-symbols-rounded" style="font-size: 20px;">warning</span></div>
+        <div class="val">3</div><div class="lbl">AC Overdue</div>
       </div>
     </div>
 
-    <!-- SECTION 2: GRID FEATURE MENUS -->
+    <!-- GRID MENU -->
     <div class="menu-grid">
-      <div class="menu-item" onclick="showPage('kantor')">
-        <div class="menu-icon-circle"><span class="material-symbols-rounded">domain</span></div>
-        <span class="menu-label">Kantor</span>
-      </div>
-
-      <div class="menu-item" onclick="showPage('asset')">
-        <div class="menu-icon-circle"><span class="material-symbols-rounded">inventory_2</span></div>
-        <span class="menu-label">Asset</span>
-      </div>
-
-      <div class="menu-item" onclick="showPage('utility')">
-        <div class="menu-icon-circle"><span class="material-symbols-rounded">receipt_long</span></div>
-        <span class="menu-label">Utilitas</span>
-      </div>
-
-      <div class="menu-item" onclick="showPage('maintenance')">
-        <div class="menu-icon-circle"><span class="material-symbols-rounded">build</span></div>
-        <span class="menu-label">Perawatan</span>
-      </div>
-
-      <div class="menu-item" onclick="showPage('workorder')">
-        <div class="menu-icon-circle"><span class="material-symbols-rounded">assignment_turned_in</span></div>
-        <span class="menu-label">Work Order</span>
-      </div>
-
-      <div class="menu-item" onclick="showPage('cleaning')">
-        <div class="menu-icon-circle"><span class="material-symbols-rounded">cleaning_services</span></div>
-        <span class="menu-label">Cleaning</span>
-      </div>
-
-      <!-- ARSIP -->
-      <div class="menu-item" onclick="showPage('arsip')">
-        <div class="menu-icon-circle" style="background: #E0F2F1; color: #00897B;">
-          <span class="material-symbols-rounded">folder_zip</span>
-        </div>
-        <span class="menu-label">Arsip</span>
-      </div>
-
-      <div class="menu-item" onclick="showPage('schedule')">
-        <div class="menu-icon-circle"><span class="material-symbols-rounded">calendar_month</span></div>
-        <span class="menu-label">Jadwal</span>
-      </div>
-
-      <div class="menu-item" onclick="openQRScanner()">
-        <div class="menu-icon-circle" style="background: #EDE7F6; color: #673AB7;">
-          <span class="material-symbols-rounded">qr_code_scanner</span>
-        </div>
-        <span class="menu-label">Scan QR</span>
-      </div>
-
-      <div class="menu-item" onclick="openAIChat()">
-        <div class="menu-icon-circle" style="background: #E3F2FD; color: #2196F3;">
-          <span class="material-symbols-rounded">smart_toy</span>
-        </div>
-        <span class="menu-label">AI Bot</span>
-      </div>
-
-      <div class="menu-item" onclick="showPage('reports')">
-        <div class="menu-icon-circle"><span class="material-symbols-rounded">assessment</span></div>
-        <span class="menu-label">Laporan</span>
-      </div>
-
-      <div class="menu-item" onclick="showPage('sql')">
-        <div class="menu-icon-circle"><span class="material-symbols-rounded">database</span></div>
-        <span class="menu-label">SQL RLS</span>
-      </div>
+      <div class="menu-item" onclick="showPage('kantor')"><div class="menu-icon-circle"><span class="material-symbols-rounded">domain</span></div><span class="menu-label">Kantor</span></div>
+      <div class="menu-item" onclick="showPage('asset')"><div class="menu-icon-circle"><span class="material-symbols-rounded">inventory_2</span></div><span class="menu-label">Asset</span></div>
+      <div class="menu-item" onclick="showPage('utility')"><div class="menu-icon-circle"><span class="material-symbols-rounded">receipt_long</span></div><span class="menu-label">Utilitas</span></div>
+      <div class="menu-item" onclick="showPage('maintenance')"><div class="menu-icon-circle"><span class="material-symbols-rounded">build</span></div><span class="menu-label">Perawatan</span></div>
+      <div class="menu-item" onclick="showPage('workorder')"><div class="menu-icon-circle"><span class="material-symbols-rounded">assignment_turned_in</span></div><span class="menu-label">Work Order</span></div>
+      <div class="menu-item" onclick="showPage('cleaning')"><div class="menu-icon-circle"><span class="material-symbols-rounded">cleaning_services</span></div><span class="menu-label">Cleaning</span></div>
+      <div class="menu-item" onclick="showPage('arsip')"><div class="menu-icon-circle" style="background: #E0F2F1; color: #00897B;"><span class="material-symbols-rounded">folder_zip</span></div><span class="menu-label">Arsip</span></div>
+      <div class="menu-item" onclick="showPage('schedule')"><div class="menu-icon-circle"><span class="material-symbols-rounded">calendar_month</span></div><span class="menu-label">Jadwal</span></div>
+      <div class="menu-item" onclick="openQRScanner()"><div class="menu-icon-circle" style="background: #EDE7F6; color: #673AB7;"><span class="material-symbols-rounded">qr_code_scanner</span></div><span class="menu-label">Scan QR</span></div>
+      <div class="menu-item" onclick="openAIChat()"><div class="menu-icon-circle" style="background: #E3F2FD; color: #2196F3;"><span class="material-symbols-rounded">smart_toy</span></div><span class="menu-label">AI Bot</span></div>
+      <div class="menu-item" onclick="showPage('reports')"><div class="menu-icon-circle"><span class="material-symbols-rounded">assessment</span></div><span class="menu-label">Laporan</span></div>
+      <div class="menu-item" onclick="showPage('sql')"><div class="menu-icon-circle"><span class="material-symbols-rounded">database</span></div><span class="menu-label">SQL RLS</span></div>
     </div>
 
-    <!-- ========================================================
-         3. DYNAMIC CONTENT DYNAMIC VIEWS
-         ======================================================== -->
-    
-    <!-- DASHBOARD MAIN GRAPH VIEW -->
+    <!-- VIEWS -->
     <div id="view-dashboard" class="page-view active">
-      <div class="content-box">
-        <h4 style="font-size: 0.85rem; margin-bottom: 10px;">Grafik Perawatan Gedung</h4>
-        <div style="height: 180px;"><canvas id="mainChart"></canvas></div>
-      </div>
+      <div class="content-box"><h4 style="font-size: 0.85rem; margin-bottom: 10px;">Grafik Perawatan Gedung</h4><div style="height: 180px;"><canvas id="mainChart"></canvas></div></div>
     </div>
 
-    <!-- ARSIP VIEW -->
     <div id="view-arsip" class="page-view">
       <div class="content-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h4 style="font-size: 0.9rem;">Penyimpanan Arsip Gedung</h4>
+          <h4 style="font-size: 0.9rem;">Penyimpanan Arsip Supabase</h4>
           <button onclick="openUploadArsipModal()" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Simpan Arsip</button>
         </div>
         <input type="text" id="search-arsip" onkeyup="filterArsip()" placeholder="Cari arsip..." class="input-field" style="margin-bottom: 10px;">
@@ -449,105 +175,33 @@
       </div>
     </div>
 
-    <!-- DATA KANTOR VIEW -->
     <div id="view-kantor" class="page-view">
       <div class="content-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
           <h4 style="font-size: 0.9rem;">Master 10 Kantor BSN</h4>
-          <button onclick="exportExcel('table-kantor', 'Data_Kantor_BSN')" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">Excel</button>
+          <button onclick="fetchOfficesFromSupabase()" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">Load Supabase</button>
         </div>
         <div style="overflow-x: auto;">
           <table id="table-kantor" style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
-            <thead>
-              <tr style="text-align: left; border-bottom: 1px solid var(--border);">
-                <th style="padding: 6px;">Kode</th>
-                <th style="padding: 6px;">Nama Kantor</th>
-                <th style="padding: 6px;">PIC</th>
-              </tr>
-            </thead>
+            <thead><tr style="text-align: left; border-bottom: 1px solid var(--border);"><th style="padding: 6px;">Kode</th><th style="padding: 6px;">Nama Kantor</th><th style="padding: 6px;">PIC</th></tr></thead>
             <tbody id="kantor-rows"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ASSET VIEW -->
-    <div id="view-asset" class="page-view">
-      <div class="content-box">
-        <h4 style="font-size: 0.9rem; margin-bottom: 10px;">Asset Management</h4>
-        <div id="asset-card-list"></div>
-      </div>
-    </div>
-
-    <!-- UTILITY VIEW -->
-    <div id="view-utility" class="page-view">
-      <div class="content-box">
-        <h4 style="font-size: 0.9rem; margin-bottom: 10px;">Tagihan Utilitas Gedung</h4>
-        <div style="padding: 10px; background: var(--icon-bg); border-radius: 10px; font-size: 0.8rem;">
-          <b>PLN Kantor Pusat</b>: Rp 48.500.000 <span style="color: green; font-weight: 700;">(LUNAS)</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- MAINTENANCE & WO VIEW -->
-    <div id="view-maintenance" class="page-view">
-      <div class="content-box">
-        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Perawatan Routine</h4>
-        <p style="font-size: 0.75rem; color: var(--text-sub);">Service AC Precision Server • Hari Ini</p>
-      </div>
-    </div>
-
-    <div id="view-workorder" class="page-view">
-      <div class="content-box">
-        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Work Order Execution</h4>
-        <button onclick="signDigitalWO()" class="btn-primary">Signature TTD Digital</button>
-      </div>
-    </div>
-
-    <div id="view-cleaning" class="page-view">
-      <div class="content-box">
-        <h4 style="font-size: 0.9rem;">General Cleaning Checklist</h4>
-        <p style="font-size: 0.75rem; color: var(--text-sub); margin-top: 4px;">Area: Lobby, Toilet, Kaca, Wallsign.</p>
-      </div>
-    </div>
-
-    <!-- SCHEDULE LIGHT VIEW -->
-    <div id="view-schedule" class="page-view">
-      <div class="content-box">
-        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Kalender Maintenance</h4>
-        <input type="date" class="input-field" value="2026-08-04">
-        <p style="font-size: 0.75rem; color: var(--text-sub);">AC Maintenance Server Room Pusat</p>
-      </div>
-    </div>
-
-    <!-- REPORTS VIEW -->
-    <div id="view-reports" class="page-view">
-      <div class="content-box">
-        <h4 style="font-size: 0.9rem; margin-bottom: 10px;">Laporan & Export</h4>
-        <button onclick="window.print()" class="btn-primary" style="margin-bottom: 8px;">Print / Export PDF</button>
-        <button onclick="exportExcel('table-kantor', 'Laporan_BBMS')" class="btn-primary" style="background: #2E7D32;">Export Excel</button>
-      </div>
-    </div>
-
-    <!-- SQL SUPABASE SCHEMA VIEW -->
-    <div id="view-sql" class="page-view">
-      <div class="content-box">
-        <h4 style="font-size: 0.85rem; margin-bottom: 6px;">Supabase SQL Schema</h4>
-        <pre style="background: #121413; color: #00FF66; padding: 10px; border-radius: 8px; font-size: 0.65rem; overflow-x: auto;">
-CREATE TABLE archives (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL,
-  category TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-ALTER TABLE archives ENABLE ROW LEVEL SECURITY;
-        </pre>
-      </div>
-    </div>
+    <div id="view-asset" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem;">Asset Management</h4><p style="font-size: 0.75rem; color: var(--text-sub); margin-top: 4px;">Terhubung ke tabel Supabase `assets`</p></div></div>
+    <div id="view-utility" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem;">Utilitas Gedung</h4><div style="padding: 10px; background: var(--icon-bg); border-radius: 10px; font-size: 0.8rem;"><b>PLN Kantor Pusat</b>: Rp 48.500.000 (LUNAS)</div></div></div>
+    <div id="view-maintenance" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem;">Perawatan Routine</h4><p style="font-size: 0.75rem; color: var(--text-sub);">AC Precision Server • Overdue 3 Unit</p></div></div>
+    <div id="view-workorder" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 8px;">Work Order Execution</h4><button onclick="Swal.fire('Signature', 'Tanda tangan disetujui', 'success')" class="btn-primary">Signature TTD Digital</button></div></div>
+    <div id="view-cleaning" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem;">General Cleaning</h4><p style="font-size: 0.75rem; color: var(--text-sub);">Checklist: Lobby, Toilet, Kaca, Wallsign.</p></div></div>
+    <div id="view-schedule" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 8px;">Kalender Maintenance</h4><input type="date" class="input-field" value="2026-08-04"></div></div>
+    <div id="view-reports" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 10px;">Laporan & Export</h4><button onclick="window.print()" class="btn-primary">Export PDF / Print</button></div></div>
+    <div id="view-sql" class="page-view"><div class="content-box"><h4 style="font-size: 0.85rem; margin-bottom: 6px;">Supabase Connected</h4><p style="font-size:0.7rem;">https://pykkfcszdihobpwhqinq.supabase.co</p></div></div>
 
   </div>
 
-  <!-- MODAL CAMERA SCANNER -->
+  <!-- MODAL SCANNER -->
   <div class="modal-backdrop" id="qr-modal">
     <div style="background: var(--card-bg); padding: 16px; border-radius: 16px; width: 100%; max-width: 300px; text-align: center;">
       <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Scan QR Asset</h4>
@@ -556,16 +210,13 @@ ALTER TABLE archives ENABLE ROW LEVEL SECURITY;
     </div>
   </div>
 
-  <!-- ========================================================
-       4. LIGHTWEIGHT JAVASCRIPT LOGIC
-       ======================================================== -->
+  <!-- JAVASCRIPT CONNECTED TO SUPABASE -->
   <script>
-    const BBMS_CONFIG = {
-      URL: "https://your-supabase-project.supabase.co",
-      KEY: "YOUR_SUPABASE_ANON_KEY"
-    };
+    // YOUR SUPABASE CONFIGURATION
+    const SUPABASE_URL = "https://pykkfcszdihobpwhqinq.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_OjVJCDPK0vIV7SEErNxoug_tr-ABUug";
 
-    const supabaseClient = supabase.createClient(BBMS_CONFIG.URL, BBMS_CONFIG.KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let archivesData = [
       { title: "Sertifikat Laik Fungsi (SLF) Gedung", cat: "Sertifikat", date: "2026-01-15" },
@@ -573,24 +224,11 @@ ALTER TABLE archives ENABLE ROW LEVEL SECURITY;
       { title: "Garansi Genset Caterpillar 500kVA", cat: "Garansi", date: "2025-11-10" }
     ];
 
-    const officesData = [
-      { code: "BSN-001", name: "BSN Pusat Jakarta", pic: "Ahmad" },
-      { code: "BSN-002", name: "BSN KC Surabaya", pic: "Budi" },
-      { code: "BSN-003", name: "BSN KC Bandung", pic: "Dedi" },
-      { code: "BSN-004", name: "BSN KC Medan", pic: "Rahmat" },
-      { code: "BSN-005", name: "BSN KC Semarang", pic: "Siti" },
-      { code: "BSN-006", name: "BSN KC Makassar", pic: "Andi" },
-      { code: "BSN-007", name: "BSN KC Palembang", pic: "Fajri" },
-      { code: "BSN-008", name: "BSN KC Balikpapan", pic: "Hendra" },
-      { code: "BSN-009", name: "BSN KC Denpasar", pic: "Made" },
-      { code: "BSN-010", name: "BSN KC Yogyakarta", pic: "Eko" }
-    ];
-
     let html5QrCode = null;
 
     document.addEventListener("DOMContentLoaded", () => {
       initLogin();
-      renderKantorTable();
+      fetchOfficesFromSupabase();
       renderArsipList(archivesData);
       initChart();
     });
@@ -605,6 +243,23 @@ ALTER TABLE archives ENABLE ROW LEVEL SECURITY;
     function showPage(pageId) {
       document.querySelectorAll(".page-view").forEach(p => p.classList.remove("active"));
       document.getElementById(`view-${pageId}`).classList.add("active");
+    }
+
+    async function fetchOfficesFromSupabase() {
+      const { data, error } = await supabaseClient.from('offices').select('*');
+      const tbody = document.getElementById("kantor-rows");
+      
+      if (data && data.length > 0) {
+        tbody.innerHTML = data.map(o => `
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 6px;"><b>${o.code}</b></td>
+            <td style="padding: 6px;">${o.name}</td>
+            <td style="padding: 6px;">${o.pic_name || '-'}</td>
+          </tr>
+        `).join('');
+      } else {
+        tbody.innerHTML = `<tr><td colspan="3" style="padding:10px; text-align:center; color:gray;">Jalankan SQL Schema di Supabase Editor dahulu.</td></tr>`;
+      }
     }
 
     function renderArsipList(items) {
@@ -642,16 +297,6 @@ ALTER TABLE archives ENABLE ROW LEVEL SECURITY;
       });
     }
 
-    function renderKantorTable() {
-      document.getElementById("kantor-rows").innerHTML = officesData.map(o => `
-        <tr style="border-bottom: 1px solid var(--border);">
-          <td style="padding: 6px;"><b>${o.code}</b></td>
-          <td style="padding: 6px;">${o.name}</td>
-          <td style="padding: 6px;">${o.pic}</td>
-        </tr>
-      `).join('');
-    }
-
     function initChart() {
       new Chart(document.getElementById('mainChart'), {
         type: 'bar',
@@ -684,13 +329,6 @@ ALTER TABLE archives ENABLE ROW LEVEL SECURITY;
     function openAIChat() {
       Swal.fire({ title: 'AI Assistant', input: 'text', inputPlaceholder: 'Tanyakan sesuatu...', confirmButtonColor: '#0B8F4D' });
     }
-
-    function exportExcel(tableID, filename) {
-      const wb = XLSX.utils.table_to_book(document.getElementById(tableID));
-      XLSX.writeFile(wb, `${filename}.xlsx`);
-    }
-
-    function signDigitalWO() { Swal.fire('Signature', 'Tanda tangan disetujui', 'success'); }
 
     function toggleTheme() {
       const cur = document.documentElement.getAttribute("data-theme");
