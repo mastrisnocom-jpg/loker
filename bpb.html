@@ -76,7 +76,6 @@
     .data-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: var(--icon-bg); border-radius: 12px; margin-bottom: 8px; }
     .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; padding: 16px; }
 
-    /* Admin Action Controls */
     .admin-only { display: none; }
   </style>
 </head>
@@ -140,11 +139,15 @@
   <!-- MAIN APP CONTAINER -->
   <div class="app-container">
 
+    <!-- USER HEADER DENGAN TOMBOL EDIT PROFIL -->
     <header class="user-header">
       <div class="user-info">
         <div class="avatar" id="avatar-initials">--</div>
         <div>
-          <div style="font-size: 0.85rem; font-weight: 700;" id="user-name">Pengguna</div>
+          <div style="font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+            <span id="user-name">Pengguna</span>
+            <span class="material-symbols-rounded" onclick="editProfileModal()" style="font-size: 16px; color: var(--primary); cursor: pointer;" title="Edit Profil">edit</span>
+          </div>
           <span class="role-badge" id="user-role-display">Guest</span>
         </div>
       </div>
@@ -177,7 +180,7 @@
       </div>
     </div>
 
-    <!-- GRID MENU (SEMUA MENU AKTIF) -->
+    <!-- GRID MENU -->
     <div class="menu-grid">
       <div class="menu-item" onclick="showPage('kantor')"><div class="menu-icon-circle"><span class="material-symbols-rounded">domain</span></div><span class="menu-label">Kantor</span></div>
       <div class="menu-item" onclick="showPage('asset')"><div class="menu-icon-circle"><span class="material-symbols-rounded">inventory_2</span></div><span class="menu-label">Asset</span></div>
@@ -194,13 +197,10 @@
     </div>
 
     <!-- PAGE VIEWS -->
-
-    <!-- 1. DASHBOARD -->
     <div id="view-dashboard" class="page-view active">
       <div class="content-box"><h4 style="font-size: 0.85rem; margin-bottom: 10px;">Grafik Perawatan Gedung Realtime</h4><div style="height: 180px;"><canvas id="mainChart"></canvas></div></div>
     </div>
 
-    <!-- 2. MASTER KANTOR VIEW -->
     <div id="view-kantor" class="page-view">
       <div class="content-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -223,7 +223,6 @@
       </div>
     </div>
 
-    <!-- 3. ASSET VIEW -->
     <div id="view-asset" class="page-view">
       <div class="content-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -234,7 +233,6 @@
       </div>
     </div>
 
-    <!-- 4. UTILITY BILLS VIEW -->
     <div id="view-utility" class="page-view">
       <div class="content-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -245,7 +243,6 @@
       </div>
     </div>
 
-    <!-- 5. MAINTENANCE VIEW -->
     <div id="view-maintenance" class="page-view">
       <div class="content-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -256,7 +253,6 @@
       </div>
     </div>
 
-    <!-- 6. WORK ORDER VIEW -->
     <div id="view-workorder" class="page-view">
       <div class="content-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -267,7 +263,6 @@
       </div>
     </div>
 
-    <!-- 7. GENERAL CLEANING VIEW -->
     <div id="view-cleaning" class="page-view">
       <div class="content-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -278,7 +273,6 @@
       </div>
     </div>
 
-    <!-- 8. ARSIP VIEW -->
     <div id="view-arsip" class="page-view">
       <div class="content-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -289,7 +283,6 @@
       </div>
     </div>
 
-    <!-- 9. SCHEDULE VIEW -->
     <div id="view-schedule" class="page-view">
       <div class="content-box">
         <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Jadwal Kegiatan Gedung</h4>
@@ -298,7 +291,6 @@
       </div>
     </div>
 
-    <!-- 10. REPORTS VIEW -->
     <div id="view-reports" class="page-view">
       <div class="content-box">
         <h4 style="font-size: 0.9rem; margin-bottom: 10px;">Laporan Operasional & Export</h4>
@@ -307,7 +299,6 @@
       </div>
     </div>
 
-    <!-- 11. SQL VIEW -->
     <div id="view-sql" class="page-view">
       <div class="content-box">
         <h4 style="font-size: 0.85rem; margin-bottom: 6px;">Supabase Realtime Connected</h4>
@@ -333,6 +324,8 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let html5QrCode = null;
     let currentUserRole = 'guest';
+    let currentUserId = null;
+    let currentProfile = null;
 
     document.addEventListener("DOMContentLoaded", async () => {
       initAuthListeners();
@@ -409,6 +402,7 @@
       
       if (session) {
         document.getElementById("auth-overlay").style.display = "none";
+        currentUserId = session.user.id;
         
         const { data: profile } = await supabaseClient
           .from('profiles')
@@ -417,13 +411,13 @@
           .single();
 
         if (profile) {
+          currentProfile = profile;
           currentUserRole = profile.role;
           document.getElementById("user-name").innerText = profile.full_name;
           document.getElementById("user-role-display").innerText = profile.role.replace('_', ' ');
           document.getElementById("avatar-initials").innerText = profile.full_name.substring(0, 2).toUpperCase();
         }
 
-        // Buka kontrol Admin jika role administrator
         if (currentUserRole === 'administrator') {
           document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'inline-block');
         } else {
@@ -436,55 +430,91 @@
       }
     }
 
+    // FITUR EDIT PROFIL REALTIME
+    async function editProfileModal() {
+      if (!currentUserId || !currentProfile) return;
+
+      const { value: formValues } = await Swal.fire({
+        title: 'Edit Profil Saya',
+        html:
+          `<label style="font-size:0.75rem; font-weight:bold; display:block; text-align:left;">Nama Lengkap</label>` +
+          `<input id="swal-prof-name" class="swal2-input" value="${currentProfile.full_name || ''}" placeholder="Nama Lengkap">` +
+          `<label style="font-size:0.75rem; font-weight:bold; display:block; text-align:left; margin-top:8px;">Nomor HP / WhatsApp</label>` +
+          `<input id="swal-prof-phone" class="swal2-input" value="${currentProfile.phone || ''}" placeholder="08123456789">`,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Simpan Profil',
+        confirmButtonColor: '#0B8F4D',
+        preConfirm: () => [
+          document.getElementById('swal-prof-name').value,
+          document.getElementById('swal-prof-phone').value
+        ]
+      });
+
+      if (formValues && formValues[0]) {
+        Swal.fire({ title: 'Memperbarui Profil...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+        const { data, error } = await supabaseClient
+          .from('profiles')
+          .update({
+            full_name: formValues[0],
+            phone: formValues[1]
+          })
+          .eq('id', currentUserId);
+
+        if (error) {
+          Swal.fire('Gagal Update Profil', error.message, 'error');
+        } else {
+          Swal.fire('Berhasil', 'Profil Anda telah diperbarui', 'success');
+          await checkCurrentSession();
+        }
+      }
+    }
+
     async function logout() {
       await supabaseClient.auth.signOut();
       document.getElementById("auth-overlay").style.display = "flex";
     }
 
     async function loadDatabaseData() {
-      // 1. Fetch Offices
+      // 1. Offices
       const { data: offices, count: officeCount } = await supabaseClient.from('offices').select('*', { count: 'exact' });
       document.getElementById('val-total-kantor').innerText = officeCount || 0;
       renderOfficeRows(offices || []);
 
-      // 2. Fetch Assets
+      // 2. Assets
       const { data: assets, count: assetCount } = await supabaseClient.from('assets').select('*', { count: 'exact' });
       document.getElementById('val-total-asset').innerText = assetCount || 0;
       renderAssetList(assets || []);
 
-      // 3. Fetch Work Orders
+      // 3. Work Orders
       const { data: wos, count: woCount } = await supabaseClient.from('work_orders').select('*', { count: 'exact' });
       document.getElementById('val-total-wo').innerText = woCount || 0;
       renderWOList(wos || []);
 
-      // 4. Fetch Archives
+      // 4. Archives
       const { data: archives, count: archiveCount } = await supabaseClient.from('archives').select('*', { count: 'exact' });
       document.getElementById('val-total-arsip').innerText = archiveCount || 0;
       renderArsipList(archives || []);
 
-      // 5. Fetch Utility Bills
+      // 5. Utility Bills
       const { data: bills } = await supabaseClient.from('utility_bills').select('*');
       renderUtilityList(bills || []);
 
-      // 6. Fetch Maintenances
+      // 6. Maintenances
       const { data: maintenances } = await supabaseClient.from('maintenances').select('*');
       renderMaintenanceList(maintenances || []);
 
-      // 7. Fetch Cleanings
+      // 7. Cleanings
       const { data: cleanings } = await supabaseClient.from('cleanings').select('*');
       renderCleaningList(cleanings || []);
 
-      // Re-apply admin visibility
       if (currentUserRole === 'administrator') {
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'inline-block');
       }
     }
 
-    // ==========================================
-    // ADMINISTRATOR FORM INPUT & CRUD ACTIONS
-    // ==========================================
-
-    // 1. MASTER KANTOR FORM
+    // CRUD ACTIONS ADMINISTRATOR
     async function addOfficeModal() {
       const { value: formValues } = await Swal.fire({
         title: 'Tambah Kantor BSN',
@@ -540,7 +570,6 @@
       }
     }
 
-    // 2. ASSET FORM
     async function addAssetModal() {
       const { value: formValues } = await Swal.fire({
         title: 'Input Asset Gedung',
@@ -593,7 +622,6 @@
       }
     }
 
-    // 3. UTILITY BILLS FORM
     async function addUtilityModal() {
       const { value: formValues } = await Swal.fire({
         title: 'Input Tagihan Utilitas',
@@ -648,7 +676,6 @@
       }
     }
 
-    // 4. MAINTENANCE FORM
     async function addMaintenanceModal() {
       const { value: formValues } = await Swal.fire({
         title: 'Input Perawatan Routine',
@@ -701,7 +728,6 @@
       }
     }
 
-    // 5. WORK ORDER FORM
     async function addWOModal() {
       const { value: formValues } = await Swal.fire({
         title: 'Buat Work Order Baru',
@@ -753,7 +779,6 @@
       }
     }
 
-    // 6. GENERAL CLEANING FORM
     async function addCleaningModal() {
       const { value: formValues } = await Swal.fire({
         title: 'Input General Cleaning',
@@ -806,7 +831,6 @@
       }
     }
 
-    // 7. ARSIP FORM
     function renderArsipList(items) {
       const container = document.getElementById("arsip-list");
       if (items.length === 0) {
@@ -862,7 +886,6 @@
       }
     }
 
-    // GENERAL NAVIGATION & UTILITY FUNCTIONS
     function showPage(pageId) {
       document.querySelectorAll(".page-view").forEach(p => p.classList.remove("active"));
       document.getElementById(`view-${pageId}`).classList.add("active");
