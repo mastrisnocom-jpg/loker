@@ -13,7 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 
-  <!-- Libraries: Chart.js, SweetAlert2, FullCalendar, QR Scanner, XLSX, HTML2PDF, Supabase -->
+  <!-- Libraries: Supabase, Chart.js, SweetAlert2, FullCalendar, QR Scanner, XLSX, HTML2PDF -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -112,7 +112,7 @@
       text-transform: uppercase;
     }
 
-    /* Section 1: Summary Metric Cards (Matching Top Screenshot Row) */
+    /* Section 1: Summary Metric Cards */
     .summary-scroll {
       display: flex;
       gap: 12px;
@@ -160,7 +160,7 @@
       font-weight: 500;
     }
 
-    /* Section 2: Grid Feature Icons (Matching Bottom Screenshot Grid) */
+    /* Section 2: Grid Feature Icons */
     .menu-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -201,7 +201,7 @@
       line-height: 1.15;
     }
 
-    /* Section Container / Modal Drawer Views */
+    /* Section Container Views */
     .content-box {
       background: var(--card-bg);
       border-radius: 24px;
@@ -259,7 +259,32 @@
       font-size: 0.9rem;
     }
 
-    /* Modal Scanner & AI Sheet */
+    /* Item List untuk Arsip & Dokumen */
+    .archive-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: var(--icon-bg);
+      border-radius: 14px;
+      margin-bottom: 10px;
+    }
+
+    .archive-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .archive-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Modal Backdrop */
     .modal-backdrop {
       display: none;
       position: fixed;
@@ -309,7 +334,7 @@
   </div>
 
   <!-- ========================================================
-       2. MAIN APP CONTAINER (UI EXACT MATCHING SCREENSHOT)
+       2. MAIN APP CONTAINER
        ======================================================== -->
   <div class="app-container">
 
@@ -329,10 +354,8 @@
       </div>
     </header>
 
-    <!-- SECTION 1: TOP SUMMARY STAT CARDS (MATCHING TOP ROW SCREENSHOT) -->
+    <!-- SECTION 1: TOP SUMMARY STAT CARDS -->
     <div class="summary-scroll">
-      
-      <!-- Card 1: Total Kantor -->
       <div class="summary-card">
         <div class="icon-wrap" style="background: #E8F5E9; color: #0B8F4D;">
           <span class="material-symbols-rounded">location_city</span>
@@ -341,7 +364,6 @@
         <div class="lbl">Kantor BSN</div>
       </div>
 
-      <!-- Card 2: Work Orders -->
       <div class="summary-card">
         <div class="icon-wrap" style="background: #FFF8E1; color: #D4A017;">
           <span class="material-symbols-rounded">assignment</span>
@@ -350,16 +372,14 @@
         <div class="lbl">Work Order</div>
       </div>
 
-      <!-- Card 3: Tagihan PLN -->
       <div class="summary-card">
         <div class="icon-wrap" style="background: #E3F2FD; color: #2196F3;">
-          <span class="material-symbols-rounded">payments</span>
+          <span class="material-symbols-rounded">folder_open</span>
         </div>
-        <div class="val">Rp 48.5M</div>
-        <div class="lbl">PLN (IDR)</div>
+        <div class="val" id="val-total-arsip">128</div>
+        <div class="lbl">File Arsip</div>
       </div>
 
-      <!-- Card 4: Asset Overdue -->
       <div class="summary-card">
         <div class="icon-wrap" style="background: #FFEBEE; color: #E53935;">
           <span class="material-symbols-rounded">warning</span>
@@ -367,69 +387,54 @@
         <div class="val">3</div>
         <div class="lbl">AC Overdue</div>
       </div>
-
     </div>
 
-    <!-- SECTION 2: GRID FEATURE MENUS (MATCHING BOTTOM CIRCULAR GRID SCREENSHOT) -->
+    <!-- SECTION 2: GRID FEATURE MENUS (TERMASUK ARSIP BARU) -->
     <div class="menu-grid">
       
-      <!-- Item 1: Master Kantor -->
       <div class="menu-item" onclick="showPage('kantor')">
-        <div class="menu-icon-circle">
-          <span class="material-symbols-rounded">domain</span>
-        </div>
+        <div class="menu-icon-circle"><span class="material-symbols-rounded">domain</span></div>
         <span class="menu-label">Kantor</span>
       </div>
 
-      <!-- Item 2: Asset Management -->
       <div class="menu-item" onclick="showPage('asset')">
-        <div class="menu-icon-circle">
-          <span class="material-symbols-rounded">inventory_2</span>
-        </div>
+        <div class="menu-icon-circle"><span class="material-symbols-rounded">inventory_2</span></div>
         <span class="menu-label">Asset</span>
       </div>
 
-      <!-- Item 3: Utility Bills -->
       <div class="menu-item" onclick="showPage('utility')">
-        <div class="menu-icon-circle">
-          <span class="material-symbols-rounded">receipt_long</span>
-        </div>
+        <div class="menu-icon-circle"><span class="material-symbols-rounded">receipt_long</span></div>
         <span class="menu-label">Utilitas</span>
       </div>
 
-      <!-- Item 4: Maintenance -->
       <div class="menu-item" onclick="showPage('maintenance')">
-        <div class="menu-icon-circle">
-          <span class="material-symbols-rounded">build</span>
-        </div>
+        <div class="menu-icon-circle"><span class="material-symbols-rounded">build</span></div>
         <span class="menu-label">Maintenance</span>
       </div>
 
-      <!-- Item 5: Work Order -->
       <div class="menu-item" onclick="showPage('workorder')">
-        <div class="menu-icon-circle">
-          <span class="material-symbols-rounded">assignment_turned_in</span>
-        </div>
+        <div class="menu-icon-circle"><span class="material-symbols-rounded">assignment_turned_in</span></div>
         <span class="menu-label">Work Order</span>
       </div>
 
-      <!-- Item 6: General Cleaning -->
       <div class="menu-item" onclick="showPage('cleaning')">
-        <div class="menu-icon-circle">
-          <span class="material-symbols-rounded">cleaning_services</span>
-        </div>
+        <div class="menu-icon-circle"><span class="material-symbols-rounded">cleaning_services</span></div>
         <span class="menu-label">Gen Clean</span>
       </div>
 
-      <!-- Item 7: Schedule FullCalendar -->
-      <div class="menu-item" onclick="showPage('schedule')">
-        <div class="menu-icon-circle">
-          <span class="material-symbols-rounded">calendar_month</span>
+      <!-- MENU BARU: SIMPAN ARSIP -->
+      <div class="menu-item" onclick="showPage('arsip')">
+        <div class="menu-icon-circle" style="background: #E0F2F1; color: #00897B;">
+          <span class="material-symbols-rounded">folder_zip</span>
         </div>
+        <span class="menu-label">Arsip</span>
+      </div>
+
+      <div class="menu-item" onclick="showPage('schedule')">
+        <div class="menu-icon-circle"><span class="material-symbols-rounded">calendar_month</span></div>
         <span class="menu-label">Jadwal</span>
       </div>
 
-      <!-- Item 8: Scan QR Code -->
       <div class="menu-item" onclick="openQRScanner()">
         <div class="menu-icon-circle" style="background: #EDE7F6; color: #673AB7;">
           <span class="material-symbols-rounded">qr_code_scanner</span>
@@ -437,36 +442,21 @@
         <span class="menu-label">Scan QR</span>
       </div>
 
-      <!-- Item 9: AI Assistant -->
       <div class="menu-item" onclick="openAIChat()">
         <div class="menu-icon-circle" style="background: #E3F2FD; color: #2196F3;">
           <span class="material-symbols-rounded">smart_toy</span>
         </div>
-        <span class="menu-label">AI Assistant</span>
+        <span class="menu-label">AI Bot</span>
       </div>
 
-      <!-- Item 10: Reports & Export -->
       <div class="menu-item" onclick="showPage('reports')">
-        <div class="menu-icon-circle">
-          <span class="material-symbols-rounded">assessment</span>
-        </div>
+        <div class="menu-icon-circle"><span class="material-symbols-rounded">assessment</span></div>
         <span class="menu-label">Laporan</span>
       </div>
 
-      <!-- Item 11: SQL Schema Supabase -->
       <div class="menu-item" onclick="showPage('sql')">
-        <div class="menu-icon-circle">
-          <span class="material-symbols-rounded">database</span>
-        </div>
+        <div class="menu-icon-circle"><span class="material-symbols-rounded">database</span></div>
         <span class="menu-label">SQL RLS</span>
-      </div>
-
-      <!-- Item 12: Logout (Matching screenshot 'Keluar' icon position) -->
-      <div class="menu-item" onclick="logout()">
-        <div class="menu-icon-circle" style="background: #FFEBEE; color: #E53935;">
-          <span class="material-symbols-rounded">logout</span>
-        </div>
-        <span class="menu-label">Keluar</span>
       </div>
 
     </div>
@@ -483,7 +473,27 @@
       </div>
     </div>
 
-    <!-- VIEW 1: DATA KANTOR (MIN. 10 OFFICES BSN) -->
+    <!-- VIEW DEDIKASI BARU: MODUL ARSIP & DOKUMEN -->
+    <div id="view-arsip" class="page-view">
+      <div class="content-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h4 style="font-size: 1rem;">Penyimpanan Arsip Gedung</h4>
+          <button onclick="openUploadArsipModal()" style="background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+            <span class="material-symbols-rounded" style="font-size: 16px;">upload_file</span> Simpan Arsip
+          </button>
+        </div>
+
+        <!-- Filter / Search Arsip -->
+        <input type="text" id="search-arsip" onkeyup="filterArsip()" placeholder="Cari arsip gedung, SLF, kontrak..." class="input-field" style="margin-bottom: 12px;">
+
+        <!-- Daftar File Arsip -->
+        <div id="arsip-list">
+          <!-- Rendered By JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW DATA KANTOR -->
     <div id="view-kantor" class="page-view">
       <div class="content-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
@@ -501,26 +511,21 @@
                 <th style="padding: 8px;">Status</th>
               </tr>
             </thead>
-            <tbody id="kantor-rows">
-              <!-- Rendered by JS -->
-            </tbody>
+            <tbody id="kantor-rows"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- VIEW 2: ASSET MANAGEMENT -->
+    <!-- VIEW ASSET -->
     <div id="view-asset" class="page-view">
       <div class="content-box">
         <h4 style="font-size: 1rem; margin-bottom: 12px;">Asset Management (25 Kategori)</h4>
-        <p style="font-size: 0.8rem; color: var(--text-sub); margin-bottom: 16px;">AC, Genset, Pompa, Panel Listrik, Lift, Escalator, PABX, CCTV, Hydrant, APAR, Server, Router, UPS, dll.</p>
-        <div id="asset-card-list">
-          <!-- Rendered by JS -->
-        </div>
+        <div id="asset-card-list"></div>
       </div>
     </div>
 
-    <!-- VIEW 3: UTILITY BILLS -->
+    <!-- VIEW UTILITY BILLS -->
     <div id="view-utility" class="page-view">
       <div class="content-box">
         <h4 style="font-size: 1rem; margin-bottom: 12px;">Tagihan Utilitas Gedung</h4>
@@ -535,28 +540,17 @@
               <span style="font-size: 0.65rem; background: #E8F5E9; color: green; padding: 2px 6px; border-radius: 4px; font-weight: 700;">LUNAS</span>
             </div>
           </div>
-
-          <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--icon-bg); border-radius: 12px;">
-            <div>
-              <div style="font-weight: 700; font-size: 0.85rem;">PDAM Gedung A</div>
-              <div style="font-size: 0.75rem; color: var(--text-sub);">Agustus 2026 • ID: 00984123</div>
-            </div>
-            <div style="text-align: right;">
-              <div style="font-weight: 800; color: var(--primary);">Rp 12.300.000</div>
-              <span style="font-size: 0.65rem; background: #E8F5E9; color: green; padding: 2px 6px; border-radius: 4px; font-weight: 700;">LUNAS</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>
 
-    <!-- VIEW 4: MAINTENANCE & WORK ORDER -->
+    <!-- VIEW MAINTENANCE & WORK ORDER -->
     <div id="view-maintenance" class="page-view">
       <div class="content-box">
         <h4 style="font-size: 1rem; margin-bottom: 12px;">Perawatan & Maintenance Routine</h4>
-        <div style="padding: 12px; border: 1px solid var(--icon-bg); border-radius: 12px; margin-bottom: 8px;">
+        <div style="padding: 12px; border: 1px solid var(--icon-bg); border-radius: 12px;">
           <div style="font-weight: 700; font-size: 0.85rem;">Service AC Precision Server</div>
-          <div style="font-size: 0.75rem; color: var(--text-sub);">Jadwal: Hari Ini, 10:00 WIB • Teknisi: Ahmad</div>
+          <div style="font-size: 0.75rem; color: var(--text-sub);">Jadwal: Hari Ini • Teknisi: Ahmad</div>
         </div>
       </div>
     </div>
@@ -575,7 +569,7 @@
       </div>
     </div>
 
-    <!-- VIEW 5: FULLCALENDAR SCHEDULE -->
+    <!-- VIEW SCHEDULE -->
     <div id="view-schedule" class="page-view">
       <div class="content-box">
         <h4 style="font-size: 1rem; margin-bottom: 12px;">Kalender Maintenance BBMS</h4>
@@ -583,7 +577,7 @@
       </div>
     </div>
 
-    <!-- VIEW 6: REPORTS & EXPORT -->
+    <!-- VIEW REPORTS -->
     <div id="view-reports" class="page-view">
       <div class="content-box">
         <h4 style="font-size: 1rem; margin-bottom: 12px;">Laporan & Export Document</h4>
@@ -594,34 +588,37 @@
       </div>
     </div>
 
-    <!-- VIEW 7: SQL SUPABASE SCHEMA -->
+    <!-- VIEW SQL SUPABASE SCHEMA TERUPDATE (ADA TABEL ARSIP) -->
     <div id="view-sql" class="page-view">
       <div class="content-box">
-        <h4 style="font-size: 0.95rem; margin-bottom: 8px;">Supabase SQL Schema & RLS</h4>
+        <h4 style="font-size: 0.95rem; margin-bottom: 8px;">Supabase SQL Schema & RLS Arsip</h4>
         <pre style="background: #121413; color: #00FF66; padding: 12px; border-radius: 12px; overflow-x: auto; font-size: 0.7rem; font-family: monospace;">
--- SUPABASE POSTGRESQL RLS BBMS
+-- SUPABASE POSTGRESQL ARCHIVE & DOCUMENTS RLS
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TYPE user_role AS ENUM (
-  'administrator', 'kepala_unit', 'supervisor', 
-  'teknisi', 'cleaning_service', 'vendor'
-);
-
-CREATE TABLE public.profiles (
-    id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
-    full_name TEXT NOT NULL,
-    role user_role DEFAULT 'teknisi'
-);
-
-CREATE TABLE public.offices (
+CREATE TABLE public.archives (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    code VARCHAR(20) UNIQUE NOT NULL,
-    name VARCHAR(150) NOT NULL
+    title VARCHAR(200) NOT NULL,
+    category VARCHAR(100) NOT NULL, -- Kontrak, SLF, Garansi, Utilitas, BAST
+    office_id UUID REFERENCES public.offices(id),
+    file_url TEXT NOT NULL,
+    uploaded_by UUID REFERENCES public.profiles(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Public profiles viewable by auth users" 
-ON public.profiles FOR SELECT USING (auth.role() = 'authenticated');
+-- RLS UNTUK AKSES ARSIP DOKUMEN
+ALTER TABLE public.archives ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "View Archives Authenticated" 
+ON public.archives FOR SELECT USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Manage Archives Admin Supervisor" 
+ON public.archives FOR ALL USING (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE id = auth.uid() AND role IN ('administrator', 'supervisor', 'kepala_unit')
+    )
+);
         </pre>
       </div>
     </div>
@@ -641,7 +638,6 @@ ON public.profiles FOR SELECT USING (auth.role() = 'authenticated');
        4. JAVASCRIPT APPLICATION CONTROLLER
        ======================================================== -->
   <script>
-    // Configuration Setup Supabase
     const BBMS_CONFIG = {
       URL: "https://your-supabase-project.supabase.co",
       KEY: "YOUR_SUPABASE_ANON_KEY"
@@ -649,7 +645,15 @@ ON public.profiles FOR SELECT USING (auth.role() = 'authenticated');
 
     const supabaseClient = supabase.createClient(BBMS_CONFIG.URL, BBMS_CONFIG.KEY);
 
-    // Mock Office Data (Min. 10 Offices BSN)
+    // Mock Arsip Master Data
+    let archivesData = [
+      { title: "Sertifikat Laik Fungsi (SLF) Gedung Pusat", cat: "Sertifikat", date: "2026-01-15", url: "#" },
+      { title: "Kontrak Vendor Maintenance Lift 2026", cat: "Kontrak", date: "2026-02-01", url: "#" },
+      { title: "Garansi Resmi Genset Caterpillar 500kVA", cat: "Garansi", date: "2025-11-10", url: "#" },
+      { title: "Bukti Bayar Tagihan PLN Agustus 2026", cat: "Utilitas", date: "2026-08-02", url: "#" },
+      { title: "Berita Acara Service Major AC Precision", cat: "BAST WO", date: "2026-07-28", url: "#" }
+    ];
+
     const officesData = [
       { code: "BSN-001", name: "BSN Kantor Pusat Jakarta", pic: "Ahmad Subarkah", status: "Active" },
       { code: "BSN-002", name: "BSN KC Surabaya", pic: "Budi Santoso", status: "Active" },
@@ -676,6 +680,7 @@ ON public.profiles FOR SELECT USING (auth.role() = 'authenticated');
       initLogin();
       renderKantorTable();
       renderAssets();
+      renderArsipList(archivesData);
       initChart();
       initCalendar();
     });
@@ -710,7 +715,80 @@ ON public.profiles FOR SELECT USING (auth.role() = 'authenticated');
       document.getElementById(`view-${pageId}`).classList.add("active");
     }
 
-    // Render Tables & Cards
+    // Render Arsip List & Functionalities
+    function renderArsipList(items) {
+      const container = document.getElementById("arsip-list");
+      document.getElementById("val-total-arsip").innerText = items.length;
+      
+      container.innerHTML = items.map(a => `
+        <div class="archive-item">
+          <div class="archive-info">
+            <div class="archive-icon">
+              <span class="material-symbols-rounded">description</span>
+            </div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem;">${a.title}</div>
+              <div style="font-size: 0.72rem; color: var(--text-sub);">${a.cat} • ${a.date}</div>
+            </div>
+          </div>
+          <button onclick="downloadArsip('${a.title}')" style="background: none; border: none; color: var(--primary); cursor: pointer;">
+            <span class="material-symbols-rounded">download</span>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function filterArsip() {
+      const query = document.getElementById("search-arsip").value.toLowerCase();
+      const filtered = archivesData.filter(a => 
+        a.title.toLowerCase().includes(query) || a.cat.toLowerCase().includes(query)
+      );
+      renderArsipList(filtered);
+    }
+
+    function openUploadArsipModal() {
+      Swal.fire({
+        title: 'Simpan Arsip Baru',
+        html: `
+          <input id="swal-title" class="swal2-input" placeholder="Nama Dokumen Arsip">
+          <select id="swal-cat" class="swal2-input">
+            <option value="Kontrak">Kontrak Vendor</option>
+            <option value="Sertifikat">Sertifikat Laik Fungsi (SLF)</option>
+            <option value="Garansi">Garansi Asset</option>
+            <option value="Utilitas">Bukti Bayar Utilitas</option>
+            <option value="BAST WO">BAST / Work Order</option>
+          </select>
+          <input type="file" id="swal-file" class="swal2-input">
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Upload Ke Supabase',
+        confirmButtonColor: '#0B8F4D',
+        preConfirm: () => {
+          return {
+            title: document.getElementById('swal-title').value,
+            cat: document.getElementById('swal-cat').value
+          }
+        }
+      }).then((result) => {
+        if (result.value && result.value.title) {
+          archivesData.unshift({
+            title: result.value.title,
+            cat: result.value.cat,
+            date: new Date().toISOString().split('T')[0],
+            url: "#"
+          });
+          renderArsipList(archivesData);
+          Swal.fire('Berhasil', 'Dokumen Arsip tersimpan aman di Supabase Storage', 'success');
+        }
+      });
+    }
+
+    function downloadArsip(title) {
+      Swal.fire('Unduh Arsip', `Mengunduh file: ${title}`, 'info');
+    }
+
+    // Render Master Data Tables & Cards
     function renderKantorTable() {
       const tbody = document.getElementById("kantor-rows");
       tbody.innerHTML = officesData.map(o => `
@@ -736,7 +814,7 @@ ON public.profiles FOR SELECT USING (auth.role() = 'authenticated');
       `).join('');
     }
 
-    // Chart.js Setup
+    // Chart.js & Calendar Init
     function initChart() {
       new Chart(document.getElementById('mainChart'), {
         type: 'bar',
@@ -751,7 +829,6 @@ ON public.profiles FOR SELECT USING (auth.role() = 'authenticated');
       });
     }
 
-    // FullCalendar Setup
     function initCalendar() {
       const calendarEl = document.getElementById('calendar-element');
       const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -763,7 +840,7 @@ ON public.profiles FOR SELECT USING (auth.role() = 'authenticated');
       calendar.render();
     }
 
-    // QR Code Scanner Camera
+    // QR Code Scanner
     function openQRScanner() {
       document.getElementById("qr-modal").style.display = "flex";
       html5QrCode = new Html5Qrcode("reader");
@@ -790,22 +867,22 @@ ON public.profiles FOR SELECT USING (auth.role() = 'authenticated');
       }
     }
 
-    // AI Assistant Bot
+    // AI Bot Assistant
     function openAIChat() {
       Swal.fire({
         title: 'AI Assistant BBMS',
         input: 'text',
-        inputPlaceholder: 'Ketik: status, jadwal, rekomendasi...',
+        inputPlaceholder: 'Ketik: status, jadwal, arsip...',
         confirmButtonText: 'Tanya AI',
         confirmButtonColor: '#0B8F4D'
       }).then((res) => {
         if(res.value) {
-          Swal.fire('Rekomendasi AI', `Hasil analisis untuk "${res.value}": Seluruh unit AC di Gedung B BSN siap di-service berkala.`, 'info');
+          Swal.fire('Rekomendasi AI', `Hasil analisis untuk "${res.value}": Seluruh dokumen SLF Gedung BSN telah diarsipkan dengan aman.`, 'info');
         }
       });
     }
 
-    // Export Utils
+    // Export Helpers
     function exportExcel(tableID, filename) {
       const table = document.getElementById(tableID);
       const wb = XLSX.utils.table_to_book(table, { sheet: "BBMS_Report" });
@@ -818,7 +895,7 @@ ON public.profiles FOR SELECT USING (auth.role() = 'authenticated');
     }
 
     function signDigitalWO() {
-      Swal.fire('Digital Signature', 'Tanda tangan verifikasi pekerjaan telah tersimpan.', 'success');
+      Swal.fire('Digital Signature', 'Tanda tangan verifikasi pekerjaan tersimpan.', 'success');
     }
 
     function toggleTheme() {
