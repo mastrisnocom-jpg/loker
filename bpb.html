@@ -73,7 +73,6 @@
     .input-field { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; margin-bottom: 12px; outline: none; font-size: 0.85rem; background: var(--card-bg); color: var(--text-main); }
     .data-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: var(--icon-bg); border-radius: 12px; margin-bottom: 8px; text-align: left; }
     
-    /* MODAL DEDIKASI MENU POP-UP */
     .menu-popup-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9998; justify-content: center; align-items: flex-end; }
     .menu-popup-card { background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 20px; max-height: 80vh; overflow-y: auto; box-shadow: 0 -8px 24px rgba(0,0,0,0.2); }
     
@@ -182,7 +181,7 @@
       </div>
     </div>
 
-    <!-- GRID MENU (DENGAN MENU PENGATURAN KHUSUS ADMIN) -->
+    <!-- GRID MENU -->
     <div class="menu-grid">
       <div class="menu-item" onclick="openMenuPopup('kantor')"><div class="menu-icon-circle"><span class="material-symbols-rounded">domain</span></div><span class="menu-label">Kantor</span></div>
       <div class="menu-item" onclick="openMenuPopup('asset')"><div class="menu-icon-circle"><span class="material-symbols-rounded">inventory_2</span></div><span class="menu-label">Asset</span></div>
@@ -322,20 +321,38 @@
         document.getElementById("auth-overlay").style.display = "none";
         currentUserId = session.user.id;
         
+        // Fetch Profile
         const { data: profile } = await supabaseClient
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle();
 
-        if (profile) {
+        const userMeta = session.user.user_metadata || {};
+
+        if (profile && profile.role) {
           currentProfile = profile;
           currentUserRole = profile.role;
-          document.getElementById("user-name").innerText = profile.full_name;
-          document.getElementById("user-role-display").innerText = profile.role.replace('_', ' ');
-          document.getElementById("avatar-initials").innerText = profile.full_name.substring(0, 2).toUpperCase();
+          document.getElementById("user-name").innerText = profile.full_name || session.user.email.split('@')[0];
+        } else if (userMeta.role) {
+          currentUserRole = userMeta.role;
+          document.getElementById("user-name").innerText = userMeta.full_name || session.user.email.split('@')[0];
         } else {
+          if (session.user.email === 'mastrisnocom@gmail.com') {
+            currentUserRole = 'administrator';
+          } else {
+            currentUserRole = 'teknisi';
+          }
           document.getElementById("user-name").innerText = session.user.email.split('@')[0];
+        }
+
+        document.getElementById("user-role-display").innerText = currentUserRole.replace('_', ' ').toUpperCase();
+        document.getElementById("avatar-initials").innerText = document.getElementById("user-name").innerText.substring(0, 2).toUpperCase();
+
+        if (currentUserRole === 'administrator') {
+          document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'inline-block');
+        } else {
+          document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
         }
 
         loadDatabaseSummary();
@@ -345,15 +362,15 @@
     }
 
     async function editProfileModal() {
-      if (!currentUserId || !currentProfile) return;
+      if (!currentUserId) return;
 
       const { value: formValues } = await Swal.fire({
         title: 'Edit Profil Saya',
         html:
           `<label style="font-size:0.75rem; font-weight:bold; display:block; text-align:left;">Nama Lengkap</label>` +
-          `<input id="swal-prof-name" class="swal2-input" value="${currentProfile.full_name || ''}" placeholder="Nama Lengkap">` +
+          `<input id="swal-prof-name" class="swal2-input" value="${document.getElementById("user-name").innerText}" placeholder="Nama Lengkap">` +
           `<label style="font-size:0.75rem; font-weight:bold; display:block; text-align:left; margin-top:8px;">Nomor HP / WhatsApp</label>` +
-          `<input id="swal-prof-phone" class="swal2-input" value="${currentProfile.phone || ''}" placeholder="08123456789">`,
+          `<input id="swal-prof-phone" class="swal2-input" value="${(currentProfile && currentProfile.phone) || ''}" placeholder="08123456789">`,
         focusConfirm: false,
         showCancelButton: true,
         confirmButtonText: 'Simpan Profil',
@@ -367,8 +384,7 @@
       if (formValues && formValues[0]) {
         const { error } = await supabaseClient
           .from('profiles')
-          .update({ full_name: formValues[0], phone: formValues[1] })
-          .eq('id', currentUserId);
+          .upsert({ id: currentUserId, full_name: formValues[0], phone: formValues[1], role: currentUserRole });
 
         if (error) {
           Swal.fire('Gagal Update Profil', error.message, 'error');
@@ -398,7 +414,7 @@
       document.getElementById('val-total-asset').innerText = assetCount || 0;
     }
 
-    // POP-UP MENU POPUP MODALS
+    // POP-UP MENU MODAL CONTROLLER
     async function openMenuPopup(menuType) {
       const popupModal = document.getElementById("menu-popup-modal");
       const titleEl = document.getElementById("popup-title");
@@ -486,7 +502,6 @@
       else if (menuType === 'settings') {
         titleEl.innerText = "Pengaturan Sistem (Admin)";
         
-        // PROTEKSI KHUSUS ADMIN
         if (currentUserRole !== 'administrator') {
           contentEl.innerHTML = `<p style="font-size:0.8rem; color:#E53935; text-align:center; padding:20px;">Akses Ditolak. Menu Pengaturan hanya dapat diakses oleh Administrator.</p>`;
           return;
@@ -539,7 +554,7 @@
       document.getElementById("menu-popup-modal").style.display = "none";
     }
 
-    // POP-UP RENDER CONTENT
+    // POP-UP RENDER CONTENT HELPERS
     function renderKantorPopupContent(data, el) {
       if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada data kantor.</p>`; return; }
       el.innerHTML = data.map(o => `
@@ -548,7 +563,12 @@
             <div style="font-weight:700; font-size:0.8rem;">${o.code} - ${o.name}</div>
             <div style="font-size:0.7rem; color:var(--text-sub);">PIC: ${o.pic_name || '-'} • ${o.address || '-'}</div>
           </div>
-          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteOffice('${o.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
+          ${currentUserRole === 'administrator' ? `
+            <div style="display:flex; gap:6px;">
+              <span class="material-symbols-rounded" onclick="editOfficeModal('${o.id}', '${o.code}', '${o.name}', '${o.pic_name || ''}', '${o.address || ''}')" style="color:#2196F3; font-size:18px; cursor:pointer;">edit</span>
+              <span class="material-symbols-rounded" onclick="deleteOffice('${o.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>
+            </div>
+          ` : ''}
         </div>
       `).join('');
     }
@@ -559,7 +579,7 @@
         <div class="data-item">
           <div>
             <div style="font-weight:700; font-size:0.8rem;">${a.name} (${a.asset_number})</div>
-            <div style="font-size:0.7rem; color:var(--text-sub);">Kategori: ${a.category} • Status: ${a.status}</div>
+            <div style="font-size:0.7rem; color:var(--text-sub);">Kantor: ${a.office_name || '-'} • Kategori: ${a.category} • Status: ${a.status}</div>
           </div>
           ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteAsset('${a.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
         </div>
@@ -653,6 +673,24 @@
       }
     }
 
+    async function editOfficeModal(id, code, name, pic, address) {
+      const { value: f } = await Swal.fire({
+        title: 'Edit Data Kantor BSN',
+        html:
+          `<input id="swal-edit-code" class="swal2-input" value="${code}" placeholder="Kode Kantor">` +
+          `<input id="swal-edit-name" class="swal2-input" value="${name}" placeholder="Nama Kantor">` +
+          `<input id="swal-edit-pic" class="swal2-input" value="${pic}" placeholder="Nama PIC">` +
+          `<input id="swal-edit-addr" class="swal2-input" value="${address}" placeholder="Alamat Lengkap">`,
+        showCancelButton: true, confirmButtonText: 'Update Data', confirmButtonColor: '#0B8F4D',
+        preConfirm: () => [document.getElementById('swal-edit-code').value, document.getElementById('swal-edit-name').value, document.getElementById('swal-edit-pic').value, document.getElementById('swal-edit-addr').value]
+      });
+
+      if (f && f[0] && f[1]) {
+        await supabaseClient.from('offices').update({ code: f[0], name: f[1], pic_name: f[2], address: f[3] }).eq('id', id);
+        openMenuPopup('kantor'); loadDatabaseSummary();
+      }
+    }
+
     async function deleteOffice(id) {
       if (confirm("Hapus kantor ini?")) {
         await supabaseClient.from('offices').delete().eq('id', id);
@@ -661,18 +699,41 @@
     }
 
     async function addAssetModal() {
+      const { data: offices } = await supabaseClient.from('offices').select('id, name');
+      let officeOptionsHTML = '<option value="">-- Pilih Lokasi Kantor BSN --</option>';
+      if (offices && offices.length > 0) {
+        officeOptionsHTML += offices.map(o => `<option value="${o.id}|${o.name}">${o.name}</option>`).join('');
+      }
+
       const { value: f } = await Swal.fire({
         title: 'Input Asset Gedung',
         html:
+          `<select id="swal-office" class="swal2-input">${officeOptionsHTML}</select>` +
           '<input id="swal-num" class="swal2-input" placeholder="No Asset (misal: AST-001)">' +
-          '<input id="swal-astname" class="swal2-input" placeholder="Nama Asset">' +
+          '<input id="swal-astname" class="swal2-input" placeholder="Nama Asset (misal: AC Server)">' +
           '<input id="swal-cat" class="swal2-input" placeholder="Kategori (AC/Genset/Lift)">',
         showCancelButton: true, confirmButtonText: 'Simpan Asset', confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [document.getElementById('swal-num').value, document.getElementById('swal-astname').value, document.getElementById('swal-cat').value]
+        preConfirm: () => [
+          document.getElementById('swal-office').value,
+          document.getElementById('swal-num').value,
+          document.getElementById('swal-astname').value,
+          document.getElementById('swal-cat').value
+        ]
       });
 
-      if (f && f[0] && f[1]) {
-        await supabaseClient.from('assets').insert([{ asset_number: f[0], name: f[1], category: f[2] || 'Umum' }]);
+      if (f && f[1] && f[2]) {
+        let selectedOfficeId = null;
+        let selectedOfficeName = 'Kantor Pusat';
+
+        if (f[0]) {
+          const parts = f[0].split('|');
+          selectedOfficeId = parts[0];
+          selectedOfficeName = parts[1];
+        }
+
+        await supabaseClient.from('assets').insert([
+          { office_id: selectedOfficeId, office_name: selectedOfficeName, asset_number: f[1], name: f[2], category: f[3] || 'Umum' }
+        ]);
         openMenuPopup('asset'); loadDatabaseSummary();
       }
     }
