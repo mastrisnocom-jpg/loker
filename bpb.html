@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Building Management System (BMS)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Building Management System</title>
     
     <!-- CSS Dependencies -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,26 +11,23 @@
     
     <style>
         :root {
-            --primary-color: #198754;
-            --primary-hover: #146c43;
+            --primary: #198754;
             --primary-light: #e8f5e9;
-            --bg-body: #f8f9fa;
-            --bg-card: #ffffff;
-            --text-main: #212529;
-            --text-muted: #6c757d;
-            --border-color: #dee2e6;
-            --sidebar-width: 250px;
-            --topbar-height: 65px;
-            --radius: 10px;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --bg: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-sub: #6b7280;
+            --border: #e5e7eb;
+            --radius: 18px;
+            --shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
 
         [data-theme="dark"] {
-            --bg-body: #121212;
-            --bg-card: #1e1e1e;
-            --text-main: #e0e0e0;
-            --text-muted: #a0a0a0;
-            --border-color: #333333;
+            --bg: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #f3f4f6;
+            --text-sub: #9ca3af;
+            --border: #2e2e2e;
             --primary-light: #1b382b;
         }
 
@@ -38,400 +35,389 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            transition: background-color 0.2s, color 0.2s;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: var(--bg-body);
+            background-color: var(--bg);
             color: var(--text-main);
-            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* MOBILE APP CONTAINER */
+        .app-shell {
+            width: 100%;
+            max-width: 480px; /* Lebar maksimal layaknya Mobile App Screen */
+            background-color: var(--bg);
+            min-height: 100vh;
+            padding: 16px;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
         }
 
         /* LOGIN SCREEN */
         #auth-container {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, var(--primary-color), #0d5233);
-            padding: 20px;
+            min-height: 90vh;
         }
 
         .auth-card {
-            background: var(--bg-card);
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        .auth-card h2 {
-            margin-bottom: 8px;
-            color: var(--primary-color);
-        }
-
-        .auth-card p {
-            color: var(--text-muted);
-            margin-bottom: 24px;
-            font-size: 0.9rem;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            padding: 30px 24px;
             border-radius: var(--radius);
-            background: var(--bg-card);
-            color: var(--text-main);
-            outline: none;
+            width: 100%;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 1px solid var(--border);
         }
 
-        .form-control:focus {
-            border-color: var(--primary-color);
+        .auth-card h2 { color: var(--primary); margin-bottom: 6px; }
+        .auth-card p { color: var(--text-sub); font-size: 0.85rem; margin-bottom: 20px; }
+
+        .form-group { text-align: left; margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; color: var(--text-sub); }
+        .form-control {
+            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 12px;
+            background: var(--card-bg); color: var(--text-main); outline: none; font-size: 0.95rem;
         }
 
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 10px 18px;
-            border: none;
-            border-radius: var(--radius);
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            text-decoration: none;
-            font-size: 0.9rem;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 12px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 0.95rem;
         }
+        .btn-primary { background: var(--primary); color: #fff; width: 100%; }
+        .btn-secondary { background: var(--border); color: var(--text-main); }
+        .btn-icon { width: 36px; height: 36px; border-radius: 50%; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-main); cursor: pointer; }
 
-        .btn-primary { background-color: var(--primary-color); color: #fff; }
-        .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-secondary { background-color: var(--border-color); color: var(--text-main); }
-        .btn-danger { background-color: #dc3545; color: #fff; }
-        .btn-warning { background-color: #ffc107; color: #000; }
-        .btn-info { background-color: #0dcaf0; color: #000; }
-
-        /* APP LAYOUT */
-        #app-container {
-            display: none;
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            width: var(--sidebar-width);
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background: var(--bg-card);
-            border-right: 1px solid var(--border-color);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-brand {
-            height: var(--topbar-height);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 0 20px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 15px 10px;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .sidebar-menu li a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 15px;
-            color: var(--text-main);
-            text-decoration: none;
-            border-radius: var(--radius);
-            margin-bottom: 4px;
-            font-weight: 500;
-            font-size: 0.95rem;
-        }
-
-        .sidebar-menu li a:hover, .sidebar-menu li a.active {
-            background-color: var(--primary-light);
-            color: var(--primary-color);
-        }
-
-        .main-wrapper {
-            margin-left: var(--sidebar-width);
-            width: calc(100% - var(--sidebar-width));
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .topbar {
-            height: var(--topbar-height);
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border-color);
+        /* USER PROFILE HEADER */
+        .profile-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 24px;
-            position: sticky;
-            top: 0;
-            z-index: 90;
+            margin-bottom: 20px;
+            padding-top: 8px;
         }
 
-        .topbar-right {
+        .profile-left {
             display: flex;
             align-items: center;
-            gap: 16px;
-        }
-
-        .theme-toggle {
-            cursor: pointer;
-            font-size: 1.2rem;
-            color: var(--text-main);
-        }
-
-        .content {
-            padding: 24px;
-            flex: 1;
-            padding-bottom: 80px;
-        }
-
-        /* COMPONENTS */
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
             gap: 12px;
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background: var(--bg-card);
-            padding: 20px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .stat-icon {
-            width: 50px;
-            height: 50px;
+        .avatar {
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            background: var(--primary-light);
-            color: var(--primary-color);
+            background: #d1e7dd;
+            color: #0f5132;
+            font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.1rem;
         }
 
-        .stat-info h3 { font-size: 1.5rem; margin-bottom: 2px; }
-        .stat-info p { color: var(--text-muted); font-size: 0.85rem; }
-
-        .card {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            padding: 20px;
-            margin-bottom: 24px;
-        }
-
-        .toolbar {
+        .user-info .email {
+            font-size: 0.9rem;
+            font-weight: 700;
             display: flex;
-            gap: 12px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
             align-items: center;
-        }
-
-        .table-responsive { width: 100%; overflow-x: auto; }
-        .table { width: 100%; border-collapse: collapse; text-align: left; }
-        .table th, .table td { padding: 12px 16px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
-        .table th { background-color: var(--primary-light); color: var(--primary-color); font-weight: 600; }
-
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
-        .badge-success { background: #d1e7dd; color: #0f5132; }
-        .badge-warning { background: #fff3cd; color: #664d03; }
-        .badge-danger { background: #f8d7da; color: #842029; }
-        .badge-info { background: #cff4fc; color: #055160; }
-
-        .img-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-color); }
-
-        /* MOBILE BOTTOM NAV */
-        .bottom-nav {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--bg-card);
-            border-top: 1px solid var(--border-color);
-            z-index: 100;
-            justify-content: space-around;
-            padding: 8px 0;
-        }
-
-        .bottom-nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.75rem;
             gap: 4px;
         }
 
-        .bottom-nav-item.active { color: var(--primary-color); }
+        .user-info .role {
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
 
-        /* MODAL */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* TOP STATS CARDS (3 COLUMN HORIZONTAL) */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .stat-box {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 14px 8px;
+            text-align: center;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin: 0 auto 8px auto;
+            display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            font-size: 0.95rem;
         }
 
-        .modal-content {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            width: 100%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            padding: 24px;
-            position: relative;
+        .stat-box h3 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 2px;
         }
 
-        .modal-header {
+        .stat-box p {
+            font-size: 0.72rem;
+            color: var(--text-sub);
+            font-weight: 500;
+        }
+
+        /* APP GRID MENU (CIRCULAR ICONS) */
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px 10px;
+            margin-bottom: 24px;
+        }
+
+        .grid-item {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
+            text-decoration: none;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        .grid-icon-wrapper {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.04);
+            transition: transform 0.1s;
+        }
+
+        .grid-item:active .grid-icon-wrapper {
+            transform: scale(0.92);
+        }
+
+        .grid-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* CHART CARD */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 18px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
             margin-bottom: 20px;
         }
 
-        .close-modal { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-muted); }
-
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .main-wrapper { margin-left: 0; width: 100%; }
-            .bottom-nav { display: flex; }
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 12px;
         }
+
+        /* PAGE SUB VIEW (OVERLAY DETIL MENU) */
+        .sub-page {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg);
+            z-index: 100;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .sub-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .sub-header h2 { font-size: 1.1rem; flex: 1; }
+
+        /* TABLE VIEW */
+        .table-responsive { width: 100%; overflow-x: auto; }
+        .table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.82rem; }
+        .table th, .table td { padding: 10px; border-bottom: 1px solid var(--border); text-align: left; }
+        .table th { background: var(--primary-light); color: var(--primary); font-weight: 700; }
+
+        /* MODAL */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--card-bg); border-radius: var(--radius); width: 100%; max-width: 400px;
+            max-height: 85vh; overflow-y: auto; padding: 20px; position: relative;
+        }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .close-modal { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-sub); }
     </style>
 </head>
 <body>
 
-    <!-- AUTH SECTION -->
-    <div id="auth-container">
-        <div class="auth-card">
-            <h2><i class="fa-solid fa-building-user"></i> BMS Login</h2>
-            <p>Silakan masuk menggunakan akun Supabase Anda</p>
-            <form id="login-form">
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="login-email" class="form-control" placeholder="admin@bms.com" required>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="login-password" class="form-control" placeholder="******" required>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fa-solid fa-right-to-bracket"></i> Masuk</button>
-            </form>
-        </div>
-    </div>
+    <div class="app-shell">
 
-    <!-- MAIN APP SECTION -->
-    <div id="app-container">
-        <!-- SIDEBAR -->
-        <aside class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fa-solid fa-building-shield"></i> BMS Pro
+        <!-- 1. AUTH SCREEN -->
+        <div id="auth-container">
+            <div class="auth-card">
+                <h2><i class="fa-solid fa-building-circle-check"></i> BMS Mobile</h2>
+                <p>Building Management System Login</p>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="login-email" class="form-control" placeholder="admin@bms.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="login-password" class="form-control" placeholder="******" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Masuk App</button>
+                </form>
             </div>
-            <ul class="sidebar-menu">
-                <li><a href="#" class="nav-link active" data-page="dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
-                <li><a href="#" class="nav-link" data-page="kantor"><i class="fa-solid fa-building"></i> Kantor</a></li>
-                <li><a href="#" class="nav-link" data-page="asset"><i class="fa-solid fa-boxes-stacked"></i> Asset</a></li>
-                <li><a href="#" class="nav-link" data-page="utilitas"><i class="fa-solid fa-bolt"></i> Utilitas</a></li>
-                <li><a href="#" class="nav-link" data-page="workorder"><i class="fa-solid fa-clipboard-list"></i> Work Order</a></li>
-                <li><a href="#" class="nav-link" data-page="perawatan"><i class="fa-solid fa-screwdriver-wrench"></i> Perawatan</a></li>
-                <li><a href="#" class="nav-link" data-page="teknisi"><i class="fa-solid fa-user-gear"></i> Teknisi</a></li>
-                <li><a href="#" class="nav-link" data-page="laporan"><i class="fa-solid fa-file-invoice"></i> Laporan</a></li>
-            </ul>
-        </aside>
-
-        <div class="main-wrapper">
-            <!-- TOPBAR -->
-            <header class="topbar">
-                <h3 id="current-page-title">Dashboard</h3>
-                <div class="topbar-right">
-                    <i class="fa-solid fa-moon theme-toggle" id="theme-toggle" title="Toggle Mode Dark/Light"></i>
-                    <span id="user-email-display" style="font-size: 0.85rem; font-weight: 600;"></span>
-                    <button class="btn btn-secondary" id="btn-logout" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-power-off"></i> Keluar</button>
-                </div>
-            </header>
-
-            <!-- DYNAMIC CONTENT AREA -->
-            <main class="content" id="main-content">
-                <!-- Injected via JavaScript -->
-            </main>
         </div>
 
-        <!-- MOBILE BOTTOM NAV -->
-        <nav class="bottom-nav">
-            <a href="#" class="bottom-nav-item active" data-page="dashboard"><i class="fa-solid fa-chart-line"></i><span>Home</span></a>
-            <a href="#" class="bottom-nav-item" data-page="kantor"><i class="fa-solid fa-building"></i><span>Kantor</span></a>
-            <a href="#" class="bottom-nav-item" data-page="asset"><i class="fa-solid fa-boxes-stacked"></i><span>Asset</span></a>
-            <a href="#" class="bottom-nav-item" data-page="workorder"><i class="fa-solid fa-clipboard-list"></i><span>WO</span></a>
-            <a href="#" class="bottom-nav-item" data-page="perawatan"><i class="fa-solid fa-screwdriver-wrench"></i><span>Maint</span></a>
-        </nav>
+        <!-- 2. MAIN APP DASHBOARD -->
+        <div id="app-dashboard" style="display: none;">
+            
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-left">
+                    <div class="avatar" id="user-avatar">MA</div>
+                    <div class="user-info">
+                        <div class="email" id="user-email">user@bms.com <i class="fa-solid fa-pen-to-square" style="font-size:0.75rem; color:var(--primary);"></i></div>
+                        <div class="role">ADMINISTRATOR</div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon" id="theme-toggle"><i class="fa-solid fa-gear"></i></button>
+                    <button class="btn-icon" id="btn-logout" style="color: #dc3545;"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+                </div>
+            </div>
+
+            <!-- Top Summary Cards -->
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-icon" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-building"></i></div>
+                    <h3 id="stat-kantor">0</h3>
+                    <p>Kantor BSN</p>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-icon" style="background:#fff8e1; color:#ffa000;"><i class="fa-solid fa-clipboard-list"></i></div>
+                    <h3 id="stat-wo">0</h3>
+                    <p>Work Order</p>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-icon" style="background:#e3f2fd; color:#1e88e5;"><i class="fa-solid fa-folder-open"></i></div>
+                    <h3 id="stat-asset">0</h3>
+                    <p>File Arsip</p>
+                </div>
+            </div>
+
+            <!-- App Grid Icons (Circular Nav) -->
+            <div class="app-grid">
+                <div class="grid-item" onclick="openSubPage('kantor')">
+                    <div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-building-user"></i></div>
+                    <span class="grid-label">Kantor</span>
+                </div>
+                <div class="grid-item" onclick="openSubPage('asset')">
+                    <div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-box-archive"></i></div>
+                    <span class="grid-label">Asset</span>
+                </div>
+                <div class="grid-item" onclick="openSubPage('utilitas')">
+                    <div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                    <span class="grid-label">Utilitas</span>
+                </div>
+                <div class="grid-item" onclick="openSubPage('perawatan')">
+                    <div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-wrench"></i></div>
+                    <span class="grid-label">Perawatan</span>
+                </div>
+                <div class="grid-item" onclick="openSubPage('workorder')">
+                    <div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-clipboard-check"></i></div>
+                    <span class="grid-label">Work Order</span>
+                </div>
+                <div class="grid-item" onclick="openSubPage('teknisi')">
+                    <div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-broom"></i></div>
+                    <span class="grid-label">Teknisi</span>
+                </div>
+                <div class="grid-item" onclick="openSubPage('arsip')">
+                    <div class="grid-icon-wrapper" style="background:#e0f2fe; color:#0284c7;"><i class="fa-solid fa-folder-minus"></i></div>
+                    <span class="grid-label">Arsip</span>
+                </div>
+                <div class="grid-item" onclick="openSubPage('jadwal')">
+                    <div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-calendar-days"></i></div>
+                    <span class="grid-label">Jadwal</span>
+                </div>
+                <div class="grid-item" onclick="scanQR()">
+                    <div class="grid-icon-wrapper" style="background:#f3e8ff; color:#9333ea;"><i class="fa-solid fa-qrcode"></i></div>
+                    <span class="grid-label">Scan QR</span>
+                </div>
+                <div class="grid-item" onclick="openSubPage('laporan')">
+                    <div class="grid-icon-wrapper" style="background:#e0f2fe; color:#0284c7;"><i class="fa-solid fa-robot"></i></div>
+                    <span class="grid-label">AI Bot</span>
+                </div>
+                <div class="grid-item" onclick="openSubPage('laporan')">
+                    <div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-chart-simple"></i></div>
+                    <span class="grid-label">Laporan</span>
+                </div>
+                <div class="grid-item" onclick="openSubPage('pengaturan')">
+                    <div class="grid-icon-wrapper" style="background:#fef3c7; color:#d97706;"><i class="fa-solid fa-gear"></i></div>
+                    <span class="grid-label">Pengaturan</span>
+                </div>
+            </div>
+
+            <!-- Chart Realtime Card -->
+            <div class="card">
+                <div class="card-title">Grafik Perawatan Gedung Realtime</div>
+                <canvas id="chartRealtime" style="max-height: 220px;"></canvas>
+            </div>
+        </div>
+
+        <!-- 3. SUB PAGE VIEW (OVERLAY) -->
+        <div id="sub-page-overlay" class="sub-page">
+            <div class="sub-header">
+                <button class="btn-icon" onclick="closeSubPage()"><i class="fa-solid fa-arrow-left"></i></button>
+                <h2 id="sub-page-title">Detail Page</h2>
+                <button class="btn-icon" id="sub-action-btn" style="background:var(--primary); color:#fff; display:none;"><i class="fa-solid fa-plus"></i></button>
+            </div>
+            <div id="sub-page-content"></div>
+        </div>
+
     </div>
 
-    <!-- MODAL CONTAINER -->
+    <!-- MODAL -->
     <div class="modal" id="app-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 id="modal-title">Form Data</h4>
+                <h4 id="modal-title" style="font-size: 0.95rem;">Form Data</h4>
                 <button class="close-modal" id="btn-close-modal">&times;</button>
             </div>
             <div id="modal-body"></div>
@@ -442,85 +428,59 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
-        // ==========================================
-        // 1. KREDENSIAL SUPABASE
-        // ==========================================
+        // --- SUPABASE CONFIG ---
         const SUPABASE_URL = "https://pykkfcszdihobpwhqinq.supabase.co";
         const SUPABASE_ANON_KEY = "Sb_publishable_OjVJCDPK0vIV7SEErNxoug_tr-ABUug";
-        
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // ==========================================
-        // 2. STATE MANAGEMENT
-        // ==========================================
-        let currentPage = 'dashboard';
         let currentUser = null;
 
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
             setupEventListeners();
         });
 
-        // ==========================================
-        // 3. AUTHENTICATION MODULE
-        // ==========================================
         async function checkAuth() {
             const { data: { session } } = await db.auth.getSession();
             if (session) {
                 currentUser = session.user;
                 document.getElementById('auth-container').style.display = 'none';
-                document.getElementById('app-container').style.display = 'flex';
-                document.getElementById('user-email-display').innerText = currentUser.email;
-                renderPage(currentPage);
+                document.getElementById('app-dashboard').style.display = 'block';
+                
+                // Set Header Info
+                const emailStr = currentUser.email;
+                document.getElementById('user-email').innerHTML = `${emailStr} <i class="fa-solid fa-pen-to-square" style="font-size:0.75rem; color:var(--primary);"></i>`;
+                document.getElementById('user-avatar').innerText = emailStr.substring(0, 2).toUpperCase();
+
+                loadDashboardStats();
             } else {
                 document.getElementById('auth-container').style.display = 'flex';
-                document.getElementById('app-container').style.display = 'none';
+                document.getElementById('app-dashboard').style.display = 'none';
             }
         }
 
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-
-            Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading() });
-
-            const { data, error } = await db.auth.signInWithPassword({ email, password });
-
-            if (error) {
-                Swal.fire('Gagal Login', error.message, 'error');
-            } else {
-                Swal.fire('Berhasil', 'Selamat datang!', 'success');
-                checkAuth();
-            }
-        });
-
-        document.getElementById('btn-logout').addEventListener('click', async () => {
-            await db.auth.signOut();
-            checkAuth();
-        });
-
-        // ==========================================
-        // 4. ROUTING & UI SWITCHER
-        // ==========================================
         function setupEventListeners() {
-            document.querySelectorAll('[data-page]').forEach(el => {
-                el.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const page = el.getAttribute('data-page');
-                    
-                    document.querySelectorAll('[data-page]').forEach(item => item.classList.remove('active'));
-                    document.querySelectorAll(`[data-page="${page}"]`).forEach(item => item.classList.add('active'));
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
 
-                    currentPage = page;
-                    document.getElementById('current-page-title').innerText = page.toUpperCase();
-                    renderPage(page);
-                });
+                Swal.fire({ title: 'Proses Login...', didOpen: () => Swal.showLoading() });
+                const { error } = await db.auth.signInWithPassword({ email, password });
+
+                if (error) {
+                    Swal.fire('Gagal', error.message, 'error');
+                } else {
+                    Swal.close();
+                    checkAuth();
+                }
+            });
+
+            document.getElementById('btn-logout').addEventListener('click', async () => {
+                await db.auth.signOut();
+                checkAuth();
             });
 
             document.getElementById('theme-toggle').addEventListener('click', () => {
@@ -531,769 +491,142 @@
                 }
             });
 
-            document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+            document.getElementById('btn-close-modal').addEventListener('click', () => {
+                document.getElementById('app-modal').style.display = 'none';
+            });
         }
 
-        function closeModal() {
-            document.getElementById('app-modal').style.display = 'none';
-        }
-
-        function renderPage(page) {
-            const container = document.getElementById('main-content');
-            container.innerHTML = `<div style="text-align:center; padding: 40px;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p style="margin-top:10px;">Memuat data...</p></div>`;
-
-            switch (page) {
-                case 'dashboard': renderDashboard(container); break;
-                case 'kantor': renderKantor(container); break;
-                case 'asset': renderAsset(container); break;
-                case 'utilitas': renderUtilitas(container); break;
-                case 'workorder': renderWorkOrder(container); break;
-                case 'perawatan': renderPerawatan(container); break;
-                case 'teknisi': renderTeknisi(container); break;
-                case 'laporan': renderLaporan(container); break;
-                default: container.innerHTML = `<h2>Page ${page}</h2><p>Halaman sedang dikembangkan.</p>`;
-            }
-        }
-
-        // ==========================================
-        // 5. MODUL DASHBOARD
-        // ==========================================
-        async function renderDashboard(container) {
+        async function loadDashboardStats() {
             const { count: countKantor } = await db.from('kantor').select('*', { count: 'exact', head: true });
-            const { count: countAsset } = await db.from('asset').select('*', { count: 'exact', head: true });
             const { count: countWO } = await db.from('work_orders').select('*', { count: 'exact', head: true });
-            const { count: countTeknisi } = await db.from('teknisi').select('*', { count: 'exact', head: true });
+            const { count: countAsset } = await db.from('asset').select('*', { count: 'exact', head: true });
 
-            container.innerHTML = `
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fa-solid fa-building"></i></div>
-                        <div class="stat-info"><h3>${countKantor || 0}</h3><p>Total Kantor</p></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
-                        <div class="stat-info"><h3>${countAsset || 0}</h3><p>Total Asset</p></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fa-solid fa-clipboard-list"></i></div>
-                        <div class="stat-info"><h3>${countWO || 0}</h3><p>Work Orders</p></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fa-solid fa-user-gear"></i></div>
-                        <div class="stat-info"><h3>${countTeknisi || 0}</h3><p>Teknisi</p></div>
-                    </div>
-                </div>
+            document.getElementById('stat-kantor').innerText = countKantor || 0;
+            document.getElementById('stat-wo').innerText = countWO || 0;
+            document.getElementById('stat-asset').innerText = countAsset || 0;
 
-                <div class="card">
-                    <h4><i class="fa-solid fa-chart-bar"></i> Statistik Pemakaian Utilitas (Grafik)</h4>
-                    <canvas id="chartUtilitas" style="max-height: 300px; margin-top:15px;"></canvas>
-                </div>
-            `;
+            renderChart();
+        }
 
-            const ctx = document.getElementById('chartUtilitas').getContext('2d');
+        function renderChart() {
+            const ctx = document.getElementById('chartRealtime').getContext('2d');
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei'],
                     datasets: [{
-                        label: 'Biaya Utilitas (Rp)',
-                        data: [1200000, 1900000, 1500000, 2100000, 1800000, 2500000],
-                        backgroundColor: '#198754'
+                        label: 'Maintenance Routine',
+                        data: [12, 19, 15, 17, 22],
+                        backgroundColor: '#198754',
+                        borderRadius: 6
                     }]
                 },
-                options: { responsive: true }
-            });
-        }
-
-        // ==========================================
-        // 6. MODUL KANTOR (CRUD)
-        // ==========================================
-        async function renderKantor(container) {
-            const { data: kantorList } = await db.from('kantor').select('*').order('created_at', { ascending: false });
-
-            container.innerHTML = `
-                <div class="page-header">
-                    <h2>Daftar Kantor / Gedung</h2>
-                    <button class="btn btn-primary" onclick="openFormKantor()"><i class="fa-solid fa-plus"></i> Tambah Kantor</button>
-                </div>
-                <div class="card">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Nama Kantor</th>
-                                    <th>Alamat</th>
-                                    <th>Penanggung Jawab</th>
-                                    <th>Telepon</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${kantorList && kantorList.length > 0 ? kantorList.map(k => `
-                                    <tr>
-                                        <td><b>${k.nama}</b></td>
-                                        <td>${k.alamat}</td>
-                                        <td>${k.penanggung_jawab || '-'}</td>
-                                        <td>${k.telepon || '-'}</td>
-                                        <td>
-                                            <button class="btn btn-info" style="padding:4px 8px;" onclick="viewMap('${k.nama}', ${k.latitude}, ${k.longitude})"><i class="fa-solid fa-map-location-dot"></i></button>
-                                            <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteKantor('${k.id}')"><i class="fa-solid fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                `).join('') : `<tr><td colspan="5" style="text-align:center;">Belum ada data kantor.</td></tr>`}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-        }
-
-        window.openFormKantor = function() {
-            document.getElementById('modal-title').innerText = "Tambah Kantor Baru";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="form-kantor">
-                    <div class="form-group">
-                        <label>Nama Kantor</label>
-                        <input type="text" id="k-nama" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Alamat</label>
-                        <textarea id="k-alamat" class="form-control" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Penanggung Jawab</label>
-                        <input type="text" id="k-pj" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Telepon</label>
-                        <input type="text" id="k-telepon" class="form-control">
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Simpan Kantor</button>
-                </form>
-            `;
-            document.getElementById('app-modal').style.display = 'flex';
-
-            document.getElementById('form-kantor').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const payload = {
-                    nama: document.getElementById('k-nama').value,
-                    alamat: document.getElementById('k-alamat').value,
-                    penanggung_jawab: document.getElementById('k-pj').value,
-                    telepon: document.getElementById('k-telepon').value
-                };
-
-                const { error } = await db.from('kantor').insert([payload]);
-                if (!error) {
-                    Swal.fire('Berhasil', 'Kantor berhasil ditambahkan', 'success');
-                    closeModal();
-                    renderPage('kantor');
-                } else {
-                    Swal.fire('Gagal', error.message, 'error');
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: true, position: 'top' } },
+                    scales: { y: { beginAtZero: true } }
                 }
             });
-        };
+        }
 
-        window.deleteKantor = async function(id) {
-            if (confirm('Yakin ingin menghapus kantor ini?')) {
-                await db.from('kantor').delete().eq('id', id);
-                renderPage('kantor');
-            }
-        };
+        // --- SUB PAGE ROUTER ---
+        async function openSubPage(pageKey) {
+            const overlay = document.getElementById('sub-page-overlay');
+            const titleEl = document.getElementById('sub-page-title');
+            const contentEl = document.getElementById('sub-page-content');
+            const actionBtn = document.getElementById('sub-action-btn');
 
-        window.viewMap = function(nama, lat, lng) {
-            document.getElementById('modal-title').innerText = `Lokasi Kantor: ${nama}`;
-            document.getElementById('modal-body').innerHTML = `
-                <iframe 
-                    width="100%" 
-                    height="300" 
-                    style="border:0; border-radius:8px;" 
-                    src="https://maps.google.com/maps?q=${lat || -6.200000},${lng || 106.816666}&z=15&output=embed">
-                </iframe>
-            `;
-            document.getElementById('app-modal').style.display = 'flex';
-        };
+            titleEl.innerText = pageKey.toUpperCase();
+            contentEl.innerHTML = `<p style="text-align:center; padding:20px; color:var(--text-sub);">Memuat data ${pageKey}...</p>`;
+            actionBtn.style.display = 'none';
+            overlay.style.display = 'block';
 
-        // ==========================================
-        // 7. MODUL ASSET (CRUD & QR CODE)
-        // ==========================================
-        async function renderAsset(container) {
-            const { data: assetList } = await db.from('asset').select('*, kantor(nama)').order('created_at', { ascending: false });
-
-            container.innerHTML = `
-                <div class="page-header">
-                    <h2>Manajemen Asset</h2>
-                    <button class="btn btn-primary" onclick="openFormAsset()"><i class="fa-solid fa-plus"></i> Tambah Asset</button>
-                </div>
-                <div class="card">
+            if (pageKey === 'kantor') {
+                actionBtn.style.display = 'inline-flex';
+                actionBtn.onclick = () => openFormKantor();
+                const { data } = await db.from('kantor').select('*');
+                contentEl.innerHTML = `
                     <div class="table-responsive">
                         <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Kode Asset</th>
-                                    <th>Nama Asset</th>
-                                    <th>Kantor</th>
-                                    <th>Kategori</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>Nama</th><th>Alamat</th></tr></thead>
                             <tbody>
-                                ${assetList && assetList.length > 0 ? assetList.map(a => `
-                                    <tr>
-                                        <td><b>${a.kode_asset}</b></td>
-                                        <td>${a.nama_asset}</td>
-                                        <td>${a.kantor ? a.kantor.nama : '-'}</td>
-                                        <td>${a.kategori}</td>
-                                        <td><span class="badge badge-${a.status === 'Baik' ? 'success' : 'danger'}">${a.status}</span></td>
-                                        <td>
-                                            <button class="btn btn-info" style="padding:4px 8px;" onclick="showQR('${a.kode_asset}')"><i class="fa-solid fa-qrcode"></i></button>
-                                            <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteAsset('${a.id}')"><i class="fa-solid fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                `).join('') : `<tr><td colspan="6" style="text-align:center;">Belum ada data asset.</td></tr>`}
+                                ${data && data.length > 0 ? data.map(k => `<tr><td><b>${k.nama}</b></td><td>${k.alamat}</td></tr>`).join('') : '<tr><td colspan="2">Belum ada data</td></tr>'}
                             </tbody>
                         </table>
                     </div>
-                </div>
-            `;
+                `;
+            } else if (pageKey === 'asset') {
+                actionBtn.style.display = 'inline-flex';
+                actionBtn.onclick = () => openFormAsset();
+                const { data } = await db.from('asset').select('*');
+                contentEl.innerHTML = `
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead><tr><th>Kode</th><th>Nama Asset</th><th>Status</th></tr></thead>
+                            <tbody>
+                                ${data && data.length > 0 ? data.map(a => `<tr><td><b>${a.kode_asset}</b></td><td>${a.nama_asset}</td><td>${a.status}</td></tr>`).join('') : '<tr><td colspan="3">Belum ada data</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } else {
+                contentEl.innerHTML = `<div class="card"><p style="text-align:center; color:var(--text-sub);">Menu ${pageKey} siap digunakan.</p></div>`;
+            }
         }
 
-        window.openFormAsset = async function() {
-            const { data: kantorList } = await db.from('kantor').select('id, nama');
+        function closeSubPage() {
+            document.getElementById('sub-page-overlay').style.display = 'none';
+        }
 
-            document.getElementById('modal-title').innerText = "Tambah Asset Baru";
+        function scanQR() {
+            Swal.fire('Scan QR Code', 'Gunakan kamera smartphone untuk memindai QR Code Asset.', 'info');
+        }
+
+        function openFormKantor() {
+            document.getElementById('modal-title').innerText = "Tambah Kantor";
             document.getElementById('modal-body').innerHTML = `
-                <form id="form-asset">
-                    <div class="form-group">
-                        <label>Kantor</label>
-                        <select id="a-kantor" class="form-control" required>
-                            ${kantorList ? kantorList.map(k => `<option value="${k.id}">${k.nama}</option>`).join('') : ''}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Kode Asset</label>
-                        <input type="text" id="a-kode" class="form-control" value="AST-${Date.now().toString().slice(-5)}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Nama Asset</label>
-                        <input type="text" id="a-nama" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Kategori</label>
-                        <input type="text" id="a-kategori" class="form-control" placeholder="AC, Generator, Lift, dll" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%;">Simpan Asset</button>
+                <form id="f-kantor">
+                    <div class="form-group"><label>Nama Kantor</label><input type="text" id="fk-nama" class="form-control" required></div>
+                    <div class="form-group"><label>Alamat</label><textarea id="fk-alamat" class="form-control" required></textarea></div>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
                 </form>
             `;
             document.getElementById('app-modal').style.display = 'flex';
 
-            document.getElementById('form-asset').addEventListener('submit', async (e) => {
+            document.getElementById('f-kantor').onsubmit = async (e) => {
                 e.preventDefault();
-                const payload = {
-                    kantor_id: document.getElementById('a-kantor').value,
-                    kode_asset: document.getElementById('a-kode').value,
-                    nama_asset: document.getElementById('a-nama').value,
-                    kategori: document.getElementById('a-kategori').value,
+                await db.from('kantor').insert([{ nama: document.getElementById('fk-nama').value, alamat: document.getElementById('fk-alamat').value }]);
+                document.getElementById('app-modal').style.display = 'none';
+                openSubPage('kantor');
+                loadDashboardStats();
+            };
+        }
+
+        function openFormAsset() {
+            document.getElementById('modal-title').innerText = "Tambah Asset";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="f-asset">
+                    <div class="form-group"><label>Kode Asset</label><input type="text" id="fa-kode" class="form-control" value="AST-${Date.now().toString().slice(-4)}" required></div>
+                    <div class="form-group"><label>Nama Asset</label><input type="text" id="fa-nama" class="form-control" required></div>
+                    <div class="form-group"><label>Kategori</label><input type="text" id="fa-kat" class="form-control" required></div>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </form>
+            `;
+            document.getElementById('app-modal').style.display = 'flex';
+
+            document.getElementById('f-asset').onsubmit = async (e) => {
+                e.preventDefault();
+                await db.from('asset').insert([{
+                    kode_asset: document.getElementById('fa-kode').value,
+                    nama_asset: document.getElementById('fa-nama').value,
+                    kategori: document.getElementById('fa-kat').value,
                     status: 'Baik'
-                };
-
-                const { error } = await db.from('asset').insert([payload]);
-                if (!error) {
-                    Swal.fire('Berhasil', 'Asset disimpan', 'success');
-                    closeModal();
-                    renderPage('asset');
-                } else {
-                    Swal.fire('Gagal', error.message, 'error');
-                }
-            });
-        };
-
-        window.deleteAsset = async function(id) {
-            if (confirm('Hapus asset ini?')) {
-                await db.from('asset').delete().eq('id', id);
-                renderPage('asset');
-            }
-        };
-
-        window.showQR = function(kode) {
-            document.getElementById('modal-title').innerText = `QR Code: ${kode}`;
-            document.getElementById('modal-body').innerHTML = `<div id="qrcode" style="display:flex; justify-content:center; padding:20px;"></div>`;
-            document.getElementById('app-modal').style.display = 'flex';
-
-            new QRCode(document.getElementById("qrcode"), { text: kode, width: 180, height: 180 });
-        };
-
-        // ==========================================
-        // 8. MODUL UTILITAS (AIR, LISTRIK, GAS)
-        // ==========================================
-        async function renderUtilitas(container) {
-            const { data: utilitasList } = await db.from('utilitas').select('*, kantor(nama)').order('created_at', { ascending: false });
-
-            container.innerHTML = `
-                <div class="page-header">
-                    <h2>Pencatatan Utilitas Gedung</h2>
-                    <button class="btn btn-primary" onclick="openFormUtilitas()"><i class="fa-solid fa-plus"></i> Catat Utilitas</button>
-                </div>
-                <div class="card">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Kantor</th>
-                                    <th>Jenis</th>
-                                    <th>Pemakaian</th>
-                                    <th>Biaya (Rp)</th>
-                                    <th>Periode</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${utilitasList && utilitasList.length > 0 ? utilitasList.map(u => `
-                                    <tr>
-                                        <td>${u.kantor ? u.kantor.nama : '-'}</td>
-                                        <td><span class="badge badge-info">${u.jenis}</span></td>
-                                        <td>${u.jumlah_pemakaian} ${u.satuan}</td>
-                                        <td><b>Rp ${Number(u.biaya).toLocaleString('id-ID')}</b></td>
-                                        <td>${u.bulan_tahun}</td>
-                                    </tr>
-                                `).join('') : `<tr><td colspan="5" style="text-align:center;">Belum ada catatan utilitas.</td></tr>`}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
+                }]);
+                document.getElementById('app-modal').style.display = 'none';
+                openSubPage('asset');
+                loadDashboardStats();
+            };
         }
-
-        window.openFormUtilitas = async function() {
-            const { data: kantorList } = await db.from('kantor').select('id, nama');
-
-            document.getElementById('modal-title').innerText = "Catat Utilitas Baru";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="form-utilitas">
-                    <div class="form-group">
-                        <label>Kantor</label>
-                        <select id="u-kantor" class="form-control" required>
-                            ${kantorList ? kantorList.map(k => `<option value="${k.id}">${k.nama}</option>`).join('') : ''}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Jenis Utilitas</label>
-                        <select id="u-jenis" class="form-control" required>
-                            <option value="Listrik">Listrik</option>
-                            <option value="Air">Air</option>
-                            <option value="Gas">Gas</option>
-                            <option value="Internet">Internet</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Jumlah Pemakaian</label>
-                        <input type="number" id="u-jumlah" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Satuan (kWh, m3, dll)</label>
-                        <input type="text" id="u-satuan" class="form-control" value="kWh" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Total Biaya (Rp)</label>
-                        <input type="number" id="u-biaya" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Bulan / Tahun</label>
-                        <input type="date" id="u-bulan" class="form-control" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%;">Simpan Utilitas</button>
-                </form>
-            `;
-            document.getElementById('app-modal').style.display = 'flex';
-
-            document.getElementById('form-utilitas').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const payload = {
-                    kantor_id: document.getElementById('u-kantor').value,
-                    jenis: document.getElementById('u-jenis').value,
-                    jumlah_pemakaian: document.getElementById('u-jumlah').value,
-                    satuan: document.getElementById('u-satuan').value,
-                    biaya: document.getElementById('u-biaya').value,
-                    bulan_tahun: document.getElementById('u-bulan').value
-                };
-
-                const { error } = await db.from('utilitas').insert([payload]);
-                if (!error) {
-                    Swal.fire('Berhasil', 'Catatan utilitas tersimpan', 'success');
-                    closeModal();
-                    renderPage('utilitas');
-                } else {
-                    Swal.fire('Gagal', error.message, 'error');
-                }
-            });
-        };
-
-        // ==========================================
-        // 9. MODUL WORK ORDER
-        // ==========================================
-        async function renderWorkOrder(container) {
-            const { data: woList } = await db.from('work_orders').select('*, asset(nama_asset)').order('created_at', { ascending: false });
-
-            container.innerHTML = `
-                <div class="page-header">
-                    <h2>Daftar Work Order (Perbaikan)</h2>
-                    <button class="btn btn-primary" onclick="openFormWO()"><i class="fa-solid fa-plus"></i> Buat Work Order</button>
-                </div>
-                <div class="card">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Judul Perbaikan</th>
-                                    <th>Asset</th>
-                                    <th>Prioritas</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${woList && woList.length > 0 ? woList.map(w => `
-                                    <tr>
-                                        <td><b>${w.judul}</b></td>
-                                        <td>${w.asset ? w.asset.nama_asset : '-'}</td>
-                                        <td><span class="badge badge-warning">${w.prioritas}</span></td>
-                                        <td><span class="badge badge-info">${w.status}</span></td>
-                                        <td>
-                                            <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteWO('${w.id}')"><i class="fa-solid fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                `).join('') : `<tr><td colspan="5" style="text-align:center;">Belum ada Work Order.</td></tr>`}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-        }
-
-        window.openFormWO = async function() {
-            const { data: assetList } = await db.from('asset').select('id, nama_asset');
-
-            document.getElementById('modal-title').innerText = "Buat Work Order";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="form-wo">
-                    <div class="form-group">
-                        <label>Asset</label>
-                        <select id="w-asset" class="form-control" required>
-                            ${assetList ? assetList.map(a => `<option value="${a.id}">${a.nama_asset}</option>`).join('') : ''}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Judul Pekerjaan</label>
-                        <input type="text" id="w-judul" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Deskripsi Masalah</label>
-                        <textarea id="w-deskripsi" class="form-control"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Prioritas</label>
-                        <select id="w-prioritas" class="form-control">
-                            <option value="Rendah">Rendah</option>
-                            <option value="Sedang" selected>Sedang</option>
-                            <option value="Tinggi">Tinggi</option>
-                            <option value="Darurat">Darurat</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%;">Buat WO</button>
-                </form>
-            `;
-            document.getElementById('app-modal').style.display = 'flex';
-
-            document.getElementById('form-wo').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const payload = {
-                    asset_id: document.getElementById('w-asset').value,
-                    judul: document.getElementById('w-judul').value,
-                    deskripsi: document.getElementById('w-deskripsi').value,
-                    prioritas: document.getElementById('w-prioritas').value,
-                    status: 'Pending'
-                };
-
-                const { error } = await db.from('work_orders').insert([payload]);
-                if (!error) {
-                    Swal.fire('Berhasil', 'Work order telah dibuat', 'success');
-                    closeModal();
-                    renderPage('workorder');
-                } else {
-                    Swal.fire('Gagal', error.message, 'error');
-                }
-            });
-        };
-
-        window.deleteWO = async function(id) {
-            if (confirm('Hapus Work Order ini?')) {
-                await db.from('work_orders').delete().eq('id', id);
-                renderPage('workorder');
-            }
-        };
-
-        // ==========================================
-        // 10. MODUL PERAWATAN (WITH BEFORE/AFTER STORAGE)
-        // ==========================================
-        async function renderPerawatan(container) {
-            const { data: mainList } = await db.from('maintenances').select('*, work_orders(judul), teknisi(nama)').order('created_at', { ascending: false });
-
-            container.innerHTML = `
-                <div class="page-header">
-                    <h2>Riwayat Perawatan & Foto Pengerjaan</h2>
-                    <button class="btn btn-primary" onclick="openFormPerawatan()"><i class="fa-solid fa-plus"></i> Catat Perawatan</button>
-                </div>
-                <div class="card">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Work Order</th>
-                                    <th>Teknisi</th>
-                                    <th>Foto Before</th>
-                                    <th>Foto After</th>
-                                    <th>Biaya (Rp)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${mainList && mainList.length > 0 ? mainList.map(m => `
-                                    <tr>
-                                        <td><b>${m.work_orders ? m.work_orders.judul : '-'}</b></td>
-                                        <td>${m.teknisi ? m.teknisi.nama : '-'}</td>
-                                        <td>${m.foto_before ? `<img src="${m.foto_before}" class="img-thumb">` : '-'}</td>
-                                        <td>${m.foto_after ? `<img src="${m.foto_after}" class="img-thumb">` : '-'}</td>
-                                        <td><b>Rp ${Number(m.biaya).toLocaleString('id-ID')}</b></td>
-                                    </tr>
-                                `).join('') : `<tr><td colspan="5" style="text-align:center;">Belum ada catatan pengerjaan.</td></tr>`}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-        }
-
-        window.openFormPerawatan = async function() {
-            const { data: woList } = await db.from('work_orders').select('id, judul');
-            const { data: teknisiList } = await db.from('teknisi').select('id, nama');
-
-            document.getElementById('modal-title').innerText = "Input Hasil Perawatan";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="form-main">
-                    <div class="form-group">
-                        <label>Pilih Work Order</label>
-                        <select id="m-wo" class="form-control" required>
-                            ${woList ? woList.map(w => `<option value="${w.id}">${w.judul}</option>`).join('') : ''}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Teknisi Pelaksana</label>
-                        <select id="m-teknisi" class="form-control" required>
-                            ${teknisiList ? teknisiList.map(t => `<option value="${t.id}">${t.nama}</option>`).join('') : ''}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Foto Before (Sebelum Perbaikan)</label>
-                        <input type="file" id="m-before" class="form-control" accept="image/*">
-                    </div>
-                    <div class="form-group">
-                        <label>Foto After (Setelah Perbaikan)</label>
-                        <input type="file" id="m-after" class="form-control" accept="image/*">
-                    </div>
-                    <div class="form-group">
-                        <label>Biaya Perbaikan (Rp)</label>
-                        <input type="number" id="m-biaya" class="form-control" value="0">
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%;">Simpan Pengerjaan</button>
-                </form>
-            `;
-            document.getElementById('app-modal').style.display = 'flex';
-
-            document.getElementById('form-main').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                Swal.fire({ title: 'Mengunggah Data...', didOpen: () => Swal.showLoading() });
-
-                let beforeUrl = null;
-                let afterUrl = null;
-
-                const fileBefore = document.getElementById('m-before').files[0];
-                const fileAfter = document.getElementById('m-after').files[0];
-
-                // Upload Foto Before
-                if (fileBefore) {
-                    const fileName = `before_${Date.now()}_${fileBefore.name}`;
-                    const { data, error } = await db.storage.from('bms-photos').upload(fileName, fileBefore);
-                    if (!error) {
-                        const { data: publicUrl } = db.storage.from('bms-photos').getPublicUrl(fileName);
-                        beforeUrl = publicUrl.publicUrl;
-                    }
-                }
-
-                // Upload Foto After
-                if (fileAfter) {
-                    const fileName = `after_${Date.now()}_${fileAfter.name}`;
-                    const { data, error } = await db.storage.from('bms-photos').upload(fileName, fileAfter);
-                    if (!error) {
-                        const { data: publicUrl } = db.storage.from('bms-photos').getPublicUrl(fileName);
-                        afterUrl = publicUrl.publicUrl;
-                    }
-                }
-
-                const payload = {
-                    work_order_id: document.getElementById('m-wo').value,
-                    teknisi_id: document.getElementById('m-teknisi').value,
-                    foto_before: beforeUrl,
-                    foto_after: afterUrl,
-                    biaya: document.getElementById('m-biaya').value,
-                    tanggal_selesai: new Date()
-                };
-
-                const { error } = await db.from('maintenances').insert([payload]);
-                if (!error) {
-                    Swal.fire('Berhasil', 'Pengerjaan berhasil disimpan', 'success');
-                    closeModal();
-                    renderPage('perawatan');
-                } else {
-                    Swal.fire('Gagal', error.message, 'error');
-                }
-            });
-        };
-
-        // ==========================================
-        // 11. MODUL TEKNISI (CRUD)
-        // ==========================================
-        async function renderTeknisi(container) {
-            const { data: teknisiList } = await db.from('teknisi').select('*').order('created_at', { ascending: false });
-
-            container.innerHTML = `
-                <div class="page-header">
-                    <h2>Data Personil Teknisi</h2>
-                    <button class="btn btn-primary" onclick="openFormTeknisi()"><i class="fa-solid fa-plus"></i> Tambah Teknisi</button>
-                </div>
-                <div class="card">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Nama Teknisi</th>
-                                    <th>Spesialisasi</th>
-                                    <th>Telepon</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${teknisiList && teknisiList.length > 0 ? teknisiList.map(t => `
-                                    <tr>
-                                        <td><b>${t.nama}</b></td>
-                                        <td>${t.spesialisasi}</td>
-                                        <td>${t.telepon || '-'}</td>
-                                        <td><span class="badge badge-${t.status === 'Tersedia' ? 'success' : 'warning'}">${t.status}</span></td>
-                                        <td>
-                                            <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteTeknisi('${t.id}')"><i class="fa-solid fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                `).join('') : `<tr><td colspan="5" style="text-align:center;">Belum ada teknisi.</td></tr>`}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-        }
-
-        window.openFormTeknisi = function() {
-            document.getElementById('modal-title').innerText = "Tambah Teknisi Baru";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="form-teknisi">
-                    <div class="form-group">
-                        <label>Nama Lengkap</label>
-                        <input type="text" id="t-nama" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Spesialisasi</label>
-                        <input type="text" id="t-spesialisasi" class="form-control" placeholder="Listrik, AC, Plumbing, Lift" required>
-                    </div>
-                    <div class="form-group">
-                        <label>No. Telepon</label>
-                        <input type="text" id="t-telepon" class="form-control">
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%;">Simpan Teknisi</button>
-                </form>
-            `;
-            document.getElementById('app-modal').style.display = 'flex';
-
-            document.getElementById('form-teknisi').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const payload = {
-                    nama: document.getElementById('t-nama').value,
-                    spesialisasi: document.getElementById('t-spesialisasi').value,
-                    telepon: document.getElementById('t-telepon').value,
-                    status: 'Tersedia'
-                };
-
-                const { error } = await db.from('teknisi').insert([payload]);
-                if (!error) {
-                    Swal.fire('Berhasil', 'Teknisi ditambahkan', 'success');
-                    closeModal();
-                    renderPage('teknisi');
-                } else {
-                    Swal.fire('Gagal', error.message, 'error');
-                }
-            });
-        };
-
-        window.deleteTeknisi = async function(id) {
-            if (confirm('Hapus teknisi ini?')) {
-                await db.from('teknisi').delete().eq('id', id);
-                renderPage('teknisi');
-            }
-        };
-
-        // ==========================================
-        // 12. LAPORAN & EKSPOR (EXCEL & PDF)
-        // ==========================================
-        async function renderLaporan(container) {
-            container.innerHTML = `
-                <div class="page-header">
-                    <h2>Ekspor Laporan Sistem</h2>
-                </div>
-                <div class="card">
-                    <h4><i class="fa-solid fa-file-export"></i> Ekspor Data</h4>
-                    <p style="color:var(--text-muted); margin-bottom: 20px;">Unduh rekapitulasi data sistem dalam format Dokumen PDF atau Spreadsheet Excel.</p>
-                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                        <button class="btn btn-primary" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i> Ekspor Data Asset (Excel)</button>
-                        <button class="btn btn-danger" onclick="exportPDF()"><i class="fa-solid fa-file-pdf"></i> Ekspor Data Kantor (PDF)</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        window.exportExcel = async function() {
-            const { data: assets } = await db.from('asset').select('kode_asset, nama_asset, kategori, status');
-            if (!assets || assets.length === 0) return Swal.fire('Peringatan', 'Tidak ada data untuk diekspor', 'warning');
-
-            const worksheet = XLSX.utils.json_to_sheet(assets);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Asset");
-            XLSX.writeFile(workbook, "Laporan_Asset_BMS.xlsx");
-        };
-
-        window.exportPDF = async function() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            const { data: kantorList } = await db.from('kantor').select('nama, alamat, penanggung_jawab');
-            
-            doc.setFontSize(16);
-            doc.text("Laporan Data Kantor & Gedung BMS", 14, 20);
-            
-            doc.setFontSize(10);
-            let y = 35;
-            kantorList.forEach((k, idx) => {
-                doc.text(`${idx + 1}. ${k.nama} - ${k.alamat} (PJ: ${k.penanggung_jawab || '-'})`, 14, y);
-                y += 10;
-            });
-
-            doc.save("Laporan_Kantor_BMS.pdf");
-        };
     </script>
 </body>
 </html>
