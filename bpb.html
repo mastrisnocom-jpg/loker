@@ -91,7 +91,6 @@
         .badge-success { background: #d1e7dd; color: #0f5132; }
         .badge-danger { background: #f8d7da; color: #842029; }
 
-        /* CHECKLIST & SIGNATURE STYLING */
         .checklist-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
         .checklist-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; color: var(--primary); }
         .checklist-desc { font-size: 0.75rem; color: var(--text-sub); margin-bottom: 8px; }
@@ -331,16 +330,18 @@
                 contentEl.innerHTML = `
                     <div class="table-responsive">
                         <table class="table">
-                            <thead><tr><th>Nama</th><th>Alamat</th><th>Peta</th><th>Aksi</th></tr></thead>
+                            <thead><tr><th>Nama</th><th>Alamat</th><th>Aksi</th></tr></thead>
                             <tbody>
                                 ${data && data.length > 0 ? data.map(k => `
                                     <tr>
                                         <td><b>${k.nama}</b></td>
                                         <td>${k.alamat}</td>
-                                        <td><button class="btn btn-secondary" style="padding:4px 8px;" onclick="viewMap('${k.nama}', ${k.latitude}, ${k.longitude})"><i class="fa-solid fa-map"></i></button></td>
-                                        <td><button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('kantor','${k.id}','kantor')"><i class="fa-solid fa-trash"></i></button></td>
+                                        <td>
+                                            <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormKantor('${k.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                            <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('kantor','${k.id}','kantor')"><i class="fa-solid fa-trash"></i></button>
+                                        </td>
                                     </tr>
-                                `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada data kantor</td></tr>'}
+                                `).join('') : '<tr><td colspan="3" style="text-align:center;">Belum ada data kantor</td></tr>'}
                             </tbody>
                         </table>
                     </div>`;
@@ -351,17 +352,19 @@
                 contentEl.innerHTML = `
                     <div class="table-responsive">
                         <table class="table">
-                            <thead><tr><th>Kode</th><th>Nama Asset</th><th>Status</th><th>QR</th><th>Aksi</th></tr></thead>
+                            <thead><tr><th>Kode</th><th>Nama Asset</th><th>Status</th><th>Aksi</th></tr></thead>
                             <tbody>
                                 ${data && data.length > 0 ? data.map(a => `
                                     <tr>
                                         <td><b>${a.kode_asset}</b></td>
                                         <td>${a.nama_asset}</td>
                                         <td><span class="badge badge-${a.status === 'Baik' ? 'success' : 'danger'}">${a.status}</span></td>
-                                        <td><button class="btn btn-secondary" style="padding:4px 8px;" onclick="showQR('${a.kode_asset}')"><i class="fa-solid fa-qrcode"></i></button></td>
-                                        <td><button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('asset','${a.id}','asset')"><i class="fa-solid fa-trash"></i></button></td>
+                                        <td>
+                                            <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormAsset('${a.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                            <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('asset','${a.id}','asset')"><i class="fa-solid fa-trash"></i></button>
+                                        </td>
                                     </tr>
-                                `).join('') : '<tr><td colspan="5" style="text-align:center;">Belum ada data asset</td></tr>'}
+                                `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada data asset</td></tr>'}
                             </tbody>
                         </table>
                     </div>`;
@@ -382,8 +385,8 @@
                                         <td>${atm.periode_minggu}</td>
                                         <td>
                                             <button class="btn btn-info" style="padding:4px 8px;" onclick="viewDetailATM('${atm.id}', '${atm.kantor ? atm.kantor.nama : ''}', '${atm.periode_minggu}')"><i class="fa-solid fa-eye"></i></button>
+                                            <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormPemeriksaanATM('${atm.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
                                             <button class="btn btn-primary" style="padding:4px 8px;" onclick="exportATMPDF('${atm.id}')"><i class="fa-solid fa-file-pdf"></i></button>
-                                            <button class="btn btn-warning" style="padding:4px 8px;" onclick="exportATMExcel('${atm.id}')"><i class="fa-solid fa-file-excel"></i></button>
                                             <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('pemeriksaan_atm','${atm.id}','pemeriksaan_atm')"><i class="fa-solid fa-trash"></i></button>
                                         </td>
                                     </tr>
@@ -469,15 +472,6 @@
                             </tbody>
                         </table>
                     </div>`;
-            } else if (pageKey === 'jadwal') {
-                contentEl.innerHTML = `
-                    <div class="card">
-                        <div class="card-title"><i class="fa-solid fa-calendar-check"></i> Kalender Pemeliharaan</div>
-                        <ul style="margin-top:10px; font-size:0.85rem; padding-left:20px; line-height:1.6;">
-                            <li><b>28 Aug:</b> Routine Maintenance Service Lift Utama</li>
-                            <li><b>30 Aug:</b> Pemeliharaan Sistem AC Gedung B</li>
-                        </ul>
-                    </div>`;
             } else if (pageKey === 'laporan') {
                 contentEl.innerHTML = `
                     <div class="card">
@@ -489,7 +483,6 @@
                 contentEl.innerHTML = `
                     <div class="card">
                         <div class="card-title"><i class="fa-solid fa-sliders"></i> Pengaturan Aplikasi</div>
-                        <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom:12px;">Database Supabase RLS & Storage terkonfigurasi aktif.</p>
                         <button class="btn btn-secondary" onclick="document.body.toggleAttribute('data-theme','dark')" style="width:100%;">Ganti Tema (Dark/Light)</button>
                     </div>`;
             }
@@ -500,7 +493,7 @@
         }
 
         // ==========================================
-        // FITUR EXPORT PDF & EXCEL DENGAN TANDA TANGAN
+        // EXPORT PDF DENGAN TANDA CENTANG (✔️)
         // ==========================================
         async function exportATMPDF(id) {
             Swal.fire({ title: 'Mencetak PDF Laporan ATM...', didOpen: () => Swal.showLoading() });
@@ -508,14 +501,11 @@
             const { data: header } = await db.from('pemeriksaan_atm').select('*, kantor(nama, alamat)').eq('id', id).single();
             const { data: details } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id).order('no_kriteria', {ascending:true});
 
-            if (!header || !details) {
-                return Swal.fire('Error', 'Gagal mengambil data laporan ATM', 'error');
-            }
+            if (!header || !details) return Swal.fire('Error', 'Gagal mengambil data laporan ATM', 'error');
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
 
-            // 1. HEADER JUDUL SURAT
             doc.setFont('Helvetica', 'bold');
             doc.setFontSize(11);
             doc.text("LAPORAN PEMERIKSAAN ATM MINGGUAN", 105, 15, { align: 'center' });
@@ -523,21 +513,19 @@
             doc.setFontSize(8.5);
             doc.text("Pemeriksaan Rutin Fasilitas & Mesin ATM (Onsite & Offsite)", 105, 20, { align: 'center' });
 
-            // 2. ATRIBUT UNIT / KCP
             doc.setFontSize(8);
             doc.text(`UNIT                  : ${header.kantor ? header.kantor.nama : '-'}`, 14, 28);
-            doc.text(`Kategori ATM  : [ ${header.kategori_atm === 'Onsite' ? 'X' : ' '} ] Onsite   [ ${header.kategori_atm === 'Offsite' ? 'X' : ' '} ] Offsite`, 110, 28);
+            doc.text(`Kategori ATM  : [ ${header.kategori_atm === 'Onsite' ? '✔️' : ' '} ] Onsite   [ ${header.kategori_atm === 'Offsite' ? '✔️' : ' '} ] Offsite`, 110, 28);
 
             doc.text(`Lokasi / KCP     : ${header.kantor ? header.kantor.alamat : '-'}`, 14, 33);
             doc.text(`Periode Minggu : ${header.periode_minggu}`, 110, 33);
-
             doc.text(`Tanggal Cek       : ${header.tanggal_pemeriksaan}`, 14, 38);
 
-            // 3. TABEL KRITERIA
+            // TABEL DENGAN TANDA CENTANG (✔️)
             const tableBody = details.map(d => [
                 d.no_kriteria,
                 d.kriteria_nama,
-                d.kondisi === 'BAIK' ? '[ X ] BAIK   [   ] TIDAK BAIK' : '[   ] BAIK   [ X ] TIDAK BAIK',
+                d.kondisi === 'BAIK' ? '[ ✔️ ] BAIK   [   ] TIDAK BAIK' : '[   ] BAIK   [ ✔️ ] TIDAK BAIK',
                 d.keterangan || '-'
             ]);
 
@@ -548,15 +536,9 @@
                 theme: 'grid',
                 styles: { fontSize: 7, cellPadding: 2 },
                 headStyles: { fillColor: [232, 245, 233], textColor: [25, 135, 84], fontStyle: 'bold' },
-                columnStyles: {
-                    0: { cellWidth: 8, halign: 'center' },
-                    1: { cellWidth: 85 },
-                    2: { cellWidth: 45 },
-                    3: { cellWidth: 44 }
-                }
+                columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 1: { cellWidth: 85 }, 2: { cellWidth: 45 }, 3: { cellWidth: 44 } }
             });
 
-            // 4. LAMPIRAN TANDA TANGAN DI BAGIAN BAWAH
             let finalY = doc.lastAutoTable.finalY + 10;
             if (finalY > 230) { doc.addPage(); finalY = 20; }
 
@@ -564,7 +546,6 @@
             doc.setFontSize(8.5);
             doc.text("LAMPIRAN PEMBERSIHAN & TANDA TANGAN", 14, finalY);
 
-            // Kotak Tanda Tangan
             doc.autoTable({
                 startY: finalY + 4,
                 head: [['Petugas Pemeriksa', 'Supervisor / Penanggung Jawab']],
@@ -572,17 +553,11 @@
                 theme: 'grid',
                 styles: { fontSize: 8, halign: 'center', cellPadding: 4 },
                 headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' },
-                columnStyles: {
-                    0: { cellWidth: 91 },
-                    1: { cellWidth: 91 }
-                }
+                columnStyles: { 0: { cellWidth: 91 }, 1: { cellWidth: 91 } }
             });
 
-            // Embed Digital Signature jika ada
             if (header.tanda_tangan_petugas) {
-                try {
-                    doc.addImage(header.tanda_tangan_petugas, 'PNG', 35, finalY + 12, 35, 18);
-                } catch (e) { console.log('TTD Error', e); }
+                try { doc.addImage(header.tanda_tangan_petugas, 'PNG', 35, finalY + 12, 35, 18); } catch (e) {}
             }
 
             Swal.close();
@@ -591,13 +566,10 @@
 
         async function exportATMExcel(id) {
             Swal.fire({ title: 'Menyiapkan Excel Laporan ATM...', didOpen: () => Swal.showLoading() });
-
             const { data: header } = await db.from('pemeriksaan_atm').select('*, kantor(nama, alamat)').eq('id', id).single();
             const { data: details } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id).order('no_kriteria', {ascending:true});
 
-            if (!header || !details) {
-                return Swal.fire('Error', 'Gagal mengambil data laporan ATM', 'error');
-            }
+            if (!header || !details) return Swal.fire('Error', 'Gagal mengambil data laporan ATM', 'error');
 
             const excelRows = [
                 ["LAPORAN PEMERIKSAAN ATM MINGGUAN"],
@@ -611,13 +583,7 @@
             ];
 
             details.forEach(d => {
-                excelRows.push([
-                    d.no_kriteria,
-                    d.kriteria_nama,
-                    d.kondisi,
-                    d.keterangan || '-',
-                    d.foto_bukti || '-'
-                ]);
+                excelRows.push([d.no_kriteria, d.kriteria_nama, d.kondisi === 'BAIK' ? '✔️ BAIK' : '✔️ TIDAK BAIK', d.keterangan || '-', d.foto_bukti || '-']);
             });
 
             excelRows.push([]);
@@ -632,7 +598,7 @@
             XLSX.writeFile(workbook, `Laporan_ATM_${header.kantor ? header.kantor.nama : 'Unit'}_${Date.now()}.xlsx`);
         }
 
-        // --- MANAGEMEN KRITERIA ATM ---
+        // MANAGEMENT KRITERIA & UTILS
         async function openManageKriteria() {
             Swal.fire({ title: 'Memuat kriteria...', didOpen: () => Swal.showLoading() });
             const { data: listKriteria } = await db.from('kriteria_atm').select('*').order('no_kriteria', {ascending:true});
@@ -662,38 +628,17 @@
             document.getElementById('modal-title').innerText = "Tambah Kriteria Baru";
             document.getElementById('modal-body').innerHTML = `
                 <form id="f-add-kriteria">
-                    <div class="form-group">
-                        <label>No. Kriteria</label>
-                        <input type="number" id="fk-no" class="form-control" value="${nextNo}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Judul Kriteria</label>
-                        <input type="text" id="fk-title" class="form-control" placeholder="Contoh: Kebersihan Neon Box" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Deskripsi / Petunjuk</label>
-                        <textarea id="fk-desc" class="form-control" placeholder="Contoh: Neon box menyala terang dan tidak kotor"></textarea>
-                    </div>
+                    <div class="form-group"><label>No. Kriteria</label><input type="number" id="fk-no" class="form-control" value="${nextNo}" required></div>
+                    <div class="form-group"><label>Judul Kriteria</label><input type="text" id="fk-title" class="form-control" placeholder="Kebersihan Neon Box" required></div>
+                    <div class="form-group"><label>Deskripsi</label><textarea id="fk-desc" class="form-control" placeholder="Neon box menyala terang"></textarea></div>
                     <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Simpan Kriteria</button>
-                </form>
-            `;
+                </form>`;
 
             document.getElementById('f-add-kriteria').onsubmit = async (e) => {
                 e.preventDefault();
                 Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-
-                const { error } = await db.from('kriteria_atm').insert([{
-                    no_kriteria: document.getElementById('fk-no').value,
-                    title: document.getElementById('fk-title').value,
-                    deskripsi: document.getElementById('fk-desc').value
-                }]);
-
-                if (error) {
-                    Swal.fire('Gagal', error.message, 'error');
-                } else {
-                    Swal.fire('Berhasil', 'Kriteria baru berhasil ditambahkan', 'success');
-                    openManageKriteria();
-                }
+                await db.from('kriteria_atm').insert([{ no_kriteria: document.getElementById('fk-no').value, title: document.getElementById('fk-title').value, deskripsi: document.getElementById('fk-desc').value }]);
+                openManageKriteria();
             };
         }
 
@@ -704,14 +649,11 @@
             }
         }
 
-        // VIEW DETAIL ATM
         async function viewDetailATM(id, lokasi, periode) {
             Swal.fire({ title: 'Memuat detail...', didOpen: () => Swal.showLoading() });
             const { data: header } = await db.from('pemeriksaan_atm').select('*').eq('id', id).single();
-            const { data, error } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id).order('no_kriteria', {ascending:true});
+            const { data } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id).order('no_kriteria', {ascending:true});
             Swal.close();
-
-            if (error || !data) return Swal.fire('Error', 'Gagal memuat detail hasil pemeriksaan.', 'error');
 
             document.getElementById('modal-title').innerText = `Detail: ${lokasi} (${periode})`;
             document.getElementById('modal-body').innerHTML = `
@@ -737,127 +679,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
+                </div>`;
             document.getElementById('app-modal').style.display = 'flex';
         }
 
-        // FORM CEK ATM DENGAN CANVAS TANDA TANGAN PADA BAGIAN BAWAH
-        function openFormPemeriksaanATM() {
-            Promise.all([
-                db.from('kantor').select('id, nama'),
-                db.from('kriteria_atm').select('*').order('no_kriteria', {ascending:true})
-            ]).then(([kantorRes, kriteriaRes]) => {
-                const kantorList = kantorRes.data;
-                const kriteriaList = kriteriaRes.data;
-
-                if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Silakan tambah Data Kantor/KCP terlebih dahulu!', 'warning');
-                if (!kriteriaList || kriteriaList.length === 0) return Swal.fire('Peringatan', 'Kriteria pemeriksaan belum diset oleh Administrator!', 'warning');
-
-                document.getElementById('modal-title').innerText = "Laporan Pemeriksaan ATM";
-                document.getElementById('modal-body').innerHTML = `
-                    <form id="f-atm">
-                        <div class="form-group">
-                            <label>Lokasi / KCP</label>
-                            <select id="fa-kantor" class="form-control" required>${kantorList.map(k=>`<option value="${k.id}">${k.nama}</option>`).join('')}</select>
-                        </div>
-                        <div class="form-group">
-                            <label>Kategori ATM</label>
-                            <select id="fa-kat" class="form-control"><option value="Onsite">Onsite</option><option value="Offsite">Offsite</option></select>
-                        </div>
-                        <div class="form-group">
-                            <label>Periode Minggu</label>
-                            <input type="text" id="fa-periode" class="form-control" placeholder="Minggu 1 Agustus" required>
-                        </div>
-
-                        <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
-                        <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 10px;">KRITERIA PEMERIKSAAN</div>
-
-                        ${kriteriaList.map(k => `
-                            <div class="checklist-card">
-                                <div class="checklist-title">${k.no_kriteria}. ${k.title}</div>
-                                <div class="checklist-desc">${k.deskripsi || ''}</div>
-                                <div class="radio-group">
-                                    <label><input type="radio" name="cond_${k.no_kriteria}" value="BAIK" checked> BAIK</label>
-                                    <label><input type="radio" name="cond_${k.no_kriteria}" value="TIDAK BAIK"> TIDAK BAIK</label>
-                                </div>
-                                <input type="text" id="ket_${k.no_kriteria}" class="form-control" placeholder="Keterangan..." style="margin-bottom:6px; font-size:0.8rem;">
-                                <input type="file" id="foto_${k.no_kriteria}" class="form-control" accept="image/*" style="font-size:0.75rem;">
-                            </div>
-                        `).join('')}
-
-                        <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
-                        <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 10px;">LAMPIRAN TANDA TANGAN</div>
-                        
-                        <div class="form-group">
-                            <label>Nama Petugas Pemeriksa</label>
-                            <input type="text" id="fa-petugas" class="form-control" placeholder="Nama Petugas" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Nama Supervisor / Penanggung Jawab</label>
-                            <input type="text" id="fa-supervisor" class="form-control" placeholder="Nama Supervisor" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Tanda Tangan Digital Petugas</label>
-                            <canvas id="canvas-ttd" class="signature-pad"></canvas>
-                            <button type="button" class="btn btn-secondary" onclick="clearCanvasTTD()" style="margin-top:4px; font-size:0.7rem; padding:4px 8px;">Clear TTD</button>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:12px;">Simpan Laporan ATM</button>
-                    </form>`;
-
-                document.getElementById('app-modal').style.display = 'flex';
-                initCanvasTTD();
-
-                document.getElementById('f-atm').onsubmit = async (e) => {
-                    e.preventDefault();
-                    Swal.fire({ title: 'Menyimpan Laporan ATM...', didOpen: () => Swal.showLoading() });
-
-                    const canvasEl = document.getElementById('canvas-ttd');
-                    const ttdDataUrl = canvasEl.toDataURL();
-
-                    const { data: headerData, error: errH } = await db.from('pemeriksaan_atm').insert([{
-                        kantor_id: document.getElementById('fa-kantor').value,
-                        kategori_atm: document.getElementById('fa-kat').value,
-                        periode_minggu: document.getElementById('fa-periode').value,
-                        petugas_nama: document.getElementById('fa-petugas').value,
-                        supervisor_nama: document.getElementById('fa-supervisor').value,
-                        tanda_tangan_petugas: ttdDataUrl
-                    }]).select().single();
-
-                    if (errH) return Swal.fire('Gagal', errH.message, 'error');
-
-                    for (let k of kriteriaList) {
-                        const kondisiVal = document.querySelector(`input[name="cond_${k.no_kriteria}"]:checked`).value;
-                        const ketVal = document.getElementById(`ket_${k.no_kriteria}`).value;
-                        const fileEl = document.getElementById(`foto_${k.no_kriteria}`).files[0];
-                        let fotoUrl = null;
-
-                        if (fileEl) {
-                            const fname = `atm_${Date.now()}_${k.no_kriteria}_${fileEl.name}`;
-                            await db.storage.from('bms-photos').upload(fname, fileEl);
-                            fotoUrl = db.storage.from('bms-photos').getPublicUrl(fname).data.publicUrl;
-                        }
-
-                        await db.from('pemeriksaan_atm_detail').insert([{
-                            pemeriksaan_id: headerData.id,
-                            no_kriteria: k.no_kriteria,
-                            kriteria_nama: k.title,
-                            kondisi: kondisiVal,
-                            keterangan: ketVal,
-                            foto_bukti: fotoUrl
-                        }]);
-                    }
-
-                    Swal.fire('Berhasil', 'Laporan pemeriksaan ATM berhasil disimpan', 'success');
-                    document.getElementById('app-modal').style.display = 'none';
-                    openSubPage('pemeriksaan_atm');
-                    loadDashboardStats();
-                };
-            });
-        }
-
-        // DIGITAL SIGNATURE CANVAS CONTROLLER
         let isDrawing = false;
         function initCanvasTTD() {
             const canvas = document.getElementById('canvas-ttd');
@@ -905,22 +730,38 @@
             }
         }
 
-        // FORM KANTOR, ASSET, UTILITAS, WO, MAINTENANCE, TEKNISI
-        function openFormKantor() {
-            document.getElementById('modal-title').innerText = "Tambah Kantor";
+        // FORMS & UTILITY ACTIONS
+        async function openFormKantor(id = null) {
+            let editData = { nama: '', alamat: '' };
+            if (id) {
+                const { data } = await db.from('kantor').select('*').eq('id', id).single();
+                if (data) editData = data;
+            }
+
+            document.getElementById('modal-title').innerText = id ? "Edit Data Kantor" : "Tambah Kantor";
             document.getElementById('modal-body').innerHTML = `
                 <form id="f-kantor">
-                    <div class="form-group"><label>Nama Kantor</label><input type="text" id="fk-nama" class="form-control" required></div>
-                    <div class="form-group"><label>Alamat</label><textarea id="fk-alamat" class="form-control" required></textarea></div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Simpan Kantor</button>
+                    <div class="form-group"><label>Nama Kantor</label><input type="text" id="fk-nama" class="form-control" value="${editData.nama}" required></div>
+                    <div class="form-group"><label>Alamat</label><textarea id="fk-alamat" class="form-control" required>${editData.alamat}</textarea></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Kantor' : 'Simpan Kantor'}</button>
                 </form>`;
             document.getElementById('app-modal').style.display = 'flex';
 
             document.getElementById('f-kantor').onsubmit = async (e) => {
                 e.preventDefault();
                 Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-                const { error } = await db.from('kantor').insert([{ nama: document.getElementById('fk-nama').value, alamat: document.getElementById('fk-alamat').value }]);
-                if (error) Swal.fire('Gagal', error.message, 'error');
+                const payload = { nama: document.getElementById('fk-nama').value, alamat: document.getElementById('fk-alamat').value };
+                
+                let err = null;
+                if (id) {
+                    const { error } = await db.from('kantor').update(payload).eq('id', id);
+                    err = error;
+                } else {
+                    const { error } = await db.from('kantor').insert([payload]);
+                    err = error;
+                }
+
+                if (err) Swal.fire('Gagal', err.message, 'error');
                 else {
                     Swal.fire('Berhasil', 'Data kantor tersimpan', 'success');
                     document.getElementById('app-modal').style.display = 'none';
@@ -930,39 +771,208 @@
             };
         }
 
-        function openFormAsset() {
-            db.from('kantor').select('id, nama').then(({data: kantorList}) => {
-                if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah Data Kantor dulu!', 'warning');
-                document.getElementById('modal-title').innerText = "Tambah Asset";
-                document.getElementById('modal-body').innerHTML = `
-                    <form id="f-asset">
-                        <div class="form-group"><label>Kantor</label><select id="fa-kantor" class="form-control" required>${kantorList.map(k => `<option value="${k.id}">${k.nama}</option>`).join('')}</select></div>
-                        <div class="form-group"><label>Kode Asset</label><input type="text" id="fa-kode" class="form-control" value="AST-${Date.now().toString().slice(-4)}" required></div>
-                        <div class="form-group"><label>Nama Asset</label><input type="text" id="fa-nama" class="form-control" required></div>
-                        <div class="form-group"><label>Kategori</label><input type="text" id="fa-kat" class="form-control" placeholder="AC, Lift, Genset" required></div>
-                        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Simpan Asset</button>
-                    </form>`;
-                document.getElementById('app-modal').style.display = 'flex';
+        async function openFormAsset(id = null) {
+            const { data: kantorList } = await db.from('kantor').select('id, nama');
+            if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah Data Kantor dulu!', 'warning');
 
-                document.getElementById('f-asset').onsubmit = async (e) => {
-                    e.preventDefault();
-                    Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-                    const { error } = await db.from('asset').insert([{
-                        kantor_id: document.getElementById('fa-kantor').value,
-                        kode_asset: document.getElementById('fa-kode').value,
-                        nama_asset: document.getElementById('fa-nama').value,
-                        kategori: document.getElementById('fa-kat').value,
-                        status: 'Baik'
-                    }]);
-                    if (error) Swal.fire('Gagal', error.message, 'error');
-                    else {
-                        Swal.fire('Berhasil', 'Data asset tersimpan', 'success');
-                        document.getElementById('app-modal').style.display = 'none';
-                        openSubPage('asset');
-                        loadDashboardStats();
-                    }
+            let editData = { kantor_id: '', kode_asset: `AST-${Date.now().toString().slice(-4)}`, nama_asset: '', kategori: '', status: 'Baik' };
+            if (id) {
+                const { data } = await db.from('asset').select('*').eq('id', id).single();
+                if (data) editData = data;
+            }
+
+            document.getElementById('modal-title').innerText = id ? "Edit Asset" : "Tambah Asset";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="f-asset">
+                    <div class="form-group">
+                        <label>Kantor</label>
+                        <select id="fa-kantor" class="form-control" required>
+                            ${kantorList.map(k => `<option value="${k.id}" ${k.id === editData.kantor_id ? 'selected' : ''}>${k.nama}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Kode Asset</label><input type="text" id="fa-kode" class="form-control" value="${editData.kode_asset}" required></div>
+                    <div class="form-group"><label>Nama Asset</label><input type="text" id="fa-nama" class="form-control" value="${editData.nama_asset}" required></div>
+                    <div class="form-group"><label>Kategori</label><input type="text" id="fa-kat" class="form-control" value="${editData.kategori}" required></div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="fa-status" class="form-control">
+                            <option value="Baik" ${editData.status === 'Baik' ? 'selected' : ''}>Baik</option>
+                            <option value="Rusak" ${editData.status === 'Rusak' ? 'selected' : ''}>Rusak</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Asset' : 'Simpan Asset'}</button>
+                </form>`;
+            document.getElementById('app-modal').style.display = 'flex';
+
+            document.getElementById('f-asset').onsubmit = async (e) => {
+                e.preventDefault();
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+                const payload = {
+                    kantor_id: document.getElementById('fa-kantor').value,
+                    kode_asset: document.getElementById('fa-kode').value,
+                    nama_asset: document.getElementById('fa-nama').value,
+                    kategori: document.getElementById('fa-kat').value,
+                    status: document.getElementById('fa-status').value
                 };
-            });
+
+                let err = null;
+                if (id) {
+                    const { error } = await db.from('asset').update(payload).eq('id', id);
+                    err = error;
+                } else {
+                    const { error } = await db.from('asset').insert([payload]);
+                    err = error;
+                }
+
+                if (err) Swal.fire('Gagal', err.message, 'error');
+                else {
+                    Swal.fire('Berhasil', 'Data asset tersimpan', 'success');
+                    document.getElementById('app-modal').style.display = 'none';
+                    openSubPage('asset');
+                    loadDashboardStats();
+                }
+            };
+        }
+
+        async function openFormPemeriksaanATM(id = null) {
+            const [kantorRes, kriteriaRes] = await Promise.all([
+                db.from('kantor').select('id, nama'),
+                db.from('kriteria_atm').select('*').order('no_kriteria', {ascending:true})
+            ]);
+
+            const kantorList = kantorRes.data;
+            const kriteriaList = kriteriaRes.data;
+
+            if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Silakan tambah Data Kantor terlebih dahulu!', 'warning');
+            if (!kriteriaList || kriteriaList.length === 0) return Swal.fire('Peringatan', 'Master Kriteria ATM kosong!', 'warning');
+
+            let editHeader = { kantor_id: '', kategori_atm: 'Onsite', periode_minggu: '', petugas_nama: '', supervisor_nama: '' };
+            let editDetailsMap = {};
+
+            if (id) {
+                const { data: h } = await db.from('pemeriksaan_atm').select('*').eq('id', id).single();
+                const { data: dList } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id);
+                if (h) editHeader = h;
+                if (dList) {
+                    dList.forEach(d => { editDetailsMap[d.no_kriteria] = d; });
+                }
+            }
+
+            document.getElementById('modal-title').innerText = id ? "Edit Laporan ATM" : "Laporan Pemeriksaan ATM";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="f-atm">
+                    <div class="form-group">
+                        <label>Lokasi / KCP</label>
+                        <select id="fa-kantor" class="form-control" required>
+                            ${kantorList.map(k=>`<option value="${k.id}" ${k.id === editHeader.kantor_id ? 'selected':''}>${k.nama}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Kategori ATM</label>
+                        <select id="fa-kat" class="form-control">
+                            <option value="Onsite" ${editHeader.kategori_atm === 'Onsite' ? 'selected':''}>Onsite</option>
+                            <option value="Offsite" ${editHeader.kategori_atm === 'Offsite' ? 'selected':''}>Offsite</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Periode Minggu</label>
+                        <input type="text" id="fa-periode" class="form-control" value="${editHeader.periode_minggu}" placeholder="Minggu 1 Agustus" required>
+                    </div>
+
+                    <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
+                    <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 10px;">KRITERIA PEMERIKSAAN</div>
+
+                    ${kriteriaList.map(k => {
+                        const existingDetail = editDetailsMap[k.no_kriteria] || { kondisi: 'BAIK', keterangan: '' };
+                        return `
+                            <div class="checklist-card">
+                                <div class="checklist-title">${k.no_kriteria}. ${k.title}</div>
+                                <div class="checklist-desc">${k.deskripsi || ''}</div>
+                                <div class="radio-group">
+                                    <label><input type="radio" name="cond_${k.no_kriteria}" value="BAIK" ${existingDetail.kondisi === 'BAIK' ? 'checked':''}> BAIK</label>
+                                    <label><input type="radio" name="cond_${k.no_kriteria}" value="TIDAK BAIK" ${existingDetail.kondisi === 'TIDAK BAIK' ? 'checked':''}> TIDAK BAIK</label>
+                                </div>
+                                <input type="text" id="ket_${k.no_kriteria}" class="form-control" value="${existingDetail.keterangan || ''}" placeholder="Keterangan..." style="margin-bottom:6px; font-size:0.8rem;">
+                                <input type="file" id="foto_${k.no_kriteria}" class="form-control" accept="image/*" style="font-size:0.75rem;">
+                            </div>
+                        `;
+                    }).join('')}
+
+                    <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
+                    <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 10px;">LAMPIRAN TANDA TANGAN</div>
+                    
+                    <div class="form-group">
+                        <label>Nama Petugas Pemeriksa</label>
+                        <input type="text" id="fa-petugas" class="form-control" value="${editHeader.petugas_nama || ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nama Supervisor / Penanggung Jawab</label>
+                        <input type="text" id="fa-supervisor" class="form-control" value="${editHeader.supervisor_nama || ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tanda Tangan Digital Petugas</label>
+                        <canvas id="canvas-ttd" class="signature-pad"></canvas>
+                        <button type="button" class="btn btn-secondary" onclick="clearCanvasTTD()" style="margin-top:4px; font-size:0.7rem; padding:4px 8px;">Clear TTD</button>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:12px;">${id ? 'Update Laporan ATM' : 'Simpan Laporan ATM'}</button>
+                </form>`;
+
+            document.getElementById('app-modal').style.display = 'flex';
+            initCanvasTTD();
+
+            document.getElementById('f-atm').onsubmit = async (e) => {
+                e.preventDefault();
+                Swal.fire({ title: 'Menyimpan Laporan ATM...', didOpen: () => Swal.showLoading() });
+
+                const canvasEl = document.getElementById('canvas-ttd');
+                const ttdDataUrl = canvasEl.toDataURL();
+
+                let headerId = id;
+                const headerPayload = {
+                    kantor_id: document.getElementById('fa-kantor').value,
+                    kategori_atm: document.getElementById('fa-kat').value,
+                    periode_minggu: document.getElementById('fa-periode').value,
+                    petugas_nama: document.getElementById('fa-petugas').value,
+                    supervisor_nama: document.getElementById('fa-supervisor').value,
+                    tanda_tangan_petugas: ttdDataUrl
+                };
+
+                if (id) {
+                    await db.from('pemeriksaan_atm').update(headerPayload).eq('id', id);
+                    await db.from('pemeriksaan_atm_detail').delete().eq('pemeriksaan_id', id);
+                } else {
+                    const { data: hData } = await db.from('pemeriksaan_atm').insert([headerPayload]).select().single();
+                    if (hData) headerId = hData.id;
+                }
+
+                for (let k of kriteriaList) {
+                    const kondisiVal = document.querySelector(`input[name="cond_${k.no_kriteria}"]:checked`).value;
+                    const ketVal = document.getElementById(`ket_${k.no_kriteria}`).value;
+                    const fileEl = document.getElementById(`foto_${k.no_kriteria}`).files[0];
+                    let fotoUrl = editDetailsMap[k.no_kriteria] ? editDetailsMap[k.no_kriteria].foto_bukti : null;
+
+                    if (fileEl) {
+                        const fname = `atm_${Date.now()}_${k.no_kriteria}_${fileEl.name}`;
+                        await db.storage.from('bms-photos').upload(fname, fileEl);
+                        fotoUrl = db.storage.from('bms-photos').getPublicUrl(fname).data.publicUrl;
+                    }
+
+                    await db.from('pemeriksaan_atm_detail').insert([{
+                        pemeriksaan_id: headerId,
+                        no_kriteria: k.no_kriteria,
+                        kriteria_nama: k.title,
+                        kondisi: kondisiVal,
+                        keterangan: ketVal,
+                        foto_bukti: fotoUrl
+                    }]);
+                }
+
+                Swal.fire('Berhasil', 'Laporan ATM tersimpan', 'success');
+                document.getElementById('app-modal').style.display = 'none';
+                openSubPage('pemeriksaan_atm');
+                loadDashboardStats();
+            };
         }
 
         function openFormUtilitas() {
