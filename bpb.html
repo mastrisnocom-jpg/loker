@@ -285,6 +285,68 @@
             });
         }
 
+        // ==========================================
+        // FUNGSI KOMPRESI GAMBAR OTOMATIS < 200 KB
+        // ==========================================
+        async function compressImage(file, maxSizeKB = 200) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        const MAX_DIMENSION = 1600;
+                        if (width > height) {
+                            if (width > MAX_DIMENSION) {
+                                height = Math.round((height * MAX_DIMENSION) / width);
+                                width = MAX_DIMENSION;
+                            }
+                        } else {
+                            if (height > MAX_DIMENSION) {
+                                width = Math.round((width * MAX_DIMENSION) / height);
+                                height = MAX_DIMENSION;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        let quality = 0.85;
+
+                        function loopCompress() {
+                            canvas.toBlob((blob) => {
+                                if (!blob) {
+                                    reject(new Error("Gagal kompresi"));
+                                    return;
+                                }
+                                if (blob.size / 1024 > maxSizeKB && quality > 0.2) {
+                                    quality -= 0.08;
+                                    loopCompress();
+                                } else {
+                                    const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                                        type: 'image/jpeg',
+                                        lastModified: Date.now()
+                                    });
+                                    resolve(compressedFile);
+                                }
+                            }, 'image/jpeg', quality);
+                        }
+
+                        loopCompress();
+                    };
+                    img.onerror = (err) => reject(err);
+                };
+                reader.onerror = (err) => reject(err);
+            });
+        }
+
         async function loadDashboardStats() {
             const { count: countKantor } = await db.from('kantor').select('*', { count: 'exact', head: true });
             const { count: countAsset } = await db.from('asset').select('*', { count: 'exact', head: true });
@@ -309,7 +371,7 @@
             });
         }
 
-        // ROUTER SUB PAGE LENGKAP
+        // ROUTER SUB PAGE
         async function openSubPage(pageKey) {
             const overlay = document.getElementById('sub-page-overlay');
             const titleEl = document.getElementById('sub-page-title');
@@ -395,7 +457,6 @@
                         </table>
                     </div>`;
             } else if (pageKey === 'jadwal') {
-                // FIXED JADWAL LOADER: Menampilkan Jadwal Pemeliharaan Gedung & ATM
                 contentEl.innerHTML = `
                     <div class="card">
                         <div class="card-title"><i class="fa-solid fa-calendar-days"></i> Kalender Jadwal Pemeliharaan</div>
@@ -408,11 +469,6 @@
                         <div class="checklist-card">
                             <div class="checklist-title">2. Cek Suhu AC & Kebersihan Ruang ATM</div>
                             <div class="checklist-desc">Tanggal: Setiap Hari Jumat Mingguan</div>
-                            <span class="badge badge-success">Terjadwal</span>
-                        </div>
-                        <div class="checklist-card">
-                            <div class="checklist-title">3. Servis Genset & Kelistrikan Gedung</div>
-                            <div class="checklist-desc">Tanggal: Akhir Bulan</div>
                             <span class="badge badge-success">Terjadwal</span>
                         </div>
                     </div>`;
@@ -515,7 +571,7 @@
         }
 
         // ==========================================
-        // EXPORT PDF TAJAM + BOLD CATEGORY & TABEL FOTO PEMBERSIHAN
+        // EXPORT PDF TAJAM HIGH RESOLUTION
         // ==========================================
         async function exportATMPDF(id) {
             Swal.fire({ title: 'Mencetak PDF Laporan ATM...', didOpen: () => Swal.showLoading() });
@@ -534,7 +590,6 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
 
-            // Header Dokumen Resmi
             doc.setFont('Helvetica', 'bold');
             doc.setFontSize(11);
             doc.text("LAPORAN PEMERIKSAAN ATM MINGGUAN", 105, 15, { align: 'center' });
@@ -553,13 +608,12 @@
             doc.text(`Periode Minggu : ${header.periode_minggu}`, 110, 33);
             doc.text(`Tanggal Cek       : ${header.tanggal_pemeriksaan}`, 14, 38);
 
-            // TABEL KRITERIA (KATEGORI DITEBALKAN/BOLD DENGAN FORMAT AMAN)
             doc.autoTable({
                 startY: 42,
                 head: [['No', 'Kriteria Pemeriksaan', 'Kondisi', 'Keterangan']],
                 body: details.map(d => [
                     d.no_kriteria,
-                    d.kriteria_nama, 
+                    d.kriteria_nama,
                     d.kondisi === 'BAIK' ? '[ V ] BAIK    [   ] TIDAK BAIK' : '[   ] BAIK    [ V ] TIDAK BAIK',
                     d.keterangan || '-'
                 ]),
@@ -579,7 +633,7 @@
             let finalY = doc.lastAutoTable.finalY + 8;
             if (finalY > 210) { doc.addPage(); finalY = 20; }
 
-            // TABEL LAMPIRAN PEMBERSIHAN (FOTO SEBELUM & SESUDAH)
+            // TABEL LAMPIRAN PEMBERSIHAN
             doc.setFont('Helvetica', 'bold');
             doc.setFontSize(8.5);
             doc.text("LAMPIRAN PEMBERSIHAN", 14, finalY);
@@ -605,7 +659,7 @@
             finalY = doc.lastAutoTable.finalY + 8;
             if (finalY > 230) { doc.addPage(); finalY = 20; }
 
-            // PENGESAHAN TANDA TANGAN DIBUAT OLEH & MENGETAHUI
+            // PENGESAHAN TANDA TANGAN
             const vendorTitle = header.vendor_nama || 'PT Binayasa Purabatara Unit ______';
             const bankTitle = header.bank_cabang || 'PT Bank Tabungan Negara Cabang ______';
             const petugasName = header.petugas_nama ? `( ${header.petugas_nama} )` : '(_______________________)';
@@ -797,110 +851,7 @@
             }
         }
 
-        // FORMS ACTIONS
-        async function openFormKantor(id = null) {
-            let editData = { nama: '', alamat: '' };
-            if (id) {
-                const { data } = await db.from('kantor').select('*').eq('id', id).single();
-                if (data) editData = data;
-            }
-
-            document.getElementById('modal-title').innerText = id ? "Edit Data Kantor" : "Tambah Kantor";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="f-kantor">
-                    <div class="form-group"><label>Nama Kantor</label><input type="text" id="fk-nama" class="form-control" value="${editData.nama}" required></div>
-                    <div class="form-group"><label>Alamat</label><textarea id="fk-alamat" class="form-control" required>${editData.alamat}</textarea></div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Kantor' : 'Simpan Kantor'}</button>
-                </form>`;
-            document.getElementById('app-modal').style.display = 'flex';
-
-            document.getElementById('f-kantor').onsubmit = async (e) => {
-                e.preventDefault();
-                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-                const payload = { nama: document.getElementById('fk-nama').value, alamat: document.getElementById('fk-alamat').value };
-                
-                let err = null;
-                if (id) {
-                    const { error } = await db.from('kantor').update(payload).eq('id', id);
-                    err = error;
-                } else {
-                    const { error } = await db.from('kantor').insert([payload]);
-                    err = error;
-                }
-
-                if (err) Swal.fire('Gagal', err.message, 'error');
-                else {
-                    Swal.fire('Berhasil', 'Data kantor tersimpan', 'success');
-                    document.getElementById('app-modal').style.display = 'none';
-                    openSubPage('kantor');
-                    loadDashboardStats();
-                }
-            };
-        }
-
-        async function openFormAsset(id = null) {
-            const { data: kantorList } = await db.from('kantor').select('id, nama');
-            if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah Data Kantor dulu!', 'warning');
-
-            let editData = { kantor_id: '', kode_asset: `AST-${Date.now().toString().slice(-4)}`, nama_asset: '', kategori: '', status: 'Baik' };
-            if (id) {
-                const { data } = await db.from('asset').select('*').eq('id', id).single();
-                if (data) editData = data;
-            }
-
-            document.getElementById('modal-title').innerText = id ? "Edit Asset" : "Tambah Asset";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="f-asset">
-                    <div class="form-group">
-                        <label>Kantor</label>
-                        <select id="fa-kantor" class="form-control" required>
-                            ${kantorList.map(k => `<option value="${k.id}" ${k.id === editData.kantor_id ? 'selected' : ''}>${k.nama}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Kode Asset</label><input type="text" id="fa-kode" class="form-control" value="${editData.kode_asset}" required></div>
-                    <div class="form-group"><label>Nama Asset</label><input type="text" id="fa-nama" class="form-control" value="${editData.nama_asset}" required></div>
-                    <div class="form-group"><label>Kategori</label><input type="text" id="fa-kat" class="form-control" value="${editData.kategori}" required></div>
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select id="fa-status" class="form-control">
-                            <option value="Baik" ${editData.status === 'Baik' ? 'selected' : ''}>Baik</option>
-                            <option value="Rusak" ${editData.status === 'Rusak' ? 'selected' : ''}>Rusak</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Asset' : 'Simpan Asset'}</button>
-                </form>`;
-            document.getElementById('app-modal').style.display = 'flex';
-
-            document.getElementById('f-asset').onsubmit = async (e) => {
-                e.preventDefault();
-                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-                const payload = {
-                    kantor_id: document.getElementById('fa-kantor').value,
-                    kode_asset: document.getElementById('fa-kode').value,
-                    nama_asset: document.getElementById('fa-nama').value,
-                    kategori: document.getElementById('fa-kat').value,
-                    status: document.getElementById('fa-status').value
-                };
-
-                let err = null;
-                if (id) {
-                    const { error } = await db.from('asset').update(payload).eq('id', id);
-                    err = error;
-                } else {
-                    const { error } = await db.from('asset').insert([payload]);
-                    err = error;
-                }
-
-                if (err) Swal.fire('Gagal', err.message, 'error');
-                else {
-                    Swal.fire('Berhasil', 'Data asset tersimpan', 'success');
-                    document.getElementById('app-modal').style.display = 'none';
-                    openSubPage('asset');
-                    loadDashboardStats();
-                }
-            };
-        }
-
+        // FORM LAPORAN PEMERIKSAAN ATM + KOMPRESI FOTO AUTOMATIC < 200 KB
         async function openFormPemeriksaanATM(id = null) {
             const [kantorRes, kriteriaRes] = await Promise.all([
                 db.from('kantor').select('id, nama'),
@@ -1019,7 +970,7 @@
 
             document.getElementById('f-atm').onsubmit = async (e) => {
                 e.preventDefault();
-                Swal.fire({ title: 'Menyimpan Laporan ATM...', didOpen: () => Swal.showLoading() });
+                Swal.fire({ title: 'Proses Kompresi & Menyimpan...', didOpen: () => Swal.showLoading() });
 
                 const canvasEl = document.getElementById('canvas-ttd');
                 const ttdDataUrl = canvasEl.toDataURL();
@@ -1030,14 +981,18 @@
                 const fileBeforePem = document.getElementById('fa-foto-before').files[0];
                 const fileAfterPem = document.getElementById('fa-foto-after').files[0];
 
+                // 1. Kompres & Upload Foto Pembersihan Before (< 200 KB)
                 if (fileBeforePem) {
-                    const fnameB = `pem_before_${Date.now()}_${fileBeforePem.name}`;
-                    await db.storage.from('bms-photos').upload(fnameB, fileBeforePem);
+                    const compressedB = await compressImage(fileBeforePem, 200);
+                    const fnameB = `pem_before_${Date.now()}_${compressedB.name}`;
+                    await db.storage.from('bms-photos').upload(fnameB, compressedB);
                     beforePemUrl = db.storage.from('bms-photos').getPublicUrl(fnameB).data.publicUrl;
                 }
+                // 2. Kompres & Upload Foto Pembersihan After (< 200 KB)
                 if (fileAfterPem) {
-                    const fnameA = `pem_after_${Date.now()}_${fileAfterPem.name}`;
-                    await db.storage.from('bms-photos').upload(fnameA, fileAfterPem);
+                    const compressedA = await compressImage(fileAfterPem, 200);
+                    const fnameA = `pem_after_${Date.now()}_${compressedA.name}`;
+                    await db.storage.from('bms-photos').upload(fnameA, compressedA);
                     afterPemUrl = db.storage.from('bms-photos').getPublicUrl(fnameA).data.publicUrl;
                 }
 
@@ -1063,6 +1018,7 @@
                     if (hData) headerId = hData.id;
                 }
 
+                // 3. Kompres & Upload Foto Bukti Kriteria (< 200 KB)
                 for (let k of kriteriaList) {
                     const kondisiVal = document.querySelector(`input[name="cond_${k.no_kriteria}"]:checked`).value;
                     const ketVal = document.getElementById(`ket_${k.no_kriteria}`).value;
@@ -1070,8 +1026,9 @@
                     let fotoUrl = editDetailsMap[k.no_kriteria] ? editDetailsMap[k.no_kriteria].foto_bukti : null;
 
                     if (fileEl) {
-                        const fname = `atm_${Date.now()}_${k.no_kriteria}_${fileEl.name}`;
-                        await db.storage.from('bms-photos').upload(fname, fileEl);
+                        const compressedK = await compressImage(fileEl, 200);
+                        const fname = `atm_${Date.now()}_${k.no_kriteria}_${compressedK.name}`;
+                        await db.storage.from('bms-photos').upload(fname, compressedK);
                         fotoUrl = db.storage.from('bms-photos').getPublicUrl(fname).data.publicUrl;
                     }
 
@@ -1089,6 +1046,109 @@
                 document.getElementById('app-modal').style.display = 'none';
                 openSubPage('pemeriksaan_atm');
                 loadDashboardStats();
+            };
+        }
+
+        async function openFormKantor(id = null) {
+            let editData = { nama: '', alamat: '' };
+            if (id) {
+                const { data } = await db.from('kantor').select('*').eq('id', id).single();
+                if (data) editData = data;
+            }
+
+            document.getElementById('modal-title').innerText = id ? "Edit Data Kantor" : "Tambah Kantor";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="f-kantor">
+                    <div class="form-group"><label>Nama Kantor</label><input type="text" id="fk-nama" class="form-control" value="${editData.nama}" required></div>
+                    <div class="form-group"><label>Alamat</label><textarea id="fk-alamat" class="form-control" required>${editData.alamat}</textarea></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Kantor' : 'Simpan Kantor'}</button>
+                </form>`;
+            document.getElementById('app-modal').style.display = 'flex';
+
+            document.getElementById('f-kantor').onsubmit = async (e) => {
+                e.preventDefault();
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+                const payload = { nama: document.getElementById('fk-nama').value, alamat: document.getElementById('fk-alamat').value };
+                
+                let err = null;
+                if (id) {
+                    const { error } = await db.from('kantor').update(payload).eq('id', id);
+                    err = error;
+                } else {
+                    const { error } = await db.from('kantor').insert([payload]);
+                    err = error;
+                }
+
+                if (err) Swal.fire('Gagal', err.message, 'error');
+                else {
+                    Swal.fire('Berhasil', 'Data kantor tersimpan', 'success');
+                    document.getElementById('app-modal').style.display = 'none';
+                    openSubPage('kantor');
+                    loadDashboardStats();
+                }
+            };
+        }
+
+        async function openFormAsset(id = null) {
+            const { data: kantorList } = await db.from('kantor').select('id, nama');
+            if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah Data Kantor dulu!', 'warning');
+
+            let editData = { kantor_id: '', kode_asset: `AST-${Date.now().toString().slice(-4)}`, nama_asset: '', kategori: '', status: 'Baik' };
+            if (id) {
+                const { data } = await db.from('asset').select('*').eq('id', id).single();
+                if (data) editData = data;
+            }
+
+            document.getElementById('modal-title').innerText = id ? "Edit Asset" : "Tambah Asset";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="f-asset">
+                    <div class="form-group">
+                        <label>Kantor</label>
+                        <select id="fa-kantor" class="form-control" required>
+                            ${kantorList.map(k => `<option value="${k.id}" ${k.id === editData.kantor_id ? 'selected' : ''}>${k.nama}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Kode Asset</label><input type="text" id="fa-kode" class="form-control" value="${editData.kode_asset}" required></div>
+                    <div class="form-group"><label>Nama Asset</label><input type="text" id="fa-nama" class="form-control" value="${editData.nama_asset}" required></div>
+                    <div class="form-group"><label>Kategori</label><input type="text" id="fa-kat" class="form-control" value="${editData.kategori}" required></div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="fa-status" class="form-control">
+                            <option value="Baik" ${editData.status === 'Baik' ? 'selected' : ''}>Baik</option>
+                            <option value="Rusak" ${editData.status === 'Rusak' ? 'selected' : ''}>Rusak</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Asset' : 'Simpan Asset'}</button>
+                </form>`;
+            document.getElementById('app-modal').style.display = 'flex';
+
+            document.getElementById('f-asset').onsubmit = async (e) => {
+                e.preventDefault();
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+                const payload = {
+                    kantor_id: document.getElementById('fa-kantor').value,
+                    kode_asset: document.getElementById('fa-kode').value,
+                    nama_asset: document.getElementById('fa-nama').value,
+                    kategori: document.getElementById('fa-kat').value,
+                    status: document.getElementById('fa-status').value
+                };
+
+                let err = null;
+                if (id) {
+                    const { error } = await db.from('asset').update(payload).eq('id', id);
+                    err = error;
+                } else {
+                    const { error } = await db.from('asset').insert([payload]);
+                    err = error;
+                }
+
+                if (err) Swal.fire('Gagal', err.message, 'error');
+                else {
+                    Swal.fire('Berhasil', 'Data asset tersimpan', 'success');
+                    document.getElementById('app-modal').style.display = 'none';
+                    openSubPage('asset');
+                    loadDashboardStats();
+                }
             };
         }
 
@@ -1183,13 +1243,15 @@
                     const fileAfter = document.getElementById('fm-after').files[0];
 
                     if (fileBefore) {
-                        const fname = `before_${Date.now()}_${fileBefore.name}`;
-                        await db.storage.from('bms-photos').upload(fname, fileBefore);
+                        const compressedB = await compressImage(fileBefore, 200);
+                        const fname = `before_${Date.now()}_${compressedB.name}`;
+                        await db.storage.from('bms-photos').upload(fname, compressedB);
                         beforeUrl = db.storage.from('bms-photos').getPublicUrl(fname).data.publicUrl;
                     }
                     if (fileAfter) {
-                        const fname = `after_${Date.now()}_${fileAfter.name}`;
-                        await db.storage.from('bms-photos').upload(fname, fileAfter);
+                        const compressedA = await compressImage(fileAfter, 200);
+                        const fname = `after_${Date.now()}_${compressedA.name}`;
+                        await db.storage.from('bms-photos').upload(fname, compressedA);
                         afterUrl = db.storage.from('bms-photos').getPublicUrl(fname).data.publicUrl;
                     }
 
