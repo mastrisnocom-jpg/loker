@@ -571,7 +571,7 @@
         }
 
         // ==========================================
-        // EXPORT PDF LENGKAP & RAPI DENGAN FOTO KRITERIA
+        // EXPORT PDF REVISI LENGKAP & RAPI DENGAN UKURAN FOTO PAS
         // ==========================================
         async function exportATMPDF(id) {
             Swal.fire({ title: 'Mencetak PDF Laporan ATM...', didOpen: () => Swal.showLoading() });
@@ -609,18 +609,22 @@
             doc.text(`Periode Minggu : ${header.periode_minggu}`, 110, 33);
             doc.text(`Tanggal Cek       : ${header.tanggal_pemeriksaan}`, 14, 38);
 
-            // TABEL KRITERIA + EMBED FOTO DALAM KOLOM "KETERANGAN DAN FOTO"
+            // TABEL KRITERIA DENGAN UKURAN FOTO YANG DIKECILKAN PAS DALAM SEL
             doc.autoTable({
                 startY: 42,
                 head: [['No', 'Kriteria Pemeriksaan', 'Kondisi', 'Keterangan dan Foto']],
-                body: details.map(d => [
-                    d.no_kriteria,
-                    d.kriteria_nama, 
-                    d.kondisi === 'BAIK' ? '[ V ] BAIK    [   ] TIDAK BAIK' : '[   ] BAIK    [ V ] TIDAK BAIK',
-                    d.keterangan ? `${d.keterangan}\n\n` : '\n\n'
-                ]),
+                body: details.map(d => {
+                    // Tambahkan space newline jika ada foto agar sel memiliki tinggi cukup
+                    const extraSpace = d.foto_bukti ? '\n\n\n' : '';
+                    return [
+                        d.no_kriteria,
+                        d.kriteria_nama, 
+                        d.kondisi === 'BAIK' ? '[ V ] BAIK    [   ] TIDAK BAIK' : '[   ] BAIK    [ V ] TIDAK BAIK',
+                        (d.keterangan || '-') + extraSpace
+                    ];
+                }),
                 theme: 'grid',
-                styles: { fontSize: 7.5, cellPadding: 2.5, font: 'Helvetica', valign: 'middle' },
+                styles: { fontSize: 7.5, cellPadding: 2, font: 'Helvetica', valign: 'middle' },
                 headStyles: { fillColor: [232, 245, 233], textColor: [25, 135, 84], fontStyle: 'bold' },
                 columnStyles: { 
                     0: { cellWidth: 8, halign: 'center' }, 
@@ -636,15 +640,15 @@
                     }
                 },
                 didDrawCell: function(data) {
-                    // Embed Foto Bukti per Kriteria jika ada di dalam kolom Keterangan dan Foto
+                    // Embed Foto Bukti per Kriteria pas di dalam sel (Lebar: 18mm, Tinggi: 12mm)
                     if (data.section === 'body' && data.column.index === 3) {
                         const rowIdx = data.row.index;
                         const detailItem = details[rowIdx];
                         if (detailItem && detailItem.foto_bukti) {
                             try {
-                                const imgX = data.cell.x + 3;
-                                const imgY = data.cell.y + (data.cell.height - 18) / 2;
-                                doc.addImage(detailItem.foto_bukti, 'JPEG', imgX, imgY, 24, 18);
+                                const imgX = data.cell.x + (data.cell.width - 18) / 2;
+                                const imgY = data.cell.y + data.cell.height - 13;
+                                doc.addImage(detailItem.foto_bukti, 'JPEG', imgX, imgY, 18, 12);
                             } catch(e){}
                         }
                     }
@@ -654,7 +658,7 @@
             let finalY = doc.lastAutoTable.finalY + 8;
             if (finalY > 210) { doc.addPage(); finalY = 20; }
 
-            // TABEL LAMPIRAN FOTO PEMBERSIHAN (BEFORE & AFTER PRESISI PRESISI CENTER)
+            // TABEL LAMPIRAN FOTO PEMBERSIHAN
             doc.setFont('Helvetica', 'bold');
             doc.setFontSize(8.5);
             doc.text("LAMPIRAN PEMBERSIHAN", 14, finalY);
@@ -677,28 +681,34 @@
                 try { doc.addImage(header.foto_pembersihan_after, 'JPEG', 128, imgY, 45, 30); } catch(e){}
             }
 
-            finalY = doc.lastAutoTable.finalY + 8;
+            finalY = doc.lastAutoTable.finalY + 12;
             if (finalY > 230) { doc.addPage(); finalY = 20; }
 
-            // TANDA TANGAN & PENGESAHAN DIBUAT OLEH & MENGETAHUI
+            // POLOS TANPA KOTAK PADA TANDA TANGAN (HANYA TEKS BISA DIEDIT)
             const vendorTitle = header.vendor_nama || 'PT Binayasa Purabatara Unit ______';
             const bankTitle = header.bank_cabang || 'PT Bank Tabungan Negara Cabang ______';
             const petugasName = header.petugas_nama ? `( ${header.petugas_nama} )` : '(_______________________)';
             const supervisorName = header.supervisor_nama ? `( ${header.supervisor_nama} )` : '(_______________________)';
 
-            doc.autoTable({
-                startY: finalY + 2,
-                head: [['Dibuat oleh,\n' + vendorTitle, 'Mengetahui,\n' + bankTitle]],
-                body: [['\n\n\n' + petugasName, '\n\n\n' + supervisorName]],
-                theme: 'grid',
-                styles: { fontSize: 8, halign: 'left', cellPadding: 4, font: 'Helvetica' },
-                headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'normal' },
-                columnStyles: { 0: { cellWidth: 91 }, 1: { cellWidth: 91 } }
-            });
+            doc.setFont('Helvetica', 'normal');
+            doc.setFontSize(8);
+            
+            // Sisi Kiri
+            doc.text("Dibuat oleh,", 14, finalY);
+            doc.text(vendorTitle, 14, finalY + 4);
+            
+            // Sisi Kanan
+            doc.text("Mengetahui,", 110, finalY);
+            doc.text(bankTitle, 110, finalY + 4);
 
+            // Render TTD Canvas
             if (header.tanda_tangan_petugas) {
-                try { doc.addImage(header.tanda_tangan_petugas, 'PNG', 20, finalY + 12, 35, 18); } catch (e) {}
+                try { doc.addImage(header.tanda_tangan_petugas, 'PNG', 14, finalY + 6, 35, 16); } catch (e) {}
             }
+
+            // Nama Petugas & Supervisor
+            doc.text(petugasName, 14, finalY + 26);
+            doc.text(supervisorName, 110, finalY + 26);
 
             Swal.close();
             doc.save(`Laporan_ATM_${header.kantor ? header.kantor.nama : 'Unit'}_${Date.now()}.pdf`);
