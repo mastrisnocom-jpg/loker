@@ -321,7 +321,6 @@
         document.getElementById("auth-overlay").style.display = "none";
         currentUserId = session.user.id;
         
-        // Fetch Profile
         const { data: profile } = await supabaseClient
           .from('profiles')
           .select('*')
@@ -414,7 +413,17 @@
       document.getElementById('val-total-asset').innerText = assetCount || 0;
     }
 
-    // POP-UP MENU MODAL CONTROLLER
+    // HELPER MENGAMBIL DROPDOWN KANTOR BSN
+    async function getOfficeDropdownHTML() {
+      const { data: offices } = await supabaseClient.from('offices').select('id, name');
+      let officeOptionsHTML = '<option value="">-- Pilih Lokasi Kantor BSN --</option>';
+      if (offices && offices.length > 0) {
+        officeOptionsHTML += offices.map(o => `<option value="${o.id}|${o.name}">${o.name}</option>`).join('');
+      }
+      return officeOptionsHTML;
+    }
+
+    // POP-UP MENU MODALS
     async function openMenuPopup(menuType) {
       const popupModal = document.getElementById("menu-popup-modal");
       const titleEl = document.getElementById("popup-title");
@@ -554,7 +563,7 @@
       document.getElementById("menu-popup-modal").style.display = "none";
     }
 
-    // POP-UP RENDER CONTENT HELPERS
+    // POP-UP RENDER CONTENT HELPERS (TAMPILKAN LOKASI KANTOR)
     function renderKantorPopupContent(data, el) {
       if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada data kantor.</p>`; return; }
       el.innerHTML = data.map(o => `
@@ -579,7 +588,7 @@
         <div class="data-item">
           <div>
             <div style="font-weight:700; font-size:0.8rem;">${a.name} (${a.asset_number})</div>
-            <div style="font-size:0.7rem; color:var(--text-sub);">Kantor: ${a.office_name || '-'} • Kategori: ${a.category} • Status: ${a.status}</div>
+            <div style="font-size:0.7rem; color:var(--text-sub);">Lokasi Kantor: ${a.office_name || 'Kantor Pusat'} • Kategori: ${a.category}</div>
           </div>
           ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteAsset('${a.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
         </div>
@@ -592,7 +601,7 @@
         <div class="data-item">
           <div>
             <div style="font-weight:700; font-size:0.8rem;">Tagihan ${u.bill_type} (${u.month_year})</div>
-            <div style="font-size:0.7rem; color:var(--text-sub);">No. Pelanggan: ${u.customer_number} • Rp ${u.amount.toLocaleString()}</div>
+            <div style="font-size:0.7rem; color:var(--text-sub);">Kantor: ${u.office_name || 'Kantor Pusat'} • Rp ${u.amount.toLocaleString()}</div>
           </div>
           ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteUtility('${u.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
         </div>
@@ -605,7 +614,7 @@
         <div class="data-item">
           <div>
             <div style="font-weight:700; font-size:0.8rem;">${m.title}</div>
-            <div style="font-size:0.7rem; color:var(--text-sub);">Asset: ${m.asset_name || '-'} • Tanggal: ${m.scheduled_date}</div>
+            <div style="font-size:0.7rem; color:var(--text-sub);">Kantor: ${m.office_name || 'Kantor Pusat'} • Asset: ${m.asset_name || '-'} • Tgl: ${m.scheduled_date}</div>
           </div>
           ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteMaintenance('${m.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
         </div>
@@ -618,7 +627,7 @@
         <div class="data-item">
           <div>
             <div style="font-weight:700; font-size:0.8rem;">${w.wo_number} - ${w.title}</div>
-            <div style="font-size:0.7rem; color:var(--text-sub);">Status: ${w.status}</div>
+            <div style="font-size:0.7rem; color:var(--text-sub);">Kantor: ${w.office_name || 'Kantor Pusat'} • Status: ${w.status}</div>
           </div>
           ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteWO('${w.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
         </div>
@@ -631,7 +640,7 @@
         <div class="data-item">
           <div>
             <div style="font-weight:700; font-size:0.8rem;">Area: ${c.area_name}</div>
-            <div style="font-size:0.7rem; color:var(--text-sub);">Petugas: ${c.cleaner_name || '-'} • Tgl: ${c.cleaning_date}</div>
+            <div style="font-size:0.7rem; color:var(--text-sub);">Kantor: ${c.office_name || 'Kantor Pusat'} • Petugas: ${c.cleaner_name || '-'}</div>
           </div>
           ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteCleaning('${c.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
         </div>
@@ -644,7 +653,7 @@
         <div class="data-item">
           <div>
             <div style="font-weight:700; font-size:0.8rem;">${a.title}</div>
-            <div style="font-size:0.7rem; color:var(--text-sub);">${a.category}</div>
+            <div style="font-size:0.7rem; color:var(--text-sub);">Kantor: ${a.office_name || 'Kantor Pusat'} • Kategori: ${a.category}</div>
           </div>
           <div>
             ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteArchive('${a.id}')" style="color:#E53935; font-size:18px; cursor:pointer; margin-right:6px;">delete</span>` : ''}
@@ -654,7 +663,7 @@
       `).join('');
     }
 
-    // ADMIN CRUD FORM MODALS
+    // FORM MODALS WITH OFFICE DROPDOWN SELECTION
     async function addOfficeModal() {
       const { value: f } = await Swal.fire({
         title: 'Tambah Kantor BSN',
@@ -699,12 +708,7 @@
     }
 
     async function addAssetModal() {
-      const { data: offices } = await supabaseClient.from('offices').select('id, name');
-      let officeOptionsHTML = '<option value="">-- Pilih Lokasi Kantor BSN --</option>';
-      if (offices && offices.length > 0) {
-        officeOptionsHTML += offices.map(o => `<option value="${o.id}|${o.name}">${o.name}</option>`).join('');
-      }
-
+      const officeOptionsHTML = await getOfficeDropdownHTML();
       const { value: f } = await Swal.fire({
         title: 'Input Asset Gedung',
         html:
@@ -713,27 +717,13 @@
           '<input id="swal-astname" class="swal2-input" placeholder="Nama Asset (misal: AC Server)">' +
           '<input id="swal-cat" class="swal2-input" placeholder="Kategori (AC/Genset/Lift)">',
         showCancelButton: true, confirmButtonText: 'Simpan Asset', confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [
-          document.getElementById('swal-office').value,
-          document.getElementById('swal-num').value,
-          document.getElementById('swal-astname').value,
-          document.getElementById('swal-cat').value
-        ]
+        preConfirm: () => [document.getElementById('swal-office').value, document.getElementById('swal-num').value, document.getElementById('swal-astname').value, document.getElementById('swal-cat').value]
       });
 
       if (f && f[1] && f[2]) {
-        let selectedOfficeId = null;
-        let selectedOfficeName = 'Kantor Pusat';
-
-        if (f[0]) {
-          const parts = f[0].split('|');
-          selectedOfficeId = parts[0];
-          selectedOfficeName = parts[1];
-        }
-
-        await supabaseClient.from('assets').insert([
-          { office_id: selectedOfficeId, office_name: selectedOfficeName, asset_number: f[1], name: f[2], category: f[3] || 'Umum' }
-        ]);
+        let selectedOfficeId = null, selectedOfficeName = 'Kantor Pusat';
+        if (f[0]) { const parts = f[0].split('|'); selectedOfficeId = parts[0]; selectedOfficeName = parts[1]; }
+        await supabaseClient.from('assets').insert([{ office_id: selectedOfficeId, office_name: selectedOfficeName, asset_number: f[1], name: f[2], category: f[3] || 'Umum' }]);
         openMenuPopup('asset'); loadDatabaseSummary();
       }
     }
@@ -746,19 +736,23 @@
     }
 
     async function addUtilityModal() {
+      const officeOptionsHTML = await getOfficeDropdownHTML();
       const { value: f } = await Swal.fire({
         title: 'Input Tagihan Utilitas',
         html:
+          `<select id="swal-office" class="swal2-input">${officeOptionsHTML}</select>` +
           '<select id="swal-type" class="swal2-input"><option value="PLN">PLN</option><option value="PDAM">PDAM</option><option value="Internet">Internet</option></select>' +
           '<input id="swal-my" class="swal2-input" placeholder="Bulan & Tahun">' +
           '<input id="swal-cust" class="swal2-input" placeholder="No. Pelanggan">' +
           '<input id="swal-amount" type="number" class="swal2-input" placeholder="Nominal Rp">',
         showCancelButton: true, confirmButtonText: 'Simpan Tagihan', confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [document.getElementById('swal-type').value, document.getElementById('swal-my').value, document.getElementById('swal-cust').value, document.getElementById('swal-amount').value]
+        preConfirm: () => [document.getElementById('swal-office').value, document.getElementById('swal-type').value, document.getElementById('swal-my').value, document.getElementById('swal-cust').value, document.getElementById('swal-amount').value]
       });
 
-      if (f && f[3]) {
-        await supabaseClient.from('utility_bills').insert([{ bill_type: f[0], month_year: f[1], customer_number: f[2], amount: parseFloat(f[3]) }]);
+      if (f && f[4]) {
+        let selectedOfficeId = null, selectedOfficeName = 'Kantor Pusat';
+        if (f[0]) { const parts = f[0].split('|'); selectedOfficeId = parts[0]; selectedOfficeName = parts[1]; }
+        await supabaseClient.from('utility_bills').insert([{ office_id: selectedOfficeId, office_name: selectedOfficeName, bill_type: f[1], month_year: f[2], customer_number: f[3], amount: parseFloat(f[4]) }]);
         openMenuPopup('utility');
       }
     }
@@ -771,18 +765,22 @@
     }
 
     async function addMaintenanceModal() {
+      const officeOptionsHTML = await getOfficeDropdownHTML();
       const { value: f } = await Swal.fire({
         title: 'Input Perawatan Routine',
         html:
+          `<select id="swal-office" class="swal2-input">${officeOptionsHTML}</select>` +
           '<input id="swal-mtitle" class="swal2-input" placeholder="Judul Perawatan">' +
           '<input id="swal-mast" class="swal2-input" placeholder="Nama Asset">' +
           '<input id="swal-mdate" type="date" class="swal2-input">',
         showCancelButton: true, confirmButtonText: 'Simpan Perawatan', confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [document.getElementById('swal-mtitle').value, document.getElementById('swal-mast').value, document.getElementById('swal-mdate').value]
+        preConfirm: () => [document.getElementById('swal-office').value, document.getElementById('swal-mtitle').value, document.getElementById('swal-mast').value, document.getElementById('swal-mdate').value]
       });
 
-      if (f && f[0] && f[2]) {
-        await supabaseClient.from('maintenances').insert([{ title: f[0], asset_name: f[1], scheduled_date: f[2] }]);
+      if (f && f[1] && f[3]) {
+        let selectedOfficeId = null, selectedOfficeName = 'Kantor Pusat';
+        if (f[0]) { const parts = f[0].split('|'); selectedOfficeId = parts[0]; selectedOfficeName = parts[1]; }
+        await supabaseClient.from('maintenances').insert([{ office_id: selectedOfficeId, office_name: selectedOfficeName, title: f[1], asset_name: f[2], scheduled_date: f[3] }]);
         openMenuPopup('maintenance');
       }
     }
@@ -795,17 +793,21 @@
     }
 
     async function addWOModal() {
+      const officeOptionsHTML = await getOfficeDropdownHTML();
       const { value: f } = await Swal.fire({
         title: 'Buat Work Order Baru',
         html:
+          `<select id="swal-office" class="swal2-input">${officeOptionsHTML}</select>` +
           '<input id="swal-wonum" class="swal2-input" placeholder="No. WO (misal: WO-001)">' +
           '<input id="swal-wotitle" class="swal2-input" placeholder="Judul Pekerjaan WO">',
         showCancelButton: true, confirmButtonText: 'Simpan WO', confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [document.getElementById('swal-wonum').value, document.getElementById('swal-wotitle').value]
+        preConfirm: () => [document.getElementById('swal-office').value, document.getElementById('swal-wonum').value, document.getElementById('swal-wotitle').value]
       });
 
-      if (f && f[0] && f[1]) {
-        await supabaseClient.from('work_orders').insert([{ wo_number: f[0], title: f[1], status: 'open' }]);
+      if (f && f[1] && f[2]) {
+        let selectedOfficeId = null, selectedOfficeName = 'Kantor Pusat';
+        if (f[0]) { const parts = f[0].split('|'); selectedOfficeId = parts[0]; selectedOfficeName = parts[1]; }
+        await supabaseClient.from('work_orders').insert([{ office_id: selectedOfficeId, office_name: selectedOfficeName, wo_number: f[1], title: f[2], status: 'open' }]);
         openMenuPopup('workorder'); loadDatabaseSummary();
       }
     }
@@ -818,18 +820,22 @@
     }
 
     async function addCleaningModal() {
+      const officeOptionsHTML = await getOfficeDropdownHTML();
       const { value: f } = await Swal.fire({
         title: 'Input General Cleaning',
         html:
+          `<select id="swal-office" class="swal2-input">${officeOptionsHTML}</select>` +
           '<input id="swal-carea" class="swal2-input" placeholder="Area Cleaning">' +
           '<input id="swal-cname" class="swal2-input" placeholder="Nama Petugas">' +
           '<input id="swal-cdate" type="date" class="swal2-input">',
         showCancelButton: true, confirmButtonText: 'Simpan Cleaning', confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [document.getElementById('swal-carea').value, document.getElementById('swal-cname').value, document.getElementById('swal-cdate').value]
+        preConfirm: () => [document.getElementById('swal-office').value, document.getElementById('swal-carea').value, document.getElementById('swal-cname').value, document.getElementById('swal-cdate').value]
       });
 
-      if (f && f[0] && f[2]) {
-        await supabaseClient.from('cleanings').insert([{ area_name: f[0], cleaner_name: f[1], cleaning_date: f[2] }]);
+      if (f && f[1] && f[3]) {
+        let selectedOfficeId = null, selectedOfficeName = 'Kantor Pusat';
+        if (f[0]) { const parts = f[0].split('|'); selectedOfficeId = parts[0]; selectedOfficeName = parts[1]; }
+        await supabaseClient.from('cleanings').insert([{ office_id: selectedOfficeId, office_name: selectedOfficeName, area_name: f[1], cleaner_name: f[2], cleaning_date: f[3] }]);
         openMenuPopup('cleaning');
       }
     }
@@ -842,18 +848,22 @@
     }
 
     async function openUploadArsipModal() {
+      const officeOptionsHTML = await getOfficeDropdownHTML();
       const { value: f } = await Swal.fire({
         title: 'Simpan Arsip Baru',
         html:
+          `<select id="swal-office" class="swal2-input">${officeOptionsHTML}</select>` +
           '<input id="swal-title" class="swal2-input" placeholder="Judul Dokumen">' +
           '<input id="swal-cat" class="swal2-input" placeholder="Kategori Dokumen">',
         showCancelButton: true, confirmButtonText: 'Simpan ke Database', confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [document.getElementById('swal-title').value, document.getElementById('swal-cat').value]
+        preConfirm: () => [document.getElementById('swal-office').value, document.getElementById('swal-title').value, document.getElementById('swal-cat').value]
       });
 
-      if (f && f[0]) {
+      if (f && f[1]) {
+        let selectedOfficeId = null, selectedOfficeName = 'Kantor Pusat';
+        if (f[0]) { const parts = f[0].split('|'); selectedOfficeId = parts[0]; selectedOfficeName = parts[1]; }
         const { data: { user } } = await supabaseClient.auth.getUser();
-        await supabaseClient.from('archives').insert([{ title: f[0], category: f[1] || 'Dokumen', uploaded_by: user.id }]);
+        await supabaseClient.from('archives').insert([{ office_id: selectedOfficeId, office_name: selectedOfficeName, title: f[1], category: f[2] || 'Dokumen', uploaded_by: user.id }]);
         openMenuPopup('arsip'); loadDatabaseSummary();
       }
     }
@@ -875,7 +885,7 @@
         resContainer.innerHTML = data.map(m => `
           <div class="data-item" style="margin-top:8px;">
             <div style="font-weight:700; font-size:0.8rem;">${m.title}</div>
-            <div style="font-size:0.7rem; color:gray;">Asset: ${m.asset_name || '-'}</div>
+            <div style="font-size:0.7rem; color:gray;">Kantor: ${m.office_name || 'Kantor Pusat'} • Asset: ${m.asset_name || '-'}</div>
           </div>
         `).join('');
       } else {
