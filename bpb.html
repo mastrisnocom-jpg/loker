@@ -64,8 +64,6 @@
     .menu-label { font-size: 0.72rem; font-weight: 600; text-align: center; }
 
     .content-box { background: var(--card-bg); border-radius: 18px; padding: 16px; border: 1px solid var(--border); margin-bottom: 16px; }
-    .page-view { display: none; }
-    .page-view.active { display: block; }
 
     #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 10000; display: flex; flex-direction: column; justify-content: center; padding: 20px; overflow-y: auto; }
     .auth-card { background: var(--card-bg); border-radius: 20px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
@@ -73,9 +71,13 @@
     .btn-secondary { width: 100%; padding: 10px; background: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 12px; font-weight: 600; font-size: 0.85rem; cursor: pointer; margin-top: 8px; }
     
     .input-field { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; margin-bottom: 12px; outline: none; font-size: 0.85rem; background: var(--card-bg); color: var(--text-main); }
-    .data-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: var(--icon-bg); border-radius: 12px; margin-bottom: 8px; }
+    .data-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: var(--icon-bg); border-radius: 12px; margin-bottom: 8px; text-align: left; }
+    
+    /* MODAL DEDIKASI MENU POP-UP */
+    .menu-popup-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9998; justify-content: center; align-items: flex-end; }
+    .menu-popup-card { background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 20px; max-height: 80vh; overflow-y: auto; box-shadow: 0 -8px 24px rgba(0,0,0,0.2); }
+    
     .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; padding: 16px; }
-
     .admin-only { display: none; }
   </style>
 </head>
@@ -160,6 +162,7 @@
       </div>
     </header>
 
+    <!-- SUMMARY CARDS ATAS -->
     <div class="summary-scroll">
       <div class="summary-card">
         <div class="icon-wrap" style="background: #E8F5E9; color: #0B8F4D;"><span class="material-symbols-rounded" style="font-size: 20px;">location_city</span></div>
@@ -179,132 +182,44 @@
       </div>
     </div>
 
-    <!-- GRID MENU -->
+    <!-- GRID MENU (SEMUA DI-KLIK MENAMPILKAN POP-UP MODAL) -->
     <div class="menu-grid">
-      <div class="menu-item" onclick="showPage('kantor')"><div class="menu-icon-circle"><span class="material-symbols-rounded">domain</span></div><span class="menu-label">Kantor</span></div>
-      <div class="menu-item" onclick="showPage('asset')"><div class="menu-icon-circle"><span class="material-symbols-rounded">inventory_2</span></div><span class="menu-label">Asset</span></div>
-      <div class="menu-item" onclick="showPage('utility')"><div class="menu-icon-circle"><span class="material-symbols-rounded">receipt_long</span></div><span class="menu-label">Utilitas</span></div>
-      <div class="menu-item" onclick="showPage('maintenance')"><div class="menu-icon-circle"><span class="material-symbols-rounded">build</span></div><span class="menu-label">Perawatan</span></div>
-      <div class="menu-item" onclick="showPage('workorder')"><div class="menu-icon-circle"><span class="material-symbols-rounded">assignment_turned_in</span></div><span class="menu-label">Work Order</span></div>
-      <div class="menu-item" onclick="showPage('cleaning')"><div class="menu-icon-circle"><span class="material-symbols-rounded">cleaning_services</span></div><span class="menu-label">Cleaning</span></div>
-      <div class="menu-item" onclick="showPage('arsip')"><div class="menu-icon-circle" style="background: #E0F2F1; color: #00897B;"><span class="material-symbols-rounded">folder_zip</span></div><span class="menu-label">Arsip</span></div>
-      <div class="menu-item" onclick="showPage('schedule')"><div class="menu-icon-circle"><span class="material-symbols-rounded">calendar_month</span></div><span class="menu-label">Jadwal</span></div>
+      <div class="menu-item" onclick="openMenuPopup('kantor')"><div class="menu-icon-circle"><span class="material-symbols-rounded">domain</span></div><span class="menu-label">Kantor</span></div>
+      <div class="menu-item" onclick="openMenuPopup('asset')"><div class="menu-icon-circle"><span class="material-symbols-rounded">inventory_2</span></div><span class="menu-label">Asset</span></div>
+      <div class="menu-item" onclick="openMenuPopup('utility')"><div class="menu-icon-circle"><span class="material-symbols-rounded">receipt_long</span></div><span class="menu-label">Utilitas</span></div>
+      <div class="menu-item" onclick="openMenuPopup('maintenance')"><div class="menu-icon-circle"><span class="material-symbols-rounded">build</span></div><span class="menu-label">Perawatan</span></div>
+      <div class="menu-item" onclick="openMenuPopup('workorder')"><div class="menu-icon-circle"><span class="material-symbols-rounded">assignment_turned_in</span></div><span class="menu-label">Work Order</span></div>
+      <div class="menu-item" onclick="openMenuPopup('cleaning')"><div class="menu-icon-circle"><span class="material-symbols-rounded">cleaning_services</span></div><span class="menu-label">Cleaning</span></div>
+      <div class="menu-item" onclick="openMenuPopup('arsip')"><div class="menu-icon-circle" style="background: #E0F2F1; color: #00897B;"><span class="material-symbols-rounded">folder_zip</span></div><span class="menu-label">Arsip</span></div>
+      <div class="menu-item" onclick="openMenuPopup('schedule')"><div class="menu-icon-circle"><span class="material-symbols-rounded">calendar_month</span></div><span class="menu-label">Jadwal</span></div>
       <div class="menu-item" onclick="openQRScanner()"><div class="menu-icon-circle" style="background: #EDE7F6; color: #673AB7;"><span class="material-symbols-rounded">qr_code_scanner</span></div><span class="menu-label">Scan QR</span></div>
       <div class="menu-item" onclick="openAIChat()"><div class="menu-icon-circle" style="background: #E3F2FD; color: #2196F3;"><span class="material-symbols-rounded">smart_toy</span></div><span class="menu-label">AI Bot</span></div>
-      <div class="menu-item" onclick="showPage('reports')"><div class="menu-icon-circle"><span class="material-symbols-rounded">assessment</span></div><span class="menu-label">Laporan</span></div>
-      <div class="menu-item" onclick="showPage('sql')"><div class="menu-icon-circle"><span class="material-symbols-rounded">database</span></div><span class="menu-label">SQL RLS</span></div>
+      <div class="menu-item" onclick="openMenuPopup('reports')"><div class="menu-icon-circle"><span class="material-symbols-rounded">assessment</span></div><span class="menu-label">Laporan</span></div>
+      <div class="menu-item" onclick="openMenuPopup('sql')"><div class="menu-icon-circle"><span class="material-symbols-rounded">database</span></div><span class="menu-label">SQL RLS</span></div>
     </div>
 
-    <!-- PAGE VIEWS -->
-    <div id="view-dashboard" class="page-view active">
-      <div class="content-box"><h4 style="font-size: 0.85rem; margin-bottom: 10px;">Grafik Perawatan Gedung Realtime</h4><div style="height: 180px;"><canvas id="mainChart"></canvas></div></div>
+    <!-- DASHBOARD GRAFIK REALTIME -->
+    <div class="content-box">
+      <h4 style="font-size: 0.85rem; margin-bottom: 10px;">Grafik Perawatan Gedung Realtime</h4>
+      <div style="height: 180px;"><canvas id="mainChart"></canvas></div>
     </div>
 
-    <div id="view-kantor" class="page-view">
-      <div class="content-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h4 style="font-size: 0.9rem;">Master Data Kantor BSN</h4>
-          <button onclick="addOfficeModal()" class="admin-only" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Tambah Kantor</button>
-        </div>
-        <div style="overflow-x: auto;">
-          <table id="table-kantor" style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
-            <thead>
-              <tr style="text-align: left; border-bottom: 1px solid var(--border);">
-                <th style="padding: 6px;">Kode</th>
-                <th style="padding: 6px;">Nama Kantor</th>
-                <th style="padding: 6px;">PIC</th>
-                <th style="padding: 6px;" class="admin-only">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="kantor-rows"></tbody>
-          </table>
-        </div>
+  </div>
+
+  <!-- POP-UP DIALOG UNTUK SEMUA MENU -->
+  <div class="menu-popup-backdrop" id="menu-popup-modal">
+    <div class="menu-popup-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+        <h3 id="popup-title" style="font-size: 1rem;">Detail Menu</h3>
+        <span class="material-symbols-rounded" onclick="closeMenuPopup()" style="cursor: pointer; color: #E53935;">close</span>
       </div>
-    </div>
 
-    <div id="view-asset" class="page-view">
-      <div class="content-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h4 style="font-size: 0.9rem;">Asset Management</h4>
-          <button onclick="addAssetModal()" class="admin-only" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Input Asset</button>
-        </div>
-        <div id="asset-card-list"></div>
-      </div>
-    </div>
+      <!-- POP-UP HEADER ACTION (ADMINISTRATOR BUTTON) -->
+      <div id="popup-admin-action" style="margin-bottom: 12px; text-align: right;"></div>
 
-    <div id="view-utility" class="page-view">
-      <div class="content-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h4 style="font-size: 0.9rem;">Tagihan Utilitas Gedung</h4>
-          <button onclick="addUtilityModal()" class="admin-only" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Tagihan Baru</button>
-        </div>
-        <div id="utility-list"></div>
-      </div>
+      <!-- POP-UP CONTENT DATA BODY -->
+      <div id="popup-body-content"></div>
     </div>
-
-    <div id="view-maintenance" class="page-view">
-      <div class="content-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h4 style="font-size: 0.9rem;">Perawatan Routine Gedung</h4>
-          <button onclick="addMaintenanceModal()" class="admin-only" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Jadwal Perawatan</button>
-        </div>
-        <div id="maintenance-list"></div>
-      </div>
-    </div>
-
-    <div id="view-workorder" class="page-view">
-      <div class="content-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h4 style="font-size: 0.9rem;">Work Order Execution</h4>
-          <button onclick="addWOModal()" class="admin-only" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Buat WO Baru</button>
-        </div>
-        <div id="wo-list"></div>
-      </div>
-    </div>
-
-    <div id="view-cleaning" class="page-view">
-      <div class="content-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h4 style="font-size: 0.9rem;">General Cleaning Checklist</h4>
-          <button onclick="addCleaningModal()" class="admin-only" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Input Cleaning</button>
-        </div>
-        <div id="cleaning-list"></div>
-      </div>
-    </div>
-
-    <div id="view-arsip" class="page-view">
-      <div class="content-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h4 style="font-size: 0.9rem;">Penyimpanan Arsip</h4>
-          <button onclick="openUploadArsipModal()" class="admin-only" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Simpan Arsip</button>
-        </div>
-        <div id="arsip-list"></div>
-      </div>
-    </div>
-
-    <div id="view-schedule" class="page-view">
-      <div class="content-box">
-        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Jadwal Kegiatan Gedung</h4>
-        <input type="date" id="calendar-picker" class="input-field" onchange="filterScheduleByDate()">
-        <div id="schedule-results"></div>
-      </div>
-    </div>
-
-    <div id="view-reports" class="page-view">
-      <div class="content-box">
-        <h4 style="font-size: 0.9rem; margin-bottom: 10px;">Laporan Operasional & Export</h4>
-        <button onclick="window.print()" class="btn-primary" style="margin-bottom:8px;">Print / Export PDF</button>
-        <button onclick="exportExcel('table-kantor', 'Laporan_BBMS')" class="btn-primary" style="background: #2E7D32;">Export Excel Data Kantor</button>
-      </div>
-    </div>
-
-    <div id="view-sql" class="page-view">
-      <div class="content-box">
-        <h4 style="font-size: 0.85rem; margin-bottom: 6px;">Supabase Realtime Connected</h4>
-        <p style="font-size:0.7rem; color:var(--text-sub);">Database: https://pykkfcszdihobpwhqinq.supabase.co</p>
-      </div>
-    </div>
-
   </div>
 
   <!-- MODAL CAMERA SCANNER -->
@@ -343,7 +258,7 @@
     }
 
     function initAuthListeners() {
-      // PROSES REGISTER
+      // REGISTER
       document.getElementById("register-form").addEventListener("submit", async (e) => {
         e.preventDefault();
         const email = document.getElementById("reg-email").value.trim();
@@ -357,15 +272,12 @@
         const { data, error } = await supabaseClient.auth.signUp({
           email: email,
           password: password,
-          options: {
-            data: { full_name: fullName, phone: phone, role: role }
-          }
+          options: { data: { full_name: fullName, phone: phone, role: role } }
         });
 
         if (error) {
           Swal.fire('Registrasi Gagal', error.message, 'error');
         } else {
-          // Manual Fallback Insert Profil Jika Auto-Trigger Terlambat
           if (data.user) {
             await supabaseClient.from('profiles').upsert([
               { id: data.user.id, full_name: fullName, phone: phone, role: role }
@@ -384,7 +296,7 @@
         }
       });
 
-      // PROSES LOGIN
+      // LOGIN
       document.getElementById("login-form").addEventListener("submit", async (e) => {
         e.preventDefault();
         const email = document.getElementById("login-email").value.trim();
@@ -429,13 +341,7 @@
           document.getElementById("user-name").innerText = session.user.email.split('@')[0];
         }
 
-        if (currentUserRole === 'administrator') {
-          document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'inline-block');
-        } else {
-          document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-        }
-
-        loadDatabaseData();
+        loadDatabaseSummary();
       } else {
         document.getElementById("auth-overlay").style.display = "flex";
       }
@@ -462,8 +368,6 @@
       });
 
       if (formValues && formValues[0]) {
-        Swal.fire({ title: 'Memperbarui Profil...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
         const { error } = await supabaseClient
           .from('profiles')
           .update({ full_name: formValues[0], phone: formValues[1] })
@@ -483,424 +387,391 @@
       document.getElementById("auth-overlay").style.display = "flex";
     }
 
-    async function loadDatabaseData() {
-      // 1. Fetch Offices
-      const { data: offices, count: officeCount } = await supabaseClient.from('offices').select('*', { count: 'exact' });
+    async function loadDatabaseSummary() {
+      const { count: officeCount } = await supabaseClient.from('offices').select('*', { count: 'exact', head: true });
       document.getElementById('val-total-kantor').innerText = officeCount || 0;
-      renderOfficeRows(offices || []);
 
-      // 2. Fetch Assets
-      const { data: assets, count: assetCount } = await supabaseClient.from('assets').select('*', { count: 'exact' });
-      document.getElementById('val-total-asset').innerText = assetCount || 0;
-      renderAssetList(assets || []);
-
-      // 3. Fetch Work Orders
-      const { data: wos, count: woCount } = await supabaseClient.from('work_orders').select('*', { count: 'exact' });
+      const { count: woCount } = await supabaseClient.from('work_orders').select('*', { count: 'exact', head: true });
       document.getElementById('val-total-wo').innerText = woCount || 0;
-      renderWOList(wos || []);
 
-      // 4. Fetch Archives
-      const { data: archives, count: archiveCount } = await supabaseClient.from('archives').select('*', { count: 'exact' });
+      const { count: archiveCount } = await supabaseClient.from('archives').select('*', { count: 'exact', head: true });
       document.getElementById('val-total-arsip').innerText = archiveCount || 0;
-      renderArsipList(archives || []);
 
-      // 5. Fetch Utility Bills
-      const { data: bills } = await supabaseClient.from('utility_bills').select('*');
-      renderUtilityList(bills || []);
+      const { count: assetCount } = await supabaseClient.from('assets').select('*', { count: 'exact', head: true });
+      document.getElementById('val-total-asset').innerText = assetCount || 0;
+    }
 
-      // 6. Fetch Maintenances
-      const { data: maintenances } = await supabaseClient.from('maintenances').select('*');
-      renderMaintenanceList(maintenances || []);
+    // =========================================================
+    // POP-UP MENU DIALOG GENERATOR (UNTUK SEMUA MENU GRID)
+    // =========================================================
 
-      // 7. Fetch Cleanings
-      const { data: cleanings } = await supabaseClient.from('cleanings').select('*');
-      renderCleaningList(cleanings || []);
+    async function openMenuPopup(menuType) {
+      const popupModal = document.getElementById("menu-popup-modal");
+      const titleEl = document.getElementById("popup-title");
+      const adminActionEl = document.getElementById("popup-admin-action");
+      const contentEl = document.getElementById("popup-body-content");
 
-      if (currentUserRole === 'administrator') {
-        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'inline-block');
+      popupModal.style.display = "flex";
+      contentEl.innerHTML = `<p style="font-size:0.8rem; text-align:center; color:gray; padding:20px;">Memuat data ${menuType}...</p>`;
+      adminActionEl.innerHTML = "";
+
+      if (menuType === 'kantor') {
+        titleEl.innerText = "Master Data Kantor BSN";
+        if (currentUserRole === 'administrator') {
+          adminActionEl.innerHTML = `<button onclick="addOfficeModal()" class="btn-primary" style="padding:6px 12px; font-size:0.75rem;">+ Tambah Kantor</button>`;
+        }
+        const { data } = await supabaseClient.from('offices').select('*');
+        renderKantorPopupContent(data || [], contentEl);
+      } 
+      else if (menuType === 'asset') {
+        titleEl.innerText = "Asset Management Gedung";
+        if (currentUserRole === 'administrator') {
+          adminActionEl.innerHTML = `<button onclick="addAssetModal()" class="btn-primary" style="padding:6px 12px; font-size:0.75rem;">+ Input Asset</button>`;
+        }
+        const { data } = await supabaseClient.from('assets').select('*');
+        renderAssetPopupContent(data || [], contentEl);
+      }
+      else if (menuType === 'utility') {
+        titleEl.innerText = "Tagihan Utilitas Gedung";
+        if (currentUserRole === 'administrator') {
+          adminActionEl.innerHTML = `<button onclick="addUtilityModal()" class="btn-primary" style="padding:6px 12px; font-size:0.75rem;">+ Input Tagihan</button>`;
+        }
+        const { data } = await supabaseClient.from('utility_bills').select('*');
+        renderUtilityPopupContent(data || [], contentEl);
+      }
+      else if (menuType === 'maintenance') {
+        titleEl.innerText = "Perawatan Routine Gedung";
+        if (currentUserRole === 'administrator') {
+          adminActionEl.innerHTML = `<button onclick="addMaintenanceModal()" class="btn-primary" style="padding:6px 12px; font-size:0.75rem;">+ Jadwal Perawatan</button>`;
+        }
+        const { data } = await supabaseClient.from('maintenances').select('*');
+        renderMaintenancePopupContent(data || [], contentEl);
+      }
+      else if (menuType === 'workorder') {
+        titleEl.innerText = "Work Order Execution";
+        if (currentUserRole === 'administrator') {
+          adminActionEl.innerHTML = `<button onclick="addWOModal()" class="btn-primary" style="padding:6px 12px; font-size:0.75rem;">+ Buat WO Baru</button>`;
+        }
+        const { data } = await supabaseClient.from('work_orders').select('*');
+        renderWOPopupContent(data || [], contentEl);
+      }
+      else if (menuType === 'cleaning') {
+        titleEl.innerText = "General Cleaning Checklist";
+        if (currentUserRole === 'administrator') {
+          adminActionEl.innerHTML = `<button onclick="addCleaningModal()" class="btn-primary" style="padding:6px 12px; font-size:0.75rem;">+ Input Cleaning</button>`;
+        }
+        const { data } = await supabaseClient.from('cleanings').select('*');
+        renderCleaningPopupContent(data || [], contentEl);
+      }
+      else if (menuType === 'arsip') {
+        titleEl.innerText = "Penyimpanan Arsip Dokumen";
+        if (currentUserRole === 'administrator') {
+          adminActionEl.innerHTML = `<button onclick="openUploadArsipModal()" class="btn-primary" style="padding:6px 12px; font-size:0.75rem;">+ Simpan Arsip</button>`;
+        }
+        const { data } = await supabaseClient.from('archives').select('*');
+        renderArsipPopupContent(data || [], contentEl);
+      }
+      else if (menuType === 'schedule') {
+        titleEl.innerText = "Jadwal Kegiatan Gedung";
+        contentEl.innerHTML = `
+          <input type="date" id="calendar-picker" class="input-field" onchange="filterScheduleByDatePopup()">
+          <div id="popup-schedule-results">
+            <p style="font-size:0.75rem; color:gray; text-align:center;">Pilih tanggal untuk melihat jadwal.</p>
+          </div>
+        `;
+      }
+      else if (menuType === 'reports') {
+        titleEl.innerText = "Laporan & Export Document";
+        contentEl.innerHTML = `
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <button onclick="window.print()" class="btn-primary">Print / Export PDF Laporan</button>
+            <button onclick="exportExcelFromPopup()" class="btn-primary" style="background:#2E7D32;">Export Excel Master Data</button>
+          </div>
+        `;
+      }
+      else if (menuType === 'sql') {
+        titleEl.innerText = "Supabase Database & RLS";
+        contentEl.innerHTML = `
+          <div style="background:#121413; color:#00FF66; padding:12px; border-radius:12px; font-size:0.7rem; font-family:monospace;">
+            Connected: https://pykkfcszdihobpwhqinq.supabase.co<br>
+            Tables: offices, assets, utility_bills, maintenances, work_orders, cleanings, archives, profiles
+          </div>
+        `;
       }
     }
 
-    // CRUD ACTIONS ADMINISTRATOR
+    function closeMenuPopup() {
+      document.getElementById("menu-popup-modal").style.display = "none";
+    }
+
+    // POP-UP RENDER CONTENT HELPERS
+    function renderKantorPopupContent(data, el) {
+      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada data kantor.</p>`; return; }
+      el.innerHTML = data.map(o => `
+        <div class="data-item">
+          <div>
+            <div style="font-weight:700; font-size:0.8rem;">${o.code} - ${o.name}</div>
+            <div style="font-size:0.7rem; color:var(--text-sub);">PIC: ${o.pic_name || '-'} • ${o.address || '-'}</div>
+          </div>
+          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteOffice('${o.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderAssetPopupContent(data, el) {
+      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada asset gedung.</p>`; return; }
+      el.innerHTML = data.map(a => `
+        <div class="data-item">
+          <div>
+            <div style="font-weight:700; font-size:0.8rem;">${a.name} (${a.asset_number})</div>
+            <div style="font-size:0.7rem; color:var(--text-sub);">Kategori: ${a.category} • Status: ${a.status}</div>
+          </div>
+          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteAsset('${a.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderUtilityPopupContent(data, el) {
+      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada tagihan utilitas.</p>`; return; }
+      el.innerHTML = data.map(u => `
+        <div class="data-item">
+          <div>
+            <div style="font-weight:700; font-size:0.8rem;">Tagihan ${u.bill_type} (${u.month_year})</div>
+            <div style="font-size:0.7rem; color:var(--text-sub);">No. Pelanggan: ${u.customer_number} • Rp ${u.amount.toLocaleString()}</div>
+          </div>
+          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteUtility('${u.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderMaintenancePopupContent(data, el) {
+      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada jadwal perawatan.</p>`; return; }
+      el.innerHTML = data.map(m => `
+        <div class="data-item">
+          <div>
+            <div style="font-weight:700; font-size:0.8rem;">${m.title}</div>
+            <div style="font-size:0.7rem; color:var(--text-sub);">Asset: ${m.asset_name || '-'} • Tanggal: ${m.scheduled_date}</div>
+          </div>
+          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteMaintenance('${m.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderWOPopupContent(data, el) {
+      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada Work Order.</p>`; return; }
+      el.innerHTML = data.map(w => `
+        <div class="data-item">
+          <div>
+            <div style="font-weight:700; font-size:0.8rem;">${w.wo_number} - ${w.title}</div>
+            <div style="font-size:0.7rem; color:var(--text-sub);">Status: ${w.status}</div>
+          </div>
+          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteWO('${w.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderCleaningPopupContent(data, el) {
+      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada data cleaning.</p>`; return; }
+      el.innerHTML = data.map(c => `
+        <div class="data-item">
+          <div>
+            <div style="font-weight:700; font-size:0.8rem;">Area: ${c.area_name}</div>
+            <div style="font-size:0.7rem; color:var(--text-sub);">Petugas: ${c.cleaner_name || '-'} • Tgl: ${c.cleaning_date}</div>
+          </div>
+          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteCleaning('${c.id}')" style="color:#E53935; font-size:18px; cursor:pointer;">delete</span>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderArsipPopupContent(data, el) {
+      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center;">Belum ada file arsip.</p>`; return; }
+      el.innerHTML = data.map(a => `
+        <div class="data-item">
+          <div>
+            <div style="font-weight:700; font-size:0.8rem;">${a.title}</div>
+            <div style="font-size:0.7rem; color:var(--text-sub);">${a.category}</div>
+          </div>
+          <div>
+            ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteArchive('${a.id}')" style="color:#E53935; font-size:18px; cursor:pointer; margin-right:6px;">delete</span>` : ''}
+            <span class="material-symbols-rounded" style="color:var(--primary); font-size:18px; cursor:pointer;">download</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // FORM INPUTS MODAL ADMINISTRATOR
     async function addOfficeModal() {
-      const { value: formValues } = await Swal.fire({
+      const { value: f } = await Swal.fire({
         title: 'Tambah Kantor BSN',
         html:
-          '<input id="swal-code" class="swal2-input" placeholder="Kode Kantor (misal: BSN-001)">' +
+          '<input id="swal-code" class="swal2-input" placeholder="Kode (misal: BSN-001)">' +
           '<input id="swal-name" class="swal2-input" placeholder="Nama Kantor">' +
           '<input id="swal-pic" class="swal2-input" placeholder="PIC Kantor">' +
           '<input id="swal-addr" class="swal2-input" placeholder="Alamat Kantor">',
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Simpan',
-        confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [
-          document.getElementById('swal-code').value,
-          document.getElementById('swal-name').value,
-          document.getElementById('swal-pic').value,
-          document.getElementById('swal-addr').value
-        ]
+        showCancelButton: true, confirmButtonText: 'Simpan', confirmButtonColor: '#0B8F4D',
+        preConfirm: () => [document.getElementById('swal-code').value, document.getElementById('swal-name').value, document.getElementById('swal-pic').value, document.getElementById('swal-addr').value]
       });
 
-      if (formValues && formValues[0] && formValues[1]) {
-        const { error } = await supabaseClient.from('offices').insert([
-          { code: formValues[0], name: formValues[1], pic_name: formValues[2], address: formValues[3] || 'Alamat BSN' }
-        ]);
-
-        if (error) Swal.fire('Gagal', error.message, 'error');
-        else { Swal.fire('Berhasil', 'Kantor baru disimpan', 'success'); loadDatabaseData(); }
+      if (f && f[0] && f[1]) {
+        await supabaseClient.from('offices').insert([{ code: f[0], name: f[1], pic_name: f[2], address: f[3] || 'Alamat BSN' }]);
+        openMenuPopup('kantor'); loadDatabaseSummary();
       }
-    }
-
-    function renderOfficeRows(offices) {
-      const tbody = document.getElementById("kantor-rows");
-      if (offices.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="padding:10px; text-align:center; color:gray;">Belum ada data kantor.</td></tr>`;
-        return;
-      }
-      tbody.innerHTML = offices.map(o => `
-        <tr style="border-bottom: 1px solid var(--border);">
-          <td style="padding: 6px;"><b>${o.code}</b></td>
-          <td style="padding: 6px;">${o.name}</td>
-          <td style="padding: 6px;">${o.pic_name || '-'}</td>
-          <td style="padding: 6px;" class="admin-only">
-            <span class="material-symbols-rounded" onclick="deleteOffice('${o.id}')" style="cursor:pointer; font-size:16px; color:#E53935;">delete</span>
-          </td>
-        </tr>
-      `).join('');
     }
 
     async function deleteOffice(id) {
       if (confirm("Hapus kantor ini?")) {
         await supabaseClient.from('offices').delete().eq('id', id);
-        loadDatabaseData();
+        openMenuPopup('kantor'); loadDatabaseSummary();
       }
     }
 
     async function addAssetModal() {
-      const { value: formValues } = await Swal.fire({
+      const { value: f } = await Swal.fire({
         title: 'Input Asset Gedung',
         html:
           '<input id="swal-num" class="swal2-input" placeholder="No Asset (misal: AST-001)">' +
-          '<input id="swal-astname" class="swal2-input" placeholder="Nama Asset (misal: AC Server)">' +
+          '<input id="swal-astname" class="swal2-input" placeholder="Nama Asset">' +
           '<input id="swal-cat" class="swal2-input" placeholder="Kategori (AC/Genset/Lift)">',
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Simpan Asset',
-        confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [
-          document.getElementById('swal-num').value,
-          document.getElementById('swal-astname').value,
-          document.getElementById('swal-cat').value
-        ]
+        showCancelButton: true, confirmButtonText: 'Simpan Asset', confirmButtonColor: '#0B8F4D',
+        preConfirm: () => [document.getElementById('swal-num').value, document.getElementById('swal-astname').value, document.getElementById('swal-cat').value]
       });
 
-      if (formValues && formValues[0] && formValues[1]) {
-        const { error } = await supabaseClient.from('assets').insert([
-          { asset_number: formValues[0], name: formValues[1], category: formValues[2] || 'Umum' }
-        ]);
-
-        if (error) Swal.fire('Gagal', error.message, 'error');
-        else { Swal.fire('Berhasil', 'Asset berhasil di-input', 'success'); loadDatabaseData(); }
+      if (f && f[0] && f[1]) {
+        await supabaseClient.from('assets').insert([{ asset_number: f[0], name: f[1], category: f[2] || 'Umum' }]);
+        openMenuPopup('asset'); loadDatabaseSummary();
       }
-    }
-
-    function renderAssetList(items) {
-      const container = document.getElementById("asset-card-list");
-      if (items.length === 0) {
-        container.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center; padding:10px;">Belum ada asset gedung.</p>`;
-        return;
-      }
-      container.innerHTML = items.map(a => `
-        <div class="data-item">
-          <div>
-            <div style="font-weight: 700; font-size: 0.8rem;">${a.name} (${a.asset_number})</div>
-            <div style="font-size: 0.7rem; color: var(--text-sub);">Kategori: ${a.category} • Status: ${a.status}</div>
-          </div>
-          <span class="material-symbols-rounded admin-only" onclick="deleteAsset('${a.id}')" style="color: #E53935; font-size: 18px; cursor: pointer;">delete</span>
-        </div>
-      `).join('');
     }
 
     async function deleteAsset(id) {
       if (confirm("Hapus asset ini?")) {
         await supabaseClient.from('assets').delete().eq('id', id);
-        loadDatabaseData();
+        openMenuPopup('asset'); loadDatabaseSummary();
       }
     }
 
     async function addUtilityModal() {
-      const { value: formValues } = await Swal.fire({
+      const { value: f } = await Swal.fire({
         title: 'Input Tagihan Utilitas',
         html:
           '<select id="swal-type" class="swal2-input"><option value="PLN">PLN</option><option value="PDAM">PDAM</option><option value="Internet">Internet</option></select>' +
-          '<input id="swal-my" class="swal2-input" placeholder="Bulan & Tahun (misal: Agustus 2026)">' +
+          '<input id="swal-my" class="swal2-input" placeholder="Bulan & Tahun">' +
           '<input id="swal-cust" class="swal2-input" placeholder="No. Pelanggan">' +
           '<input id="swal-amount" type="number" class="swal2-input" placeholder="Nominal Rp">',
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Simpan Tagihan',
-        confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [
-          document.getElementById('swal-type').value,
-          document.getElementById('swal-my').value,
-          document.getElementById('swal-cust').value,
-          document.getElementById('swal-amount').value
-        ]
+        showCancelButton: true, confirmButtonText: 'Simpan Tagihan', confirmButtonColor: '#0B8F4D',
+        preConfirm: () => [document.getElementById('swal-type').value, document.getElementById('swal-my').value, document.getElementById('swal-cust').value, document.getElementById('swal-amount').value]
       });
 
-      if (formValues && formValues[3]) {
-        const { error } = await supabaseClient.from('utility_bills').insert([
-          { bill_type: formValues[0], month_year: formValues[1], customer_number: formValues[2], amount: parseFloat(formValues[3]) }
-        ]);
-
-        if (error) Swal.fire('Gagal', error.message, 'error');
-        else { Swal.fire('Berhasil', 'Tagihan disimpan', 'success'); loadDatabaseData(); }
+      if (f && f[3]) {
+        await supabaseClient.from('utility_bills').insert([{ bill_type: f[0], month_year: f[1], customer_number: f[2], amount: parseFloat(f[3]) }]);
+        openMenuPopup('utility');
       }
-    }
-
-    function renderUtilityList(items) {
-      const container = document.getElementById("utility-list");
-      if (items.length === 0) {
-        container.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center; padding:10px;">Belum ada catatan tagihan utilitas.</p>`;
-        return;
-      }
-      container.innerHTML = items.map(u => `
-        <div class="data-item">
-          <div>
-            <div style="font-weight: 700; font-size: 0.8rem;">Tagihan ${u.bill_type} (${u.month_year})</div>
-            <div style="font-size: 0.7rem; color: var(--text-sub);">No. Pelanggan: ${u.customer_number} • Nominal: Rp ${u.amount.toLocaleString()}</div>
-          </div>
-          <span class="material-symbols-rounded admin-only" onclick="deleteUtility('${u.id}')" style="color: #E53935; font-size: 18px; cursor: pointer;">delete</span>
-        </div>
-      `).join('');
     }
 
     async function deleteUtility(id) {
-      if (confirm("Hapus catatan tagihan ini?")) {
+      if (confirm("Hapus tagihan ini?")) {
         await supabaseClient.from('utility_bills').delete().eq('id', id);
-        loadDatabaseData();
+        openMenuPopup('utility');
       }
     }
 
     async function addMaintenanceModal() {
-      const { value: formValues } = await Swal.fire({
+      const { value: f } = await Swal.fire({
         title: 'Input Perawatan Routine',
         html:
-          '<input id="swal-mtitle" class="swal2-input" placeholder="Judul Perawatan (misal: Service AC)">' +
+          '<input id="swal-mtitle" class="swal2-input" placeholder="Judul Perawatan">' +
           '<input id="swal-mast" class="swal2-input" placeholder="Nama Asset">' +
           '<input id="swal-mdate" type="date" class="swal2-input">',
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Simpan Perawatan',
-        confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [
-          document.getElementById('swal-mtitle').value,
-          document.getElementById('swal-mast').value,
-          document.getElementById('swal-mdate').value
-        ]
+        showCancelButton: true, confirmButtonText: 'Simpan Perawatan', confirmButtonColor: '#0B8F4D',
+        preConfirm: () => [document.getElementById('swal-mtitle').value, document.getElementById('swal-mast').value, document.getElementById('swal-mdate').value]
       });
 
-      if (formValues && formValues[0] && formValues[2]) {
-        const { error } = await supabaseClient.from('maintenances').insert([
-          { title: formValues[0], asset_name: formValues[1], scheduled_date: formValues[2] }
-        ]);
-
-        if (error) Swal.fire('Gagal', error.message, 'error');
-        else { Swal.fire('Berhasil', 'Jadwal perawatan disimpan', 'success'); loadDatabaseData(); }
+      if (f && f[0] && f[2]) {
+        await supabaseClient.from('maintenances').insert([{ title: f[0], asset_name: f[1], scheduled_date: f[2] }]);
+        openMenuPopup('maintenance');
       }
-    }
-
-    function renderMaintenanceList(items) {
-      const container = document.getElementById("maintenance-list");
-      if (items.length === 0) {
-        container.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center; padding:10px;">Belum ada jadwal perawatan.</p>`;
-        return;
-      }
-      container.innerHTML = items.map(m => `
-        <div class="data-item">
-          <div>
-            <div style="font-weight: 700; font-size: 0.8rem;">${m.title}</div>
-            <div style="font-size: 0.7rem; color: var(--text-sub);">Asset: ${m.asset_name || '-'} • Tgl: ${m.scheduled_date}</div>
-          </div>
-          <span class="material-symbols-rounded admin-only" onclick="deleteMaintenance('${m.id}')" style="color: #E53935; font-size: 18px; cursor: pointer;">delete</span>
-        </div>
-      `).join('');
     }
 
     async function deleteMaintenance(id) {
       if (confirm("Hapus perawatan ini?")) {
         await supabaseClient.from('maintenances').delete().eq('id', id);
-        loadDatabaseData();
+        openMenuPopup('maintenance');
       }
     }
 
     async function addWOModal() {
-      const { value: formValues } = await Swal.fire({
+      const { value: f } = await Swal.fire({
         title: 'Buat Work Order Baru',
         html:
           '<input id="swal-wonum" class="swal2-input" placeholder="No. WO (misal: WO-001)">' +
           '<input id="swal-wotitle" class="swal2-input" placeholder="Judul Pekerjaan WO">',
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Simpan WO',
-        confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [
-          document.getElementById('swal-wonum').value,
-          document.getElementById('swal-wotitle').value
-        ]
+        showCancelButton: true, confirmButtonText: 'Simpan WO', confirmButtonColor: '#0B8F4D',
+        preConfirm: () => [document.getElementById('swal-wonum').value, document.getElementById('swal-wotitle').value]
       });
 
-      if (formValues && formValues[0] && formValues[1]) {
-        const { error } = await supabaseClient.from('work_orders').insert([
-          { wo_number: formValues[0], title: formValues[1], status: 'open' }
-        ]);
-
-        if (error) Swal.fire('Gagal', error.message, 'error');
-        else { Swal.fire('Berhasil', 'WO baru terbit', 'success'); loadDatabaseData(); }
+      if (f && f[0] && f[1]) {
+        await supabaseClient.from('work_orders').insert([{ wo_number: f[0], title: f[1], status: 'open' }]);
+        openMenuPopup('workorder'); loadDatabaseSummary();
       }
-    }
-
-    function renderWOList(items) {
-      const container = document.getElementById("wo-list");
-      if (items.length === 0) {
-        container.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center; padding:10px;">Belum ada Work Order.</p>`;
-        return;
-      }
-
-      container.innerHTML = items.map(w => `
-        <div class="data-item">
-          <div>
-            <div style="font-weight: 700; font-size: 0.8rem;">${w.wo_number} - ${w.title}</div>
-            <div style="font-size: 0.7rem; color: var(--text-sub);">Status: ${w.status}</div>
-          </div>
-          <span class="material-symbols-rounded admin-only" onclick="deleteWO('${w.id}')" style="color: #E53935; font-size: 18px; cursor: pointer;">delete</span>
-        </div>
-      `).join('');
     }
 
     async function deleteWO(id) {
       if (confirm("Hapus Work Order ini?")) {
         await supabaseClient.from('work_orders').delete().eq('id', id);
-        loadDatabaseData();
+        openMenuPopup('workorder'); loadDatabaseSummary();
       }
     }
 
     async function addCleaningModal() {
-      const { value: formValues } = await Swal.fire({
+      const { value: f } = await Swal.fire({
         title: 'Input General Cleaning',
         html:
-          '<input id="swal-carea" class="swal2-input" placeholder="Area Cleaning (Lobby/Kaca/Toilet)">' +
-          '<input id="swal-cname" class="swal2-input" placeholder="Nama Petugas Cleaning">' +
+          '<input id="swal-carea" class="swal2-input" placeholder="Area Cleaning">' +
+          '<input id="swal-cname" class="swal2-input" placeholder="Nama Petugas">' +
           '<input id="swal-cdate" type="date" class="swal2-input">',
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Simpan Cleaning',
-        confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [
-          document.getElementById('swal-carea').value,
-          document.getElementById('swal-cname').value,
-          document.getElementById('swal-cdate').value
-        ]
+        showCancelButton: true, confirmButtonText: 'Simpan Cleaning', confirmButtonColor: '#0B8F4D',
+        preConfirm: () => [document.getElementById('swal-carea').value, document.getElementById('swal-cname').value, document.getElementById('swal-cdate').value]
       });
 
-      if (formValues && formValues[0] && formValues[2]) {
-        const { error } = await supabaseClient.from('cleanings').insert([
-          { area_name: formValues[0], cleaner_name: formValues[1], cleaning_date: formValues[2] }
-        ]);
-
-        if (error) Swal.fire('Gagal', error.message, 'error');
-        else { Swal.fire('Berhasil', 'Data cleaning tersimpan', 'success'); loadDatabaseData(); }
+      if (f && f[0] && f[2]) {
+        await supabaseClient.from('cleanings').insert([{ area_name: f[0], cleaner_name: f[1], cleaning_date: f[2] }]);
+        openMenuPopup('cleaning');
       }
-    }
-
-    function renderCleaningList(items) {
-      const container = document.getElementById("cleaning-list");
-      if (items.length === 0) {
-        container.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center; padding:10px;">Belum ada catatan cleaning.</p>`;
-        return;
-      }
-      container.innerHTML = items.map(c => `
-        <div class="data-item">
-          <div>
-            <div style="font-weight: 700; font-size: 0.8rem;">Area: ${c.area_name}</div>
-            <div style="font-size: 0.7rem; color: var(--text-sub);">Petugas: ${c.cleaner_name || '-'} • Tgl: ${c.cleaning_date}</div>
-          </div>
-          <span class="material-symbols-rounded admin-only" onclick="deleteCleaning('${c.id}')" style="color: #E53935; font-size: 18px; cursor: pointer;">delete</span>
-        </div>
-      `).join('');
     }
 
     async function deleteCleaning(id) {
-      if (confirm("Hapus catatan cleaning ini?")) {
+      if (confirm("Hapus cleaning ini?")) {
         await supabaseClient.from('cleanings').delete().eq('id', id);
-        loadDatabaseData();
+        openMenuPopup('cleaning');
       }
-    }
-
-    function renderArsipList(items) {
-      const container = document.getElementById("arsip-list");
-      if (items.length === 0) {
-        container.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center; padding:10px;">Belum ada file arsip.</p>`;
-        return;
-      }
-
-      container.innerHTML = items.map(a => `
-        <div class="data-item">
-          <div>
-            <div style="font-weight: 700; font-size: 0.8rem;">${a.title}</div>
-            <div style="font-size: 0.7rem; color: var(--text-sub);">${a.category}</div>
-          </div>
-          <div>
-            <span class="material-symbols-rounded admin-only" onclick="deleteArchive('${a.id}')" style="color: #E53935; font-size: 18px; cursor: pointer; margin-right:6px;">delete</span>
-            <span class="material-symbols-rounded" style="color: var(--primary); font-size: 18px; cursor: pointer;">download</span>
-          </div>
-        </div>
-      `).join('');
     }
 
     async function openUploadArsipModal() {
-      const { value: formValues } = await Swal.fire({
+      const { value: f } = await Swal.fire({
         title: 'Simpan Arsip Baru',
         html:
           '<input id="swal-title" class="swal2-input" placeholder="Judul Dokumen">' +
-          '<input id="swal-cat" class="swal2-input" placeholder="Kategori (misal: Kontrak/SLF)">',
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Simpan ke Database',
-        confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [
-          document.getElementById('swal-title').value,
-          document.getElementById('swal-cat').value
-        ]
+          '<input id="swal-cat" class="swal2-input" placeholder="Kategori Dokumen">',
+        showCancelButton: true, confirmButtonText: 'Simpan ke Database', confirmButtonColor: '#0B8F4D',
+        preConfirm: () => [document.getElementById('swal-title').value, document.getElementById('swal-cat').value]
       });
 
-      if (formValues && formValues[0]) {
+      if (f && f[0]) {
         const { data: { user } } = await supabaseClient.auth.getUser();
-        const { error } = await supabaseClient.from('archives').insert([
-          { title: formValues[0], category: formValues[1] || 'Dokumen', uploaded_by: user.id }
-        ]);
-
-        if (error) Swal.fire('Gagal Simpan', error.message, 'error');
-        else { Swal.fire('Tersimpan', 'Arsip baru berhasil disimpan', 'success'); loadDatabaseData(); }
+        await supabaseClient.from('archives').insert([{ title: f[0], category: f[1] || 'Dokumen', uploaded_by: user.id }]);
+        openMenuPopup('arsip'); loadDatabaseSummary();
       }
     }
 
     async function deleteArchive(id) {
       if (confirm("Hapus dokumen arsip ini?")) {
         await supabaseClient.from('archives').delete().eq('id', id);
-        loadDatabaseData();
+        openMenuPopup('arsip'); loadDatabaseSummary();
       }
     }
 
-    function showPage(pageId) {
-      document.querySelectorAll(".page-view").forEach(p => p.classList.remove("active"));
-      document.getElementById(`view-${pageId}`).classList.add("active");
-    }
-
-    async function filterScheduleByDate() {
+    async function filterScheduleByDatePopup() {
       const selectedDate = document.getElementById("calendar-picker").value;
-      const resContainer = document.getElementById("schedule-results");
+      const resContainer = document.getElementById("popup-schedule-results");
       
       const { data } = await supabaseClient.from('maintenances').select('*').eq('scheduled_date', selectedDate);
 
@@ -912,8 +783,16 @@
           </div>
         `).join('');
       } else {
-        resContainer.innerHTML = `<p style="font-size:0.75rem; color:gray; margin-top:8px;">Tidak ada jadwal di tanggal ini.</p>`;
+        resContainer.innerHTML = `<p style="font-size:0.75rem; color:gray; margin-top:8px; text-align:center;">Tidak ada jadwal pada tanggal ini.</p>`;
       }
+    }
+
+    async function exportExcelFromPopup() {
+      const { data } = await supabaseClient.from('offices').select('*');
+      const ws = XLSX.utils.json_to_sheet(data || []);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "MasterKantor");
+      XLSX.writeFile(wb, "Master_Data_Kantor_BSN.xlsx");
     }
 
     function initChart() {
@@ -947,11 +826,6 @@
 
     function openAIChat() {
       Swal.fire({ title: 'AI Assistant Gedung', input: 'text', inputPlaceholder: 'Ketik pertanyaan...', confirmButtonColor: '#0B8F4D' });
-    }
-
-    function exportExcel(tableID, filename) {
-      const wb = XLSX.utils.table_to_book(document.getElementById(tableID));
-      XLSX.writeFile(wb, `${filename}.xlsx`);
     }
 
     function toggleTheme() {
