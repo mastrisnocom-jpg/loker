@@ -493,7 +493,7 @@
         }
 
         // ==========================================
-        // EXPORT PDF SESUAI DRAFT GAMBAR RESMI (VENDOR & BANK)
+        // EXPORT PDF TAJAM HIGH RESOLUTION & ANTI BLUR
         // ==========================================
         async function exportATMPDF(id) {
             Swal.fire({ title: 'Mencetak PDF Laporan ATM...', didOpen: () => Swal.showLoading() });
@@ -506,6 +506,7 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
 
+            // Set Font Vektor Murni
             doc.setFont('Helvetica', 'bold');
             doc.setFontSize(11);
             doc.text("LAPORAN PEMERIKSAAN ATM MINGGUAN", 105, 15, { align: 'center' });
@@ -544,7 +545,6 @@
             let finalY = doc.lastAutoTable.finalY + 8;
             if (finalY > 220) { doc.addPage(); finalY = 20; }
 
-            // LAMPIRAN TANDA TANGAN DIBUAT DENGAN TULISAN PERUSAHAAN SAMA PERSIS GAMBAR USER
             const vendorTitle = header.vendor_nama || 'PT Binayasa Purabatara Unit ______';
             const bankTitle = header.bank_cabang || 'PT Bank Tabungan Negara Cabang ______';
             const petugasName = header.petugas_nama ? `( ${header.petugas_nama} )` : '(_______________________)';
@@ -736,7 +736,110 @@
             }
         }
 
-        // FORMS & UTILITY ACTIONS (EDITABLE VENDOR & BANK NAME INCLUDED)
+        // FORMS & UTILITY ACTIONS
+        async function openFormKantor(id = null) {
+            let editData = { nama: '', alamat: '' };
+            if (id) {
+                const { data } = await db.from('kantor').select('*').eq('id', id).single();
+                if (data) editData = data;
+            }
+
+            document.getElementById('modal-title').innerText = id ? "Edit Data Kantor" : "Tambah Kantor";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="f-kantor">
+                    <div class="form-group"><label>Nama Kantor</label><input type="text" id="fk-nama" class="form-control" value="${editData.nama}" required></div>
+                    <div class="form-group"><label>Alamat</label><textarea id="fk-alamat" class="form-control" required>${editData.alamat}</textarea></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Kantor' : 'Simpan Kantor'}</button>
+                </form>`;
+            document.getElementById('app-modal').style.display = 'flex';
+
+            document.getElementById('f-kantor').onsubmit = async (e) => {
+                e.preventDefault();
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+                const payload = { nama: document.getElementById('fk-nama').value, alamat: document.getElementById('fk-alamat').value };
+                
+                let err = null;
+                if (id) {
+                    const { error } = await db.from('kantor').update(payload).eq('id', id);
+                    err = error;
+                } else {
+                    const { error } = await db.from('kantor').insert([payload]);
+                    err = error;
+                }
+
+                if (err) Swal.fire('Gagal', err.message, 'error');
+                else {
+                    Swal.fire('Berhasil', 'Data kantor tersimpan', 'success');
+                    document.getElementById('app-modal').style.display = 'none';
+                    openSubPage('kantor');
+                    loadDashboardStats();
+                }
+            };
+        }
+
+        async function openFormAsset(id = null) {
+            const { data: kantorList } = await db.from('kantor').select('id, nama');
+            if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah Data Kantor dulu!', 'warning');
+
+            let editData = { kantor_id: '', kode_asset: `AST-${Date.now().toString().slice(-4)}`, nama_asset: '', kategori: '', status: 'Baik' };
+            if (id) {
+                const { data } = await db.from('asset').select('*').eq('id', id).single();
+                if (data) editData = data;
+            }
+
+            document.getElementById('modal-title').innerText = id ? "Edit Asset" : "Tambah Asset";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="f-asset">
+                    <div class="form-group">
+                        <label>Kantor</label>
+                        <select id="fa-kantor" class="form-control" required>
+                            ${kantorList.map(k => `<option value="${k.id}" ${k.id === editData.kantor_id ? 'selected' : ''}>${k.nama}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Kode Asset</label><input type="text" id="fa-kode" class="form-control" value="${editData.kode_asset}" required></div>
+                    <div class="form-group"><label>Nama Asset</label><input type="text" id="fa-nama" class="form-control" value="${editData.nama_asset}" required></div>
+                    <div class="form-group"><label>Kategori</label><input type="text" id="fa-kat" class="form-control" value="${editData.kategori}" required></div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="fa-status" class="form-control">
+                            <option value="Baik" ${editData.status === 'Baik' ? 'selected' : ''}>Baik</option>
+                            <option value="Rusak" ${editData.status === 'Rusak' ? 'selected' : ''}>Rusak</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Asset' : 'Simpan Asset'}</button>
+                </form>`;
+            document.getElementById('app-modal').style.display = 'flex';
+
+            document.getElementById('f-asset').onsubmit = async (e) => {
+                e.preventDefault();
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+                const payload = {
+                    kantor_id: document.getElementById('fa-kantor').value,
+                    kode_asset: document.getElementById('fa-kode').value,
+                    nama_asset: document.getElementById('fa-nama').value,
+                    kategori: document.getElementById('fa-kat').value,
+                    status: document.getElementById('fa-status').value
+                };
+
+                let err = null;
+                if (id) {
+                    const { error } = await db.from('asset').update(payload).eq('id', id);
+                    err = error;
+                } else {
+                    const { error } = await db.from('asset').insert([payload]);
+                    err = error;
+                }
+
+                if (err) Swal.fire('Gagal', err.message, 'error');
+                else {
+                    Swal.fire('Berhasil', 'Data asset tersimpan', 'success');
+                    document.getElementById('app-modal').style.display = 'none';
+                    openSubPage('asset');
+                    loadDashboardStats();
+                }
+            };
+        }
+
         async function openFormPemeriksaanATM(id = null) {
             const [kantorRes, kriteriaRes] = await Promise.all([
                 db.from('kantor').select('id, nama'),
@@ -898,109 +1001,6 @@
             };
         }
 
-        async function openFormKantor(id = null) {
-            let editData = { nama: '', alamat: '' };
-            if (id) {
-                const { data } = await db.from('kantor').select('*').eq('id', id).single();
-                if (data) editData = data;
-            }
-
-            document.getElementById('modal-title').innerText = id ? "Edit Data Kantor" : "Tambah Kantor";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="f-kantor">
-                    <div class="form-group"><label>Nama Kantor</label><input type="text" id="fk-nama" class="form-control" value="${editData.nama}" required></div>
-                    <div class="form-group"><label>Alamat</label><textarea id="fk-alamat" class="form-control" required>${editData.alamat}</textarea></div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Kantor' : 'Simpan Kantor'}</button>
-                </form>`;
-            document.getElementById('app-modal').style.display = 'flex';
-
-            document.getElementById('f-kantor').onsubmit = async (e) => {
-                e.preventDefault();
-                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-                const payload = { nama: document.getElementById('fk-nama').value, alamat: document.getElementById('fk-alamat').value };
-                
-                let err = null;
-                if (id) {
-                    const { error } = await db.from('kantor').update(payload).eq('id', id);
-                    err = error;
-                } else {
-                    const { error } = await db.from('kantor').insert([payload]);
-                    err = error;
-                }
-
-                if (err) Swal.fire('Gagal', err.message, 'error');
-                else {
-                    Swal.fire('Berhasil', 'Data kantor tersimpan', 'success');
-                    document.getElementById('app-modal').style.display = 'none';
-                    openSubPage('kantor');
-                    loadDashboardStats();
-                }
-            };
-        }
-
-        async function openFormAsset(id = null) {
-            const { data: kantorList } = await db.from('kantor').select('id, nama');
-            if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah Data Kantor dulu!', 'warning');
-
-            let editData = { kantor_id: '', kode_asset: `AST-${Date.now().toString().slice(-4)}`, nama_asset: '', kategori: '', status: 'Baik' };
-            if (id) {
-                const { data } = await db.from('asset').select('*').eq('id', id).single();
-                if (data) editData = data;
-            }
-
-            document.getElementById('modal-title').innerText = id ? "Edit Asset" : "Tambah Asset";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="f-asset">
-                    <div class="form-group">
-                        <label>Kantor</label>
-                        <select id="fa-kantor" class="form-control" required>
-                            ${kantorList.map(k => `<option value="${k.id}" ${k.id === editData.kantor_id ? 'selected' : ''}>${k.nama}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Kode Asset</label><input type="text" id="fa-kode" class="form-control" value="${editData.kode_asset}" required></div>
-                    <div class="form-group"><label>Nama Asset</label><input type="text" id="fa-nama" class="form-control" value="${editData.nama_asset}" required></div>
-                    <div class="form-group"><label>Kategori</label><input type="text" id="fa-kat" class="form-control" value="${editData.kategori}" required></div>
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select id="fa-status" class="form-control">
-                            <option value="Baik" ${editData.status === 'Baik' ? 'selected' : ''}>Baik</option>
-                            <option value="Rusak" ${editData.status === 'Rusak' ? 'selected' : ''}>Rusak</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Asset' : 'Simpan Asset'}</button>
-                </form>`;
-            document.getElementById('app-modal').style.display = 'flex';
-
-            document.getElementById('f-asset').onsubmit = async (e) => {
-                e.preventDefault();
-                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-                const payload = {
-                    kantor_id: document.getElementById('fa-kantor').value,
-                    kode_asset: document.getElementById('fa-kode').value,
-                    nama_asset: document.getElementById('fa-nama').value,
-                    kategori: document.getElementById('fa-kat').value,
-                    status: document.getElementById('fa-status').value
-                };
-
-                let err = null;
-                if (id) {
-                    const { error } = await db.from('asset').update(payload).eq('id', id);
-                    err = error;
-                } else {
-                    const { error } = await db.from('asset').insert([payload]);
-                    err = error;
-                }
-
-                if (err) Swal.fire('Gagal', err.message, 'error');
-                else {
-                    Swal.fire('Berhasil', 'Data asset tersimpan', 'success');
-                    document.getElementById('app-modal').style.display = 'none';
-                    openSubPage('asset');
-                    loadDashboardStats();
-                }
-            };
-        }
-
         function openFormUtilitas() {
             db.from('kantor').select('id, nama').then(({data: kantorList}) => {
                 if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah data kantor dulu!', 'warning');
@@ -1076,7 +1076,7 @@
                 document.getElementById('modal-body').innerHTML = `
                     <form id="f-main">
                         <div class="form-group"><label>Work Order</label><select id="fm-wo" class="form-control">${woRes.data.map(w=>`<option value="${w.id}">${w.judul}</option>`).join('')}</select></div>
-                        <div class="form-group"><label>Teknisi</label><select id="fm-teknisi" class="form-control">${tekRes.data ? tekRes.data.map(t=>`<option value="${t.id}">${t.nama}</option>`).join('') : '<option value="">-</option>'}</select></div>
+                        <div class="form-group"><label>Teknisi</label><select id="fm-teknisi" class="form-control">${tekRes.data ? tekRes.data.map(t=>`<option value="${t.id}">${t.nama}</option>`) : '<option value="">-</option>'}</select></div>
                         <div class="form-group"><label>Foto Before</label><input type="file" id="fm-before" class="form-control" accept="image/*"></div>
                         <div class="form-group"><label>Foto After</label><input type="file" id="fm-after" class="form-control" accept="image/*"></div>
                         <div class="form-group"><label>Biaya (Rp)</label><input type="number" id="fm-biaya" class="form-control" value="0"></div>
