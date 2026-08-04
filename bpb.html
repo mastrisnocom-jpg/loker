@@ -493,7 +493,7 @@
         }
 
         // ==========================================
-        // EXPORT PDF DENGAN TANDA CENTANG (✔️)
+        // EXPORT PDF FIX (FORMAT TANDA CENTANG [ V ])
         // ==========================================
         async function exportATMPDF(id) {
             Swal.fire({ title: 'Mencetak PDF Laporan ATM...', didOpen: () => Swal.showLoading() });
@@ -515,17 +515,19 @@
 
             doc.setFontSize(8);
             doc.text(`UNIT                  : ${header.kantor ? header.kantor.nama : '-'}`, 14, 28);
-            doc.text(`Kategori ATM  : [ ${header.kategori_atm === 'Onsite' ? '✔️' : ' '} ] Onsite   [ ${header.kategori_atm === 'Offsite' ? '✔️' : ' '} ] Offsite`, 110, 28);
+            
+            const onsiteCheck = header.kategori_atm === 'Onsite' ? '[ V ]' : '[   ]';
+            const offsiteCheck = header.kategori_atm === 'Offsite' ? '[ V ]' : '[   ]';
+            doc.text(`Kategori ATM  : ${onsiteCheck} Onsite   ${offsiteCheck} Offsite`, 110, 28);
 
             doc.text(`Lokasi / KCP     : ${header.kantor ? header.kantor.alamat : '-'}`, 14, 33);
             doc.text(`Periode Minggu : ${header.periode_minggu}`, 110, 33);
             doc.text(`Tanggal Cek       : ${header.tanggal_pemeriksaan}`, 14, 38);
 
-            // TABEL DENGAN TANDA CENTANG (✔️)
             const tableBody = details.map(d => [
                 d.no_kriteria,
                 d.kriteria_nama,
-                d.kondisi === 'BAIK' ? '[ ✔️ ] BAIK   [   ] TIDAK BAIK' : '[   ] BAIK   [ ✔️ ] TIDAK BAIK',
+                d.kondisi === 'BAIK' ? '[ V ] BAIK    [   ] TIDAK BAIK' : '[   ] BAIK    [ V ] TIDAK BAIK',
                 d.keterangan || '-'
             ]);
 
@@ -534,12 +536,12 @@
                 head: [['No', 'Kriteria Pemeriksaan', 'Kondisi', 'Keterangan']],
                 body: tableBody,
                 theme: 'grid',
-                styles: { fontSize: 7, cellPadding: 2 },
+                styles: { fontSize: 7.5, cellPadding: 2.5, font: 'Helvetica' },
                 headStyles: { fillColor: [232, 245, 233], textColor: [25, 135, 84], fontStyle: 'bold' },
-                columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 1: { cellWidth: 85 }, 2: { cellWidth: 45 }, 3: { cellWidth: 44 } }
+                columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 1: { cellWidth: 85 }, 2: { cellWidth: 48 }, 3: { cellWidth: 41 } }
             });
 
-            let finalY = doc.lastAutoTable.finalY + 10;
+            let finalY = doc.lastAutoTable.finalY + 8;
             if (finalY > 230) { doc.addPage(); finalY = 20; }
 
             doc.setFont('Helvetica', 'bold');
@@ -551,7 +553,7 @@
                 head: [['Petugas Pemeriksa', 'Supervisor / Penanggung Jawab']],
                 body: [['\n\n\n\n_______________________\nNama: ' + (header.petugas_nama || 'Petugas ATM'), '\n\n\n\n_______________________\nNama: ' + (header.supervisor_nama || 'Supervisor')]],
                 theme: 'grid',
-                styles: { fontSize: 8, halign: 'center', cellPadding: 4 },
+                styles: { fontSize: 8, halign: 'center', cellPadding: 4, font: 'Helvetica' },
                 headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' },
                 columnStyles: { 0: { cellWidth: 91 }, 1: { cellWidth: 91 } }
             });
@@ -583,7 +585,7 @@
             ];
 
             details.forEach(d => {
-                excelRows.push([d.no_kriteria, d.kriteria_nama, d.kondisi === 'BAIK' ? '✔️ BAIK' : '✔️ TIDAK BAIK', d.keterangan || '-', d.foto_bukti || '-']);
+                excelRows.push([d.no_kriteria, d.kriteria_nama, d.kondisi === 'BAIK' ? '[V] BAIK' : '[V] TIDAK BAIK', d.keterangan || '-', d.foto_bukti || '-']);
             });
 
             excelRows.push([]);
