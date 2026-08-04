@@ -309,7 +309,7 @@
             });
         }
 
-        // ROUTER SUB PAGE
+        // ROUTER SUB PAGE LENGKAP
         async function openSubPage(pageKey) {
             const overlay = document.getElementById('sub-page-overlay');
             const titleEl = document.getElementById('sub-page-title');
@@ -393,6 +393,28 @@
                                 `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada pemeriksaan ATM</td></tr>'}
                             </tbody>
                         </table>
+                    </div>`;
+            } else if (pageKey === 'jadwal') {
+                // FIXED JADWAL LOADER: Menampilkan Jadwal Pemeliharaan Gedung & ATM
+                contentEl.innerHTML = `
+                    <div class="card">
+                        <div class="card-title"><i class="fa-solid fa-calendar-days"></i> Kalender Jadwal Pemeliharaan</div>
+                        <p style="font-size:0.8rem; color:var(--text-sub); margin-bottom:12px;">Daftar kegiatan rutin pemeliharaan mendatang:</p>
+                        <div class="checklist-card">
+                            <div class="checklist-title">1. Pemeliharaan Rutin Lift Utama</div>
+                            <div class="checklist-desc">Tanggal: Setiap Hari Senin Minggu I</div>
+                            <span class="badge badge-success">Terjadwal</span>
+                        </div>
+                        <div class="checklist-card">
+                            <div class="checklist-title">2. Cek Suhu AC & Kebersihan Ruang ATM</div>
+                            <div class="checklist-desc">Tanggal: Setiap Hari Jumat Mingguan</div>
+                            <span class="badge badge-success">Terjadwal</span>
+                        </div>
+                        <div class="checklist-card">
+                            <div class="checklist-title">3. Servis Genset & Kelistrikan Gedung</div>
+                            <div class="checklist-desc">Tanggal: Akhir Bulan</div>
+                            <span class="badge badge-success">Terjadwal</span>
+                        </div>
                     </div>`;
             } else if (pageKey === 'utilitas') {
                 actionBtn.style.display = 'inline-flex';
@@ -531,13 +553,13 @@
             doc.text(`Periode Minggu : ${header.periode_minggu}`, 110, 33);
             doc.text(`Tanggal Cek       : ${header.tanggal_pemeriksaan}`, 14, 38);
 
-            // TABEL KRITERIA (KATEGORI DITEBALKAN/BOLD)
+            // TABEL KRITERIA (KATEGORI DITEBALKAN/BOLD DENGAN FORMAT AMAN)
             doc.autoTable({
                 startY: 42,
                 head: [['No', 'Kriteria Pemeriksaan', 'Kondisi', 'Keterangan']],
                 body: details.map(d => [
                     d.no_kriteria,
-                    d.kriteria_nama, // Didukung oleh didParseCell untuk menebalkan baris judul
+                    d.kriteria_nama, 
                     d.kondisi === 'BAIK' ? '[ V ] BAIK    [   ] TIDAK BAIK' : '[   ] BAIK    [ V ] TIDAK BAIK',
                     d.keterangan || '-'
                 ]),
@@ -546,11 +568,10 @@
                 headStyles: { fillColor: [232, 245, 233], textColor: [25, 135, 84], fontStyle: 'bold' },
                 columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 1: { cellWidth: 85 }, 2: { cellWidth: 48 }, 3: { cellWidth: 41 } },
                 didParseCell: function(data) {
-                    // Tebalkan teks judul kriteria di kolom Kriteria Pemeriksaan
                     if (data.section === 'body' && data.column.index === 1) {
                         const noK = data.row.cells[0].raw;
                         const desc = descMap[noK] ? `\n${descMap[noK]}` : '';
-                        data.cell.text = [data.cell.text[0], desc]; // Judul di atas, deskripsi di bawahnya
+                        data.cell.text = [data.cell.text[0], desc]; 
                     }
                 }
             });
@@ -1003,7 +1024,6 @@
                 const canvasEl = document.getElementById('canvas-ttd');
                 const ttdDataUrl = canvasEl.toDataURL();
 
-                // Upload Foto Pembersihan Sebelum & Sesudah jika dipilih
                 let beforePemUrl = editHeader.foto_pembersihan_before || null;
                 let afterPemUrl = editHeader.foto_pembersihan_after || null;
 
