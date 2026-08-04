@@ -246,18 +246,24 @@
         });
 
         async function checkAuth() {
-            const { data: { session } } = await db.auth.getSession();
-            if (session) {
-                currentUser = session.user;
-                document.getElementById('auth-container').style.display = 'none';
-                document.getElementById('app-dashboard').style.display = 'block';
-                
-                const emailStr = currentUser.email;
-                document.getElementById('user-email').innerText = emailStr;
-                document.getElementById('user-avatar').innerText = emailStr.substring(0, 2).toUpperCase();
+            try {
+                const { data: { session } } = await db.auth.getSession();
+                if (session) {
+                    currentUser = session.user;
+                    document.getElementById('auth-container').style.display = 'none';
+                    document.getElementById('app-dashboard').style.display = 'block';
+                    
+                    const emailStr = currentUser.email;
+                    document.getElementById('user-email').innerText = emailStr;
+                    document.getElementById('user-avatar').innerText = emailStr.substring(0, 2).toUpperCase();
 
-                loadDashboardStats();
-            } else {
+                    loadDashboardStats();
+                } else {
+                    document.getElementById('auth-container').style.display = 'flex';
+                    document.getElementById('app-dashboard').style.display = 'none';
+                }
+            } catch (err) {
+                console.error("Auth Exception:", err);
                 document.getElementById('auth-container').style.display = 'flex';
                 document.getElementById('app-dashboard').style.display = 'none';
             }
@@ -299,7 +305,7 @@
             });
         }
 
-        // FUNGSI SHARE LEWAT PERANGKAT (WEB SHARE API)
+        // FUNGSI SHARE LEWAT PERANGKAT
         async function shareData(title, text, url = null) {
             if (navigator.share) {
                 try {
@@ -312,7 +318,7 @@
                     console.log('Batal berbagi:', err);
                 }
             } else {
-                navigator.clipboard.writeText(`${title}\n${text}`);
+                navigator.clipboard.writeText(title + "\n" + text);
                 Swal.fire('Tersalin!', 'Detail data berhasil disalin ke clipboard.', 'success');
             }
         }
@@ -401,7 +407,7 @@
             });
         }
 
-        // ROUTER SUB PAGE LENGKAP BISA VIEW, EDIT, HAPUS & SHARE
+        // ROUTER SUB PAGE LENGKAP
         async function openSubPage(pageKey) {
             const overlay = document.getElementById('sub-page-overlay');
             const titleEl = document.getElementById('sub-page-title');
@@ -493,7 +499,6 @@
                             </table>
                         </div>`;
                 } else if (pageKey === 'cek_tagihan') {
-                    // FITUR CEK TAGIHAN PLN & PDAM
                     contentEl.innerHTML = `
                         <div class="card">
                             <div class="card-title"><i class="fa-solid fa-receipt"></i> Cek Tagihan PLN & PDAM</div>
@@ -857,12 +862,7 @@
                     d.no_kriteria,
                     d.kriteria_nama, 
                     d.kondisi === 'BAIK' ? '[ V ] BAIK    [   ] TIDAK BAIK' : '[   ] BAIK    [ V ] TIDAK BAIK',
-                    (d.keterangan || '-') + (d.foto_bukti ? '
-
-
-
-
-' : '')
+                    (d.keterangan || '-') + (d.foto_bukti ? '\n\n\n\n\n' : '')
                 ]),
                 theme: 'grid',
                 styles: { fontSize: 7.5, cellPadding: 2, font: 'Helvetica', valign: 'top' },
@@ -876,8 +876,7 @@
                 didParseCell: function(data) {
                     if (data.section === 'body' && data.column.index === 1) {
                         const noK = data.row.cells[0].raw;
-                        const desc = descMap[noK] ? `
-${descMap[noK]}` : '';
+                        const desc = descMap[noK] ? `\n${descMap[noK]}` : '';
                         data.cell.text = [data.cell.text[0], desc]; 
                     }
                 },
@@ -908,21 +907,7 @@ ${descMap[noK]}` : '';
             doc.autoTable({
                 startY: finalY + 3,
                 head: [['Bukti Foto - SEBELUM (Before)', 'Bukti Foto - SESUDAH (After)']],
-                body: [['
-
-
-
-
-
-
-', '
-
-
-
-
-
-
-']],
+                body: [['\n\n\n\n\n\n\n', '\n\n\n\n\n\n\n']],
                 theme: 'grid',
                 styles: { fontSize: 8, halign: 'center', cellPadding: 2, font: 'Helvetica' },
                 headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },
