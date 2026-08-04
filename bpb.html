@@ -1,1066 +1,885 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="light">
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>BBMS - Binayasa Building Management System</title>
-
-  <!-- PWA Manifest & Theme -->
-  <link rel="manifest" href="data:application/manifest+json;base64,ewogICJzaG9ydF9uYW1lIjogIkJCTVMiLAogICJuYW1lIjogIkJJTkFZQVNBIEJVSUxESU5HIE1BTkFHRU1FTlQgU1lTVEVNIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwQjhGNEQiLAogICJ0aGVtZV9jb2xvcjogIiMwQjhGNEQiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiCn0=">
-  <meta name="theme-color" content="#0B8F4D">
-
-  <!-- Material Symbols & Typography -->
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
-
-  <!-- Core CDNs -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-  <style>
-    :root {
-      --primary: #0B8F4D;
-      --primary-light: #E8F5E9;
-      --bg-main: #F4F6F5;
-      --card-bg: #FFFFFF;
-      --text-main: #1C201D;
-      --text-sub: #6C7570;
-      --icon-bg: #F0F4F2;
-      --border: #E5E8E6;
-    }
-
-    [data-theme="dark"] {
-      --bg-main: #121413;
-      --card-bg: #1A1D1C;
-      --text-main: #F0F4F1;
-      --text-sub: #909E96;
-      --icon-bg: #242826;
-      --border: #2D3230;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg-main); color: var(--text-main); display: flex; justify-content: center; min-height: 100vh; }
-
-    .app-container { width: 100%; max-width: 480px; min-height: 100vh; background-color: var(--bg-main); position: relative; padding: 16px 14px 80px 14px; }
-    .user-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .user-info { display: flex; align-items: center; gap: 10px; }
-    .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; }
-    .role-badge { font-size: 0.65rem; background: var(--primary-light); color: var(--primary); padding: 2px 6px; border-radius: 8px; font-weight: 700; text-transform: uppercase; }
-
-    .summary-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 20px; scrollbar-width: none; }
-    .summary-scroll::-webkit-scrollbar { display: none; }
-    .summary-card { min-width: 120px; flex: 1; background: var(--card-bg); border-radius: 16px; padding: 12px 10px; text-align: center; border: 1px solid var(--border); }
-    .summary-card .icon-wrap { width: 32px; height: 32px; margin: 0 auto 6px auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
-    .summary-card .val { font-size: 1.1rem; font-weight: 700; }
-    .summary-card .lbl { font-size: 0.7rem; color: var(--text-sub); }
-
-    .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 8px; margin-bottom: 20px; }
-    .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-    .menu-item:active { opacity: 0.7; }
-    .menu-icon-circle { width: 58px; height: 58px; border-radius: 50%; background: var(--icon-bg); display: flex; align-items: center; justify-content: center; margin-bottom: 6px; color: var(--primary); border: 1px solid var(--border); }
-    .menu-label { font-size: 0.72rem; font-weight: 600; text-align: center; }
-
-    .content-box { background: var(--card-bg); border-radius: 18px; padding: 16px; border: 1px solid var(--border); margin-bottom: 16px; }
-
-    #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 10000; display: flex; flex-direction: column; justify-content: center; padding: 20px; overflow-y: auto; }
-    .auth-card { background: var(--card-bg); border-radius: 20px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
-    .btn-primary { width: 100%; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 0.8rem; cursor: pointer; }
-    .btn-secondary { width: 100%; padding: 8px; background: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 10px; font-weight: 600; font-size: 0.75rem; cursor: pointer; margin-top: 8px; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building Management System (BMS)</title>
     
-    .input-field { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; margin-top: 4px; margin-bottom: 10px; outline: none; font-size: 0.75rem; background: var(--card-bg); color: var(--text-main); }
-    .data-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: var(--icon-bg); border-radius: 10px; margin-bottom: 6px; text-align: left; }
+    <!-- External CSS Dependencies -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     
-    /* MODAL POP-UP STYLE - COMPACT FONT & MODERN SLIDE-UP */
-    .menu-popup-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9998; justify-content: center; align-items: flex-end; }
-    .menu-popup-card { background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 16px; max-height: 80vh; overflow-y: auto; box-shadow: 0 -6px 20px rgba(0,0,0,0.15); }
-    
-    /* SWEETALERT COMPACT STYLE */
-    .swal2-popup { font-size: 0.75rem !important; border-radius: 16px !important; padding: 14px !important; width: 90% !important; max-width: 380px !important; }
-    .swal2-title { font-size: 0.95rem !important; font-weight: 700 !important; }
-    .swal2-input, .swal2-select { font-size: 0.75rem !important; height: 36px !important; margin: 6px 0 !important; border-radius: 8px !important; }
-    .swal2-confirm, .swal2-cancel { font-size: 0.75rem !important; padding: 8px 14px !important; border-radius: 8px !important; }
+    <style>
+        :root {
+            --primary-color: #198754;
+            --primary-hover: #146c43;
+            --primary-light: #e8f5e9;
+            --bg-body: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-main: #212529;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+            --sidebar-width: 260px;
+            --topbar-height: 65px;
+            --radius: 10px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
 
-    .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; padding: 16px; }
-    .admin-only { display: none; }
-  </style>
+        [data-theme="dark"] {
+            --bg-body: #121212;
+            --bg-card: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --border-color: #333333;
+            --primary-light: #1b382b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* --- AUTH SCREEN --- */
+        #auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary-color), #0d5233);
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .auth-card h2 {
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+
+        .auth-card p {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            background: var(--bg-card);
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        /* --- MAIN LAYOUT --- */
+        #app-container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border-color);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-brand {
+            height: var(--topbar-height);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 15px 10px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: var(--text-main);
+            text-decoration: none;
+            border-radius: var(--radius);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .sidebar-menu li a:hover, .sidebar-menu li a.active {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            height: var(--topbar-height);
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .theme-toggle {
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-main);
+        }
+
+        .content {
+            padding: 24px;
+            flex: 1;
+            padding-bottom: 80px;
+        }
+
+        /* --- COMPONENTS --- */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .stat-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 2px;
+        }
+
+        .stat-info p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            margin-top: 12px;
+        }
+
+        .table th, .table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        .table th {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success { background: #d1e7dd; color: #0f5132; }
+        .badge-warning { background: #fff3cd; color: #664d03; }
+        .badge-danger { background: #f8d7da; color: #842029; }
+
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        /* --- BOTTOM NAV (MOBILE) --- */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            z-index: 100;
+            justify-content: space-around;
+            padding: 8px 0;
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.75rem;
+            gap: 4px;
+        }
+
+        .bottom-nav-item.active {
+            color: var(--primary-color);
+        }
+
+        /* --- MODAL --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 550px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 24px;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        /* --- MEDIA QUERIES --- */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-wrapper { margin-left: 0; }
+            .bottom-nav { display: flex; }
+        }
+    </style>
 </head>
 <body>
 
-  <!-- AUTH OVERLAY (LOGIN & REGISTER) -->
-  <div id="auth-overlay">
-    <div style="text-align: center; color: white; margin-bottom: 16px;">
-      <span class="material-symbols-rounded" style="font-size: 40px;">domain</span>
-      <h2 style="font-size: 1.1rem;">BBMS MOBILE</h2>
-      <p style="font-size: 0.75rem; opacity: 0.9;">PT. Binayasa Putra Batara (BSN)</p>
-    </div>
-
-    <!-- LOGIN FORM -->
-    <div class="auth-card" id="login-box">
-      <h3 style="font-size: 0.9rem; margin-bottom: 10px; text-align: center;">Masuk ke Akun</h3>
-      <form id="login-form">
-        <label style="font-size: 0.65rem; font-weight: 700; color: var(--text-sub);">EMAIL</label>
-        <input type="email" id="login-email" class="input-field" placeholder="email@domain.com" required>
-
-        <label style="font-size: 0.65rem; font-weight: 700; color: var(--text-sub);">PASSWORD</label>
-        <input type="password" id="login-password" class="input-field" placeholder="******" required>
-
-        <button type="submit" class="btn-primary">MASUK SISTEM</button>
-      </form>
-      <button onclick="toggleAuthMode('register')" class="btn-secondary">Belum punya akun? Daftar Akun Baru</button>
-    </div>
-
-    <!-- REGISTER FORM -->
-    <div class="auth-card" id="register-box" style="display: none;">
-      <h3 style="font-size: 0.9rem; margin-bottom: 10px; text-align: center;">Daftar Akun Baru</h3>
-      <form id="register-form">
-        <label style="font-size: 0.65rem; font-weight: 700; color: var(--text-sub);">NAMA LENGKAP</label>
-        <input type="text" id="reg-fullname" class="input-field" placeholder="Nama Lengkap" required>
-
-        <label style="font-size: 0.65rem; font-weight: 700; color: var(--text-sub);">NOMOR HP/WHATSAPP</label>
-        <input type="tel" id="reg-phone" class="input-field" placeholder="08123456789" required>
-
-        <label style="font-size: 0.65rem; font-weight: 700; color: var(--text-sub);">ROLE HAK AKSES</label>
-        <select id="reg-role" class="input-field" required>
-          <option value="administrator">1. Administrator</option>
-          <option value="kepala_unit">2. Kepala Unit</option>
-          <option value="supervisor">3. Supervisor</option>
-          <option value="teknisi" selected>4. Teknisi</option>
-          <option value="cleaning_service">5. Cleaning Service</option>
-          <option value="vendor">6. Vendor</option>
-        </select>
-
-        <label style="font-size: 0.65rem; font-weight: 700; color: var(--text-sub);">EMAIL</label>
-        <input type="email" id="reg-email" class="input-field" placeholder="email@domain.com" required>
-
-        <label style="font-size: 0.65rem; font-weight: 700; color: var(--text-sub);">PASSWORD</label>
-        <input type="password" id="reg-password" class="input-field" placeholder="Minimal 6 Karakter" minlength="6" required>
-
-        <button type="submit" class="btn-primary">DAFTAR AKUN</button>
-      </form>
-      <button onclick="toggleAuthMode('login')" class="btn-secondary">Sudah punya akun? Masuk</button>
-    </div>
-  </div>
-
-  <!-- MAIN APP CONTAINER -->
-  <div class="app-container">
-
-    <header class="user-header">
-      <div class="user-info">
-        <div class="avatar" id="avatar-initials">--</div>
-        <div>
-          <div style="font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 4px;">
-            <span id="user-name">Pengguna</span>
-            <span class="material-symbols-rounded" onclick="editProfileModal()" style="font-size: 15px; color: var(--primary); cursor: pointer;" title="Edit Profil">edit</span>
-          </div>
-          <span class="role-badge" id="user-role-display">Guest</span>
+    <!-- AUTHENTICATION FORM -->
+    <div id="auth-container">
+        <div class="auth-card">
+            <h2><i class="fa-solid fa-building-user"></i> BMS Login</h2>
+            <p>Silakan masuk menggunakan akun Supabase Anda</p>
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" class="form-control" placeholder="admin@bms.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" class="form-control" placeholder="******" required>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Masuk</button>
+            </form>
         </div>
-      </div>
-      <div style="display: flex; gap: 6px;">
-        <button onclick="toggleTheme()" style="background: var(--card-bg); border: 1px solid var(--border); padding: 5px; border-radius: 50%; cursor: pointer;">
-          <span class="material-symbols-rounded" style="font-size: 18px; color: var(--text-main);">brightness_4</span>
-        </button>
-        <button onclick="logout()" style="background: var(--card-bg); border: 1px solid var(--border); padding: 5px; border-radius: 50%; cursor: pointer; color: #E53935;">
-          <span class="material-symbols-rounded" style="font-size: 18px;">logout</span>
-        </button>
-      </div>
-    </header>
-
-    <!-- SUMMARY CARDS -->
-    <div class="summary-scroll">
-      <div class="summary-card">
-        <div class="icon-wrap" style="background: #E8F5E9; color: #0B8F4D;"><span class="material-symbols-rounded" style="font-size: 18px;">location_city</span></div>
-        <div class="val" id="val-total-kantor">0</div><div class="lbl">Kantor BSN</div>
-      </div>
-      <div class="summary-card">
-        <div class="icon-wrap" style="background: #FFF8E1; color: #D4A017;"><span class="material-symbols-rounded" style="font-size: 18px;">assignment</span></div>
-        <div class="val" id="val-total-wo">0</div><div class="lbl">Work Order</div>
-      </div>
-      <div class="summary-card">
-        <div class="icon-wrap" style="background: #E3F2FD; color: #2196F3;"><span class="material-symbols-rounded" style="font-size: 18px;">folder_open</span></div>
-        <div class="val" id="val-total-arsip">0</div><div class="lbl">File Arsip</div>
-      </div>
-      <div class="summary-card">
-        <div class="icon-wrap" style="background: #FFEBEE; color: #E53935;"><span class="material-symbols-rounded" style="font-size: 18px;">inventory_2</span></div>
-        <div class="val" id="val-total-asset">0</div><div class="lbl">Asset Gedung</div>
-      </div>
     </div>
 
-    <!-- GRID MENU -->
-    <div class="menu-grid">
-      <div class="menu-item" onclick="openMenuPopup('kantor')"><div class="menu-icon-circle"><span class="material-symbols-rounded">domain</span></div><span class="menu-label">Kantor</span></div>
-      <div class="menu-item" onclick="openMenuPopup('asset')"><div class="menu-icon-circle"><span class="material-symbols-rounded">inventory_2</span></div><span class="menu-label">Asset</span></div>
-      <div class="menu-item" onclick="openMenuPopup('utility')"><div class="menu-icon-circle"><span class="material-symbols-rounded">receipt_long</span></div><span class="menu-label">Utilitas</span></div>
-      <div class="menu-item" onclick="openMenuPopup('maintenance')"><div class="menu-icon-circle"><span class="material-symbols-rounded">build</span></div><span class="menu-label">Perawatan</span></div>
-      <div class="menu-item" onclick="openMenuPopup('workorder')"><div class="menu-icon-circle"><span class="material-symbols-rounded">assignment_turned_in</span></div><span class="menu-label">Work Order</span></div>
-      <div class="menu-item" onclick="openMenuPopup('cleaning')"><div class="menu-icon-circle"><span class="material-symbols-rounded">cleaning_services</span></div><span class="menu-label">Cleaning</span></div>
-      <div class="menu-item" onclick="openMenuPopup('arsip')"><div class="menu-icon-circle" style="background: #E0F2F1; color: #00897B;"><span class="material-symbols-rounded">folder_zip</span></div><span class="menu-label">Arsip</span></div>
-      <div class="menu-item" onclick="openMenuPopup('schedule')"><div class="menu-icon-circle"><span class="material-symbols-rounded">calendar_month</span></div><span class="menu-label">Jadwal</span></div>
-      <div class="menu-item" onclick="openQRScanner()"><div class="menu-icon-circle" style="background: #EDE7F6; color: #673AB7;"><span class="material-symbols-rounded">qr_code_scanner</span></div><span class="menu-label">Scan QR</span></div>
-      <div class="menu-item" onclick="openAIChat()"><div class="menu-icon-circle" style="background: #E3F2FD; color: #2196F3;"><span class="material-symbols-rounded">smart_toy</span></div><span class="menu-label">AI Bot</span></div>
-      <div class="menu-item" onclick="openMenuPopup('reports')"><div class="menu-icon-circle"><span class="material-symbols-rounded">assessment</span></div><span class="menu-label">Laporan</span></div>
-      <div class="menu-item" onclick="openMenuPopup('settings')"><div class="menu-icon-circle" style="background: #FFF3E0; color: #E65100;"><span class="material-symbols-rounded">settings</span></div><span class="menu-label">Pengaturan</span></div>
-    </div>
-
-    <!-- DASHBOARD GRAFIK REALTIME -->
-    <div class="content-box">
-      <h4 style="font-size: 0.8rem; margin-bottom: 8px;">Grafik Perawatan Gedung Realtime</h4>
-      <div style="height: 180px;"><canvas id="mainChart"></canvas></div>
-    </div>
-
-  </div>
-
-  <!-- POP-UP DIALOG MENU - COMPACT & MODERN FONT -->
-  <div class="menu-popup-backdrop" id="menu-popup-modal">
-    <div class="menu-popup-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
-        <h3 id="popup-title" style="font-size: 0.85rem; font-weight: 700;">Detail Menu</h3>
-        <span class="material-symbols-rounded" onclick="closeMenuPopup()" style="cursor: pointer; color: #E53935; font-size: 18px;">close</span>
-      </div>
-
-      <div id="popup-admin-action" style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;"></div>
-      <div id="popup-body-content" style="font-size: 0.75rem;"></div>
-    </div>
-  </div>
-
-  <!-- MODAL CAMERA SCANNER -->
-  <div class="modal-backdrop" id="qr-modal">
-    <div style="background: var(--card-bg); padding: 14px; border-radius: 16px; width: 100%; max-width: 300px; text-align: center;">
-      <h4 style="font-size: 0.85rem; margin-bottom: 8px;">Scan QR Asset Gedung</h4>
-      <div id="reader" style="width: 100%;"></div>
-      <button onclick="closeQRScanner()" class="btn-primary" style="background: #E53935; margin-top: 10px;">Tutup</button>
-    </div>
-  </div>
-
-  <script>
-    const SUPABASE_URL = "https://pykkfcszdihobpwhqinq.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_OjVJCDPK0vIV7SEErNxoug_tr-ABUug";
-
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    let html5QrCode = null;
-    let currentUserRole = 'guest';
-    let currentUserId = null;
-    let currentProfile = null;
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      initAuthListeners();
-      await checkCurrentSession();
-      initChart();
-    });
-
-    function toggleAuthMode(mode) {
-      if (mode === 'register') {
-        document.getElementById('login-box').style.display = 'none';
-        document.getElementById('register-box').style.display = 'block';
-      } else {
-        document.getElementById('login-box').style.display = 'block';
-        document.getElementById('register-box').style.display = 'none';
-      }
-    }
-
-    function initAuthListeners() {
-      // REGISTER
-      document.getElementById("register-form").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const email = document.getElementById("reg-email").value.trim();
-        const password = document.getElementById("reg-password").value;
-        const fullName = document.getElementById("reg-fullname").value.trim();
-        const phone = document.getElementById("reg-phone").value.trim();
-        const role = document.getElementById("reg-role").value;
-
-        Swal.fire({ title: 'Mendaftarkan Akun...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-        const { data, error } = await supabaseClient.auth.signUp({
-          email: email,
-          password: password,
-          options: { data: { full_name: fullName, phone: phone, role: role } }
-        });
-
-        if (error) {
-          Swal.fire('Registrasi Gagal', error.message, 'error');
-        } else {
-          if (data.user) {
-            await supabaseClient.from('profiles').upsert([
-              { id: data.user.id, full_name: fullName, phone: phone, role: role }
-            ]);
-          }
-
-          Swal.fire({
-            icon: 'success',
-            title: 'Pendaftaran Berhasil!',
-            text: 'Akun Anda terdaftar. Silakan login.',
-            confirmButtonColor: '#0B8F4D'
-          }).then(() => {
-            toggleAuthMode('login');
-            document.getElementById("login-email").value = email;
-          });
-        }
-      });
-
-      // LOGIN
-      document.getElementById("login-form").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const email = document.getElementById("login-email").value.trim();
-        const password = document.getElementById("login-password").value;
-
-        Swal.fire({ title: 'Memverifikasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-          email: email,
-          password: password
-        });
-
-        if (error) {
-          Swal.fire('Login Gagal', error.message, 'error');
-        } else {
-          Swal.close();
-          await checkCurrentSession();
-        }
-      });
-    }
-
-    async function checkCurrentSession() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      
-      if (session) {
-        document.getElementById("auth-overlay").style.display = "none";
-        currentUserId = session.user.id;
-        
-        const { data: profile } = await supabaseClient
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .maybeSingle();
-
-        const userMeta = session.user.user_metadata || {};
-
-        if (profile && profile.role) {
-          currentProfile = profile;
-          currentUserRole = profile.role;
-          document.getElementById("user-name").innerText = profile.full_name || session.user.email.split('@')[0];
-        } else if (userMeta.role) {
-          currentUserRole = userMeta.role;
-          document.getElementById("user-name").innerText = userMeta.full_name || session.user.email.split('@')[0];
-        } else {
-          if (session.user.email === 'mastrisnocom@gmail.com') {
-            currentUserRole = 'administrator';
-          } else {
-            currentUserRole = 'teknisi';
-          }
-          document.getElementById("user-name").innerText = session.user.email.split('@')[0];
-        }
-
-        document.getElementById("user-role-display").innerText = currentUserRole.replace('_', ' ').toUpperCase();
-        document.getElementById("avatar-initials").innerText = document.getElementById("user-name").innerText.substring(0, 2).toUpperCase();
-
-        if (currentUserRole === 'administrator') {
-          document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'inline-block');
-        } else {
-          document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-        }
-
-        loadDatabaseSummary();
-      } else {
-        document.getElementById("auth-overlay").style.display = "flex";
-      }
-    }
-
-    async function editProfileModal() {
-      if (!currentUserId) return;
-
-      const { value: formValues } = await Swal.fire({
-        title: 'Edit Profil Saya',
-        html:
-          `<label style="font-size:0.65rem; font-weight:bold; display:block; text-align:left;">Nama Lengkap</label>` +
-          `<input id="swal-prof-name" class="swal2-input" value="${document.getElementById("user-name").innerText}" placeholder="Nama Lengkap">` +
-          `<label style="font-size:0.65rem; font-weight:bold; display:block; text-align:left; margin-top:6px;">Nomor HP / WhatsApp</label>` +
-          `<input id="swal-prof-phone" class="swal2-input" value="${(currentProfile && currentProfile.phone) || ''}" placeholder="08123456789">`,
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Simpan Profil',
-        confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [
-          document.getElementById('swal-prof-name').value,
-          document.getElementById('swal-prof-phone').value
-        ]
-      });
-
-      if (formValues && formValues[0]) {
-        const { error } = await supabaseClient
-          .from('profiles')
-          .upsert({ id: currentUserId, full_name: formValues[0], phone: formValues[1], role: currentUserRole });
-
-        if (error) {
-          Swal.fire('Gagal Update Profil', error.message, 'error');
-        } else {
-          Swal.fire('Berhasil', 'Profil Anda telah diperbarui', 'success');
-          await checkCurrentSession();
-        }
-      }
-    }
-
-    async function logout() {
-      await supabaseClient.auth.signOut();
-      document.getElementById("auth-overlay").style.display = "flex";
-    }
-
-    async function loadDatabaseSummary() {
-      const { count: officeCount } = await supabaseClient.from('offices').select('*', { count: 'exact', head: true });
-      document.getElementById('val-total-kantor').innerText = officeCount || 0;
-
-      const { count: woCount } = await supabaseClient.from('work_orders').select('*', { count: 'exact', head: true });
-      document.getElementById('val-total-wo').innerText = woCount || 0;
-
-      const { count: archiveCount } = await supabaseClient.from('archives').select('*', { count: 'exact', head: true });
-      document.getElementById('val-total-arsip').innerText = archiveCount || 0;
-
-      const { count: assetCount } = await supabaseClient.from('assets').select('*', { count: 'exact', head: true });
-      document.getElementById('val-total-asset').innerText = assetCount || 0;
-    }
-
-    // HELPER LOG RIWAYAT INPUT SUPABASE
-    async function recordInputLog(menuType, description, officeName, locationDetail) {
-      const userName = document.getElementById("user-name").innerText || 'Admin';
-      await supabaseClient.from('activity_logs').insert([
-        {
-          menu_type: menuType,
-          action_type: 'INSERT',
-          description: description,
-          office_name: officeName || 'Kantor Pusat',
-          location_detail: locationDetail || 'Lantai 1',
-          created_by: userName
-        }
-      ]);
-    }
-
-    // HELPER MENGAMBIL DROPDOWN KANTOR BSN
-    async function getOfficeDropdownHTML() {
-      const { data: offices } = await supabaseClient.from('offices').select('id, name');
-      let officeOptionsHTML = '<option value="">-- Pilih Lokasi Kantor BSN --</option>';
-      if (offices && offices.length > 0) {
-        officeOptionsHTML += offices.map(o => `<option value="${o.id}|${o.name}">${o.name}</option>`).join('');
-      }
-      return officeOptionsHTML;
-    }
-
-    // POP-UP MENU MODALS
-    async function openMenuPopup(menuType) {
-      const popupModal = document.getElementById("menu-popup-modal");
-      const titleEl = document.getElementById("popup-title");
-      const adminActionEl = document.getElementById("popup-admin-action");
-      const contentEl = document.getElementById("popup-body-content");
-
-      popupModal.style.display = "flex";
-      contentEl.innerHTML = `<p style="font-size:0.7rem; text-align:center; color:gray; padding:16px;">Memuat data...</p>`;
-      adminActionEl.innerHTML = "";
-
-      if (menuType === 'kantor') {
-        titleEl.innerText = "Master Data Kantor BSN";
-        adminActionEl.innerHTML = `
-          <button onclick="showInputHistory('kantor')" class="btn-primary" style="padding:4px 8px; font-size:0.65rem; background:#2196F3; width:auto;">Riwayat Input</button>
-          ${currentUserRole === 'administrator' ? `<button onclick="addOfficeModal()" class="btn-primary" style="padding:4px 8px; font-size:0.65rem; width:auto;">+ Tambah Kantor</button>` : ''}
-        `;
-        const { data } = await supabaseClient.from('offices').select('*');
-        renderKantorPopupContent(data || [], contentEl);
-      } 
-      else if (menuType === 'asset') {
-        titleEl.innerText = "Asset Management Gedung";
-        adminActionEl.innerHTML = `
-          <button onclick="showInputHistory('asset')" class="btn-primary" style="padding:4px 8px; font-size:0.65rem; background:#2196F3; width:auto;">Riwayat Input</button>
-          ${currentUserRole === 'administrator' ? `<button onclick="addAssetModal()" class="btn-primary" style="padding:4px 8px; font-size:0.65rem; width:auto;">+ Input Asset</button>` : ''}
-        `;
-        const { data } = await supabaseClient.from('assets').select('*');
-        renderAssetPopupContent(data || [], contentEl);
-      }
-      else if (menuType === 'utility') {
-        titleEl.innerText = "Tagihan Utilitas Gedung";
-        adminActionEl.innerHTML = `
-          <button onclick="showInputHistory('utility')" class="btn-primary" style="padding:4px 8px; font-size:0.65rem; background:#2196F3; width:auto;">Riwayat Input</button>
-          ${currentUserRole === 'administrator' ? `<button onclick="addUtilityModal()" class="btn-primary" style="padding:4px 8px; font-size:0.65rem; width:auto;">+ Input Tagihan</button>` : ''}
-        `;
-        const { data } = await supabaseClient.from('utility_bills').select('*');
-        renderUtilityPopupContent(data || [], contentEl);
-      }
-      else if (menuType === 'maintenance') {
-        titleEl.innerText = "Perawatan Routine Gedung";
-        adminActionEl.innerHTML = `
-          <button onclick="showInputHistory('maintenance')" class="btn-primary" style="padding:4px 8px; font-size:0.65rem; background:#2196F3; width:auto;">Riwayat Input</button>
-          ${currentUserRole === 'administrator' ? `<button onclick="addMaintenanceModal()" class="btn-primary" style="padding:4px 8px; font-size:0.65rem; width:auto;">+ Perawatan</button>` : ''}
-        `;
-        const { data } = await supabaseClient.from('maintenances').select('*');
-        renderMaintenancePopupContent(data || [], contentEl);
-      }
-      else if (menuType === 'workorder') {
-        titleEl.innerText = "Work Order Execution";
-        adminActionEl.innerHTML = `
-          <button onclick="showInputHistory('workorder')" class="btn-primary" style="padding:4px 8px; font-size:0.65rem; background:#2196F3; width:auto;">Riwayat Input</button>
-          ${currentUserRole === 'administrator' ? `<button onclick="addWOModal()" class="btn-primary" style="padding:4px 8px; font-size:0.65rem; width:auto;">+ Buat WO</button>` : ''}
-        `;
-        const { data } = await supabaseClient.from('work_orders').select('*');
-        renderWOPopupContent(data || [], contentEl);
-      }
-      else if (menuType === 'cleaning') {
-        titleEl.innerText = "General Cleaning Checklist";
-        adminActionEl.innerHTML = `
-          <button onclick="showInputHistory('cleaning')" class="btn-primary" style="padding:4px 8px; font-size:0.65rem; background:#2196F3; width:auto;">Riwayat Input</button>
-          ${currentUserRole === 'administrator' ? `<button onclick="addCleaningModal()" class="btn-primary" style="padding:4px 8px; font-size:0.65rem; width:auto;">+ Cleaning</button>` : ''}
-        `;
-        const { data } = await supabaseClient.from('cleanings').select('*');
-        renderCleaningPopupContent(data || [], contentEl);
-      }
-      else if (menuType === 'arsip') {
-        titleEl.innerText = "Penyimpanan Arsip Dokumen";
-        adminActionEl.innerHTML = `
-          <button onclick="showInputHistory('arsip')" class="btn-primary" style="padding:4px 8px; font-size:0.65rem; background:#2196F3; width:auto;">Riwayat Input</button>
-          ${currentUserRole === 'administrator' ? `<button onclick="openUploadArsipModal()" class="btn-primary" style="padding:4px 8px; font-size:0.65rem; width:auto;">+ Simpan Arsip</button>` : ''}
-        `;
-        const { data } = await supabaseClient.from('archives').select('*');
-        renderArsipPopupContent(data || [], contentEl);
-      }
-      else if (menuType === 'schedule') {
-        titleEl.innerText = "Jadwal Kegiatan Gedung";
-        contentEl.innerHTML = `
-          <input type="date" id="calendar-picker" class="input-field" onchange="filterScheduleByDatePopup()">
-          <div id="popup-schedule-results">
-            <p style="font-size:0.7rem; color:gray; text-align:center;">Pilih tanggal untuk melihat jadwal.</p>
-          </div>
-        `;
-      }
-      else if (menuType === 'reports') {
-        titleEl.innerText = "Laporan & Export Document";
-        contentEl.innerHTML = `
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <button onclick="window.print()" class="btn-primary">Print / Export PDF Laporan</button>
-            <button onclick="exportExcelFromPopup()" class="btn-primary" style="background:#2E7D32;">Export Excel Master Data</button>
-          </div>
-        `;
-      }
-      else if (menuType === 'settings') {
-        titleEl.innerText = "Pengaturan Sistem (Admin)";
-        
-        if (currentUserRole !== 'administrator') {
-          contentEl.innerHTML = `<p style="font-size:0.75rem; color:#E53935; text-align:center; padding:16px;">Akses Ditolak. Hanya untuk Administrator.</p>`;
-          return;
-        }
-
-        const { data: set } = await supabaseClient.from('settings').select('*').limit(1).single();
-        const s = set || { app_name: 'BBMS', company_name: 'PT. Binayasa Putra Batara', client_name: 'Bank Syariah Nasional (BSN)', support_phone: '021-5550101' };
-
-        contentEl.innerHTML = `
-          <div style="text-align:left;">
-            <label style="font-size:0.65rem; font-weight:700;">NAMA APLIKASI</label>
-            <input id="set-app" class="input-field" value="${s.app_name}">
-
-            <label style="font-size:0.65rem; font-weight:700;">NAMA PERUSAHAAN</label>
-            <input id="set-comp" class="input-field" value="${s.company_name}">
-
-            <label style="font-size:0.65rem; font-weight:700;">NAMA KLIEN / PENGELOLA</label>
-            <input id="set-client" class="input-field" value="${s.client_name}">
-
-            <label style="font-size:0.65rem; font-weight:700;">HOTLINE SUPPORT PHONE</label>
-            <input id="set-phone" class="input-field" value="${s.support_phone}">
-
-            <button onclick="saveSettings()" class="btn-primary" style="margin-top:6px;">Simpan Pengaturan</button>
-          </div>
-        `;
-      }
-    }
-
-    async function showInputHistory(menuType) {
-      const contentEl = document.getElementById("popup-body-content");
-      contentEl.innerHTML = `<p style="font-size:0.7rem; text-align:center; color:gray;">Memuat riwayat input ${menuType}...</p>`;
-
-      const { data } = await supabaseClient
-        .from('activity_logs')
-        .select('*')
-        .eq('menu_type', menuType)
-        .order('created_at', { ascending: false });
-
-      if (!data || data.length === 0) {
-        contentEl.innerHTML = `<p style="font-size:0.7rem; color:gray; text-align:center; padding:12px;">Belum ada riwayat input untuk menu ini.</p>`;
-        return;
-      }
-
-      contentEl.innerHTML = data.map(log => `
-        <div class="data-item">
-          <div>
-            <div style="font-weight:700; font-size:0.7rem; color:var(--primary);">${log.description}</div>
-            <div style="font-size:0.65rem; color:var(--text-sub);">Kantor: ${log.office_name} • Lokasi: ${log.location_detail}</div>
-            <div style="font-size:0.6rem; color:gray;">Oleh: ${log.created_by} • ${new Date(log.created_at).toLocaleString('id-ID')}</div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    async function saveSettings() {
-      const appName = document.getElementById("set-app").value;
-      const compName = document.getElementById("set-comp").value;
-      const clientName = document.getElementById("set-client").value;
-      const phone = document.getElementById("set-phone").value;
-
-      Swal.fire({ title: 'Menyimpan Pengaturan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-      const { error } = await supabaseClient.from('settings').upsert([
-        { app_name: appName, company_name: compName, client_name: clientName, support_phone: phone }
-      ]);
-
-      if (error) {
-        Swal.fire('Gagal', error.message, 'error');
-      } else {
-        Swal.fire('Tersimpan', 'Pengaturan sistem berhasil diperbarui.', 'success');
-        closeMenuPopup();
-      }
-    }
-
-    function closeMenuPopup() {
-      document.getElementById("menu-popup-modal").style.display = "none";
-    }
-
-    // POP-UP RENDER CONTENT HELPERS
-    function renderKantorPopupContent(data, el) {
-      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.7rem; color:gray; text-align:center;">Belum ada data kantor.</p>`; return; }
-      el.innerHTML = data.map(o => `
-        <div class="data-item">
-          <div>
-            <div style="font-weight:700; font-size:0.75rem;">${o.code} - ${o.name}</div>
-            <div style="font-size:0.65rem; color:var(--text-sub);">PIC: ${o.pic_name || '-'} • ${o.address || '-'}</div>
-          </div>
-          ${currentUserRole === 'administrator' ? `
-            <div style="display:flex; gap:4px;">
-              <span class="material-symbols-rounded" onclick="editOfficeModal('${o.id}', '${o.code}', '${o.name}', '${o.pic_name || ''}', '${o.address || ''}')" style="color:#2196F3; font-size:16px; cursor:pointer;">edit</span>
-              <span class="material-symbols-rounded" onclick="deleteOffice('${o.id}')" style="color:#E53935; font-size:16px; cursor:pointer;">delete</span>
+    <!-- MAIN APPLICATION -->
+    <div id="app-container">
+        <!-- SIDEBAR (DESKTOP) -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-building-shield"></i> BMS Pro
             </div>
-          ` : ''}
+            <ul class="sidebar-menu">
+                <li><a href="#" class="nav-link active" data-page="dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="#" class="nav-link" data-page="kantor"><i class="fa-solid fa-building"></i> Kantor</a></li>
+                <li><a href="#" class="nav-link" data-page="asset"><i class="fa-solid fa-boxes-stacked"></i> Asset</a></li>
+                <li><a href="#" class="nav-link" data-page="utilitas"><i class="fa-solid fa-bolt"></i> Utilitas</a></li>
+                <li><a href="#" class="nav-link" data-page="workorder"><i class="fa-solid fa-clipboard-list"></i> Work Order</a></li>
+                <li><a href="#" class="nav-link" data-page="perawatan"><i class="fa-solid fa-screwdriver-wrench"></i> Perawatan</a></li>
+                <li><a href="#" class="nav-link" data-page="teknisi"><i class="fa-solid fa-user-gear"></i> Teknisi</a></li>
+                <li><a href="#" class="nav-link" data-page="jadwal"><i class="fa-solid fa-calendar-days"></i> Jadwal</a></li>
+                <li><a href="#" class="nav-link" data-page="laporan"><i class="fa-solid fa-file-invoice"></i> Laporan</a></li>
+                <li><a href="#" class="nav-link" data-page="pengaturan"><i class="fa-solid fa-gear"></i> Pengaturan</a></li>
+            </ul>
+        </aside>
+
+        <div class="main-wrapper">
+            <!-- TOPBAR -->
+            <header class="topbar">
+                <h3 id="current-page-title">Dashboard</h3>
+                <div class="topbar-right">
+                    <i class="fa-solid fa-moon theme-toggle" id="theme-toggle" title="Ganti Mode Dark/Light"></i>
+                    <span id="user-email-display" style="font-size: 0.85rem; font-weight: 600;"></span>
+                    <button class="btn btn-secondary" id="btn-logout" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-power-off"></i> Keluar</button>
+                </div>
+            </header>
+
+            <!-- DYNAMIC CONTENT VIEW -->
+            <main class="content" id="main-content">
+                <!-- Content generated dynamically via JavaScript -->
+            </main>
         </div>
-      `).join('');
-    }
 
-    function renderAssetPopupContent(data, el) {
-      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.7rem; color:gray; text-align:center;">Belum ada asset gedung.</p>`; return; }
-      el.innerHTML = data.map(a => `
-        <div class="data-item">
-          <div>
-            <div style="font-weight:700; font-size:0.75rem;">${a.name} (${a.asset_number})</div>
-            <div style="font-size:0.65rem; color:var(--text-sub);">Kantor: ${a.office_name || 'Kantor Pusat'} • Lokasi: ${a.location_detail || 'Lantai 1'} • Kategori: ${a.category}</div>
-          </div>
-          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteAsset('${a.id}')" style="color:#E53935; font-size:16px; cursor:pointer;">delete</span>` : ''}
+        <!-- BOTTOM NAVIGATION (MOBILE) -->
+        <nav class="bottom-nav">
+            <a href="#" class="bottom-nav-item active" data-page="dashboard"><i class="fa-solid fa-chart-line"></i><span>Home</span></a>
+            <a href="#" class="bottom-nav-item" data-page="kantor"><i class="fa-solid fa-building"></i><span>Kantor</span></a>
+            <a href="#" class="bottom-nav-item" data-page="asset"><i class="fa-solid fa-boxes-stacked"></i><span>Asset</span></a>
+            <a href="#" class="bottom-nav-item" data-page="workorder"><i class="fa-solid fa-clipboard-list"></i><span>WO</span></a>
+            <a href="#" class="bottom-nav-item" data-page="pengaturan"><i class="fa-solid fa-gear"></i><span>More</span></a>
+        </nav>
+    </div>
+
+    <!-- MODAL FORM -->
+    <div class="modal" id="app-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="modal-title">Form Data</h4>
+                <button class="close-modal" id="btn-close-modal">&times;</button>
+            </div>
+            <div id="modal-body">
+                <!-- Form Inputs dynamically injected -->
+            </div>
         </div>
-      `).join('');
-    }
+    </div>
 
-    function renderUtilityPopupContent(data, el) {
-      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.7rem; color:gray; text-align:center;">Belum ada tagihan utilitas.</p>`; return; }
-      el.innerHTML = data.map(u => `
-        <div class="data-item">
-          <div>
-            <div style="font-weight:700; font-size:0.75rem;">Tagihan ${u.bill_type} (${u.month_year})</div>
-            <div style="font-size:0.65rem; color:var(--text-sub);">Kantor: ${u.office_name || 'Kantor Pusat'} • Lokasi: ${u.location_detail || 'Gedung Utama'} • Rp ${u.amount.toLocaleString()}</div>
-          </div>
-          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteUtility('${u.id}')" style="color:#E53935; font-size:16px; cursor:pointer;">delete</span>` : ''}
-        </div>
-      `).join('');
-    }
+    <!-- External JS Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    function renderMaintenancePopupContent(data, el) {
-      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.7rem; color:gray; text-align:center;">Belum ada jadwal perawatan.</p>`; return; }
-      el.innerHTML = data.map(m => `
-        <div class="data-item">
-          <div>
-            <div style="font-weight:700; font-size:0.75rem;">${m.title}</div>
-            <div style="font-size:0.65rem; color:var(--text-sub);">Kantor: ${m.office_name || 'Kantor Pusat'} • Lokasi: ${m.location_detail || 'Lantai 1'} • Asset: ${m.asset_name || '-'}</div>
-          </div>
-          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteMaintenance('${m.id}')" style="color:#E53935; font-size:16px; cursor:pointer;">delete</span>` : ''}
-        </div>
-      `).join('');
-    }
-
-    function renderWOPopupContent(data, el) {
-      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.7rem; color:gray; text-align:center;">Belum ada Work Order.</p>`; return; }
-      el.innerHTML = data.map(w => `
-        <div class="data-item">
-          <div>
-            <div style="font-weight:700; font-size:0.75rem;">${w.wo_number} - ${w.title}</div>
-            <div style="font-size:0.65rem; color:var(--text-sub);">Kantor: ${w.office_name || 'Kantor Pusat'} • Lokasi: ${w.location_detail || 'Lantai 1'} • Status: ${w.status}</div>
-          </div>
-          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteWO('${w.id}')" style="color:#E53935; font-size:16px; cursor:pointer;">delete</span>` : ''}
-        </div>
-      `).join('');
-    }
-
-    function renderCleaningPopupContent(data, el) {
-      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.7rem; color:gray; text-align:center;">Belum ada data cleaning.</p>`; return; }
-      el.innerHTML = data.map(c => `
-        <div class="data-item">
-          <div>
-            <div style="font-weight:700; font-size:0.75rem;">Area: ${c.area_name}</div>
-            <div style="font-size:0.65rem; color:var(--text-sub);">Kantor: ${c.office_name || 'Kantor Pusat'} • Lokasi Detail: ${c.location_detail || 'Lobby'} • Petugas: ${c.cleaner_name || '-'}</div>
-          </div>
-          ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteCleaning('${c.id}')" style="color:#E53935; font-size:16px; cursor:pointer;">delete</span>` : ''}
-        </div>
-      `).join('');
-    }
-
-    function renderArsipPopupContent(data, el) {
-      if (data.length === 0) { el.innerHTML = `<p style="font-size:0.7rem; color:gray; text-align:center;">Belum ada file arsip.</p>`; return; }
-      el.innerHTML = data.map(a => `
-        <div class="data-item">
-          <div>
-            <div style="font-weight:700; font-size:0.75rem;">${a.title}</div>
-            <div style="font-size:0.65rem; color:var(--text-sub);">Kantor: ${a.office_name || 'Kantor Pusat'} • Lokasi Arsip: ${a.location_detail || 'Ruang Arsip'} • Kategori: ${a.category}</div>
-          </div>
-          <div>
-            ${currentUserRole === 'administrator' ? `<span class="material-symbols-rounded" onclick="deleteArchive('${a.id}')" style="color:#E53935; font-size:16px; cursor:pointer; margin-right:4px;">delete</span>` : ''}
-            <span class="material-symbols-rounded" style="color:var(--primary); font-size:16px; cursor:pointer;">download</span>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // FORM MODALS WITH OFFICE & SPECIFIC LOCATION FIELD
-    async function addOfficeModal() {
-      const { value: f } = await Swal.fire({
-        title: 'Tambah Kantor BSN',
-        html:
-          '<input id="swal-code" class="swal2-input" placeholder="Kode (misal: BSN-001)">' +
-          '<input id="swal-name" class="swal2-input" placeholder="Nama Kantor">' +
-          '<input id="swal-pic" class="swal2-input" placeholder="PIC Kantor">' +
-          '<input id="swal-addr" class="swal2-input" placeholder="Alamat Kantor">',
-        showCancelButton: true, confirmButtonText: 'Simpan', confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [document.getElementById('swal-code').value, document.getElementById('swal-name').value, document.getElementById('swal-pic').value, document.getElementById('swal-addr').value]
-      });
-
-      if (f && f[0] && f[1]) {
-        await supabaseClient.from('offices').insert([{ code: f[0], name: f[1], pic_name: f[2], address: f[3] || 'Alamat BSN' }]);
-        await recordInputLog('kantor', `Menambah Kantor Baru: ${f[1]} (${f[0]})`, f[1], f[3] || 'Alamat Kantor');
-        openMenuPopup('kantor'); loadDatabaseSummary();
-      }
-    }
-
-    async function editOfficeModal(id, code, name, pic, address) {
-      const { value: f } = await Swal.fire({
-        title: 'Edit Data Kantor BSN',
-        html:
-          `<input id="swal-edit-code" class="swal2-input" value="${code}" placeholder="Kode Kantor">` +
-          `<input id="swal-edit-name" class="swal2-input" value="${name}" placeholder="Nama Kantor">` +
-          `<input id="swal-edit-pic" class="swal2-input" value="${pic}" placeholder="Nama PIC">` +
-          `<input id="swal-edit-addr" class="swal2-input" value="${address}" placeholder="Alamat Lengkap">`,
-        showCancelButton: true, confirmButtonText: 'Update Data', confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [document.getElementById('swal-edit-code').value, document.getElementById('swal-edit-name').value, document.getElementById('swal-edit-pic').value, document.getElementById('swal-edit-addr').value]
-      });
-
-      if (f && f[0] && f[1]) {
-        await supabaseClient.from('offices').update({ code: f[0], name: f[1], pic_name: f[2], address: f[3] }).eq('id', id);
-        openMenuPopup('kantor'); loadDatabaseSummary();
-      }
-    }
-
-    async function deleteOffice(id) {
-      if (confirm("Hapus kantor ini?")) {
-        await supabaseClient.from('offices').delete().eq('id', id);
-        openMenuPopup('kantor'); loadDatabaseSummary();
-      }
-    }
-
-    async function addAssetModal() {
-      const officeOptionsHTML = await getOfficeDropdownHTML();
-      const { value: f } = await Swal.fire({
-        title: 'Input Asset Gedung',
-        html:
-          `<select id="swal-office" class="swal2-input">${officeOptionsHTML}</select>` +
-          '<input id="swal-loc" class="swal2-input" placeholder="Lokasi Detail/Area (misal: Lt. 2 Server Room)">' +
-          '<input id="swal-num" class="swal2-input" placeholder="No Asset (misal: AST-001)">' +
-          '<input id="swal-astname" class="swal2-input" placeholder="Nama Asset (misal: AC Server)">' +
-          '<input id="swal-cat" class="swal2-input" placeholder="Kategori (AC/Genset/Lift)">',
-        showCancelButton: true, confirmButtonText: 'Simpan Asset', confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [document.getElementById('swal-office').value, document.getElementById('swal-loc').value, document.getElementById('swal-num').value, document.getElementById('swal-astname').value, document.getElementById('swal-cat').value]
-      });
-
-      if (f && f[2] && f[3]) {
-        let selectedOfficeId = null, selectedOfficeName = 'Kantor Pusat';
-        if (f[0]) { const parts = f[0].split('|'); selectedOfficeId = parts[0]; selectedOfficeName = parts[1]; }
+    <!-- App JavaScript Logic -->
+    <script>
+        // --- CONFIGURATION SUPABASE ---
+        const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT_ID.supabase.co";
+        const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
         
-        await supabaseClient.from('assets').insert([{ 
-          office_id: selectedOfficeId, 
-          office_name: selectedOfficeName, 
-          location_detail: f[1] || 'Lantai 1',
-          asset_number: f[2], 
-          name: f[3], 
-          category: f[4] || 'Umum' 
-        }]);
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        await recordInputLog('asset', `Input Asset: ${f[3]} (${f[2]})`, selectedOfficeName, f[1] || 'Lantai 1');
-        openMenuPopup('asset'); loadDatabaseSummary();
-      }
-    }
+        // --- STATE MANAGEMENT ---
+        let currentPage = 'dashboard';
+        let currentUser = null;
 
-    async function deleteAsset(id) {
-      if (confirm("Hapus asset ini?")) {
-        await supabaseClient.from('assets').delete().eq('id', id);
-        openMenuPopup('asset'); loadDatabaseSummary();
-      }
-    }
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            checkAuth();
+            setupEventListeners();
+        });
 
-    async function addUtilityModal() {
-      const officeOptionsHTML = await getOfficeDropdownHTML();
-      const { value: f } = await Swal.fire({
-        title: 'Input Tagihan Utilitas',
-        html:
-          `<select id="swal-office" class="swal2-input">${officeOptionsHTML}</select>` +
-          '<input id="swal-loc" class="swal2-input" placeholder="Lokasi Detail/Gedung (misal: Gedung A)">' +
-          '<select id="swal-type" class="swal2-input"><option value="PLN">PLN</option><option value="PDAM">PDAM</option><option value="Internet">Internet</option></select>' +
-          '<input id="swal-my" class="swal2-input" placeholder="Bulan & Tahun">' +
-          '<input id="swal-cust" class="swal2-input" placeholder="No. Pelanggan">' +
-          '<input id="swal-amount" type="number" class="swal2-input" placeholder="Nominal Rp">',
-        showCancelButton: true, confirmButtonText: 'Simpan Tagihan', confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [document.getElementById('swal-office').value, document.getElementById('swal-loc').value, document.getElementById('swal-type').value, document.getElementById('swal-my').value, document.getElementById('swal-cust').value, document.getElementById('swal-amount').value]
-      });
+        // --- AUTHENTICATION MODULE ---
+        async function checkAuth() {
+            const { data: { session } } = await db.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('app-container').style.display = 'flex';
+                document.getElementById('user-email-display').innerText = currentUser.email;
+                renderPage(currentPage);
+            } else {
+                document.getElementById('auth-container').style.display = 'flex';
+                document.getElementById('app-container').style.display = 'none';
+            }
+        }
 
-      if (f && f[5]) {
-        let selectedOfficeId = null, selectedOfficeName = 'Kantor Pusat';
-        if (f[0]) { const parts = f[0].split('|'); selectedOfficeId = parts[0]; selectedOfficeName = parts[1]; }
-        
-        await supabaseClient.from('utility_bills').insert([{ 
-          office_id: selectedOfficeId, 
-          office_name: selectedOfficeName, 
-          location_detail: f[1] || 'Gedung Utama',
-          bill_type: f[2], 
-          month_year: f[3], 
-          customer_number: f[4], 
-          amount: parseFloat(f[5]) 
-        }]);
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
 
-        await recordInputLog('utility', `Tagihan Utilitas: ${f[2]} (${f[3]}) Rp ${parseFloat(f[5]).toLocaleString()}`, selectedOfficeName, f[1] || 'Gedung Utama');
-        openMenuPopup('utility');
-      }
-    }
+            Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading() });
 
-    async function deleteUtility(id) {
-      if (confirm("Hapus tagihan ini?")) {
-        await supabaseClient.from('utility_bills').delete().eq('id', id);
-        openMenuPopup('utility');
-      }
-    }
+            const { data, error } = await db.auth.signInWithPassword({ email, password });
 
-    async function addMaintenanceModal() {
-      const officeOptionsHTML = await getOfficeDropdownHTML();
-      const { value: f } = await Swal.fire({
-        title: 'Input Perawatan Routine',
-        html:
-          `<select id="swal-office" class="swal2-input">${officeOptionsHTML}</select>` +
-          '<input id="swal-loc" class="swal2-input" placeholder="Lokasi Area/Lantai (misal: Lt. 3)">' +
-          '<input id="swal-mtitle" class="swal2-input" placeholder="Judul Perawatan">' +
-          '<input id="swal-mast" class="swal2-input" placeholder="Nama Asset">' +
-          '<input id="swal-mdate" type="date" class="swal2-input">',
-        showCancelButton: true, confirmButtonText: 'Simpan Perawatan', confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [document.getElementById('swal-office').value, document.getElementById('swal-loc').value, document.getElementById('swal-mtitle').value, document.getElementById('swal-mast').value, document.getElementById('swal-mdate').value]
-      });
+            if (error) {
+                Swal.fire('Gagal Login', error.message, 'error');
+            } else {
+                Swal.fire('Berhasil', 'Selamat datang!', 'success');
+                checkAuth();
+            }
+        });
 
-      if (f && f[2] && f[4]) {
-        let selectedOfficeId = null, selectedOfficeName = 'Kantor Pusat';
-        if (f[0]) { const parts = f[0].split('|'); selectedOfficeId = parts[0]; selectedOfficeName = parts[1]; }
-        
-        await supabaseClient.from('maintenances').insert([{ 
-          office_id: selectedOfficeId, 
-          office_name: selectedOfficeName, 
-          location_detail: f[1] || 'Lantai 1',
-          title: f[2], 
-          asset_name: f[3], 
-          scheduled_date: f[4] 
-        }]);
+        document.getElementById('btn-logout').addEventListener('click', async () => {
+            await db.auth.signOut();
+            checkAuth();
+        });
 
-        await recordInputLog('maintenance', `Perawatan Routine: ${f[2]} (${f[3] || 'Asset'})`, selectedOfficeName, f[1] || 'Lantai 1');
-        openMenuPopup('maintenance');
-      }
-    }
+        // --- NAVIGATION & ROUTING ---
+        function setupEventListeners() {
+            document.querySelectorAll('[data-page]').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = el.getAttribute('data-page');
+                    
+                    document.querySelectorAll('[data-page]').forEach(item => item.classList.remove('active'));
+                    document.querySelectorAll(`[data-page="${page}"]`).forEach(item => item.classList.add('active'));
 
-    async function deleteMaintenance(id) {
-      if (confirm("Hapus perawatan ini?")) {
-        await supabaseClient.from('maintenances').delete().eq('id', id);
-        openMenuPopup('maintenance');
-      }
-    }
+                    currentPage = page;
+                    document.getElementById('current-page-title').innerText = page.charAt(0).toUpperCase() + page.slice(1);
+                    renderPage(page);
+                });
+            });
 
-    async function addWOModal() {
-      const officeOptionsHTML = await getOfficeDropdownHTML();
-      const { value: f } = await Swal.fire({
-        title: 'Buat Work Order Baru',
-        html:
-          `<select id="swal-office" class="swal2-input">${officeOptionsHTML}</select>` +
-          '<input id="swal-loc" class="swal2-input" placeholder="Lokasi Pekerjaan (misal: Ruang Server Lt. 2)">' +
-          '<input id="swal-wonum" class="swal2-input" placeholder="No. WO (misal: WO-001)">' +
-          '<input id="swal-wotitle" class="swal2-input" placeholder="Judul Pekerjaan WO">',
-        showCancelButton: true, confirmButtonText: 'Simpan WO', confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [document.getElementById('swal-office').value, document.getElementById('swal-loc').value, document.getElementById('swal-wonum').value, document.getElementById('swal-wotitle').value]
-      });
+            // Theme Switcher
+            document.getElementById('theme-toggle').addEventListener('click', () => {
+                const currentTheme = document.body.getAttribute('data-theme');
+                if (currentTheme === 'dark') {
+                    document.body.removeAttribute('data-theme');
+                } else {
+                    document.body.setAttribute('data-theme', 'dark');
+                }
+            });
 
-      if (f && f[2] && f[3]) {
-        let selectedOfficeId = null, selectedOfficeName = 'Kantor Pusat';
-        if (f[0]) { const parts = f[0].split('|'); selectedOfficeId = parts[0]; selectedOfficeName = parts[1]; }
-        
-        await supabaseClient.from('work_orders').insert([{ 
-          office_id: selectedOfficeId, 
-          office_name: selectedOfficeName, 
-          location_detail: f[1] || 'Lantai 1',
-          wo_number: f[2], 
-          title: f[3], 
-          status: 'open' 
-        }]);
+            // Modal Close
+            document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+        }
 
-        await recordInputLog('workorder', `Terbit Work Order: ${f[2]} - ${f[3]}`, selectedOfficeName, f[1] || 'Lantai 1');
-        openMenuPopup('workorder'); loadDatabaseSummary();
-      }
-    }
+        function closeModal() {
+            document.getElementById('app-modal').style.display = 'none';
+        }
 
-    async function deleteWO(id) {
-      if (confirm("Hapus Work Order ini?")) {
-        await supabaseClient.from('work_orders').delete().eq('id', id);
-        openMenuPopup('workorder'); loadDatabaseSummary();
-      }
-    }
+        // --- ROUTE SWITCHER ---
+        function renderPage(page) {
+            const container = document.getElementById('main-content');
+            container.innerHTML = `<div style="text-align:center; padding: 40px;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p style="margin-top:10px;">Memuat data...</p></div>`;
 
-    async function addCleaningModal() {
-      const officeOptionsHTML = await getOfficeDropdownHTML();
-      const { value: f } = await Swal.fire({
-        title: 'Input General Cleaning',
-        html:
-          `<select id="swal-office" class="swal2-input">${officeOptionsHTML}</select>` +
-          '<input id="swal-loc" class="swal2-input" placeholder="Lokasi Detail (misal: Area Lobby / Toilet)">' +
-          '<input id="swal-carea" class="swal2-input" placeholder="Nama Area Cleaning">' +
-          '<input id="swal-cname" class="swal2-input" placeholder="Nama Petugas">' +
-          '<input id="swal-cdate" type="date" class="swal2-input">',
-        showCancelButton: true, confirmButtonText: 'Simpan Cleaning', confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [document.getElementById('swal-office').value, document.getElementById('swal-loc').value, document.getElementById('swal-carea').value, document.getElementById('swal-cname').value, document.getElementById('swal-cdate').value]
-      });
+            switch (page) {
+                case 'dashboard': renderDashboard(container); break;
+                case 'kantor': renderKantor(container); break;
+                case 'asset': renderAsset(container); break;
+                case 'utilitas': renderUtilitas(container); break;
+                case 'workorder': renderWorkOrder(container); break;
+                case 'teknisi': renderTeknisi(container); break;
+                default:
+                    container.innerHTML = `<h2>Page ${page}</h2><p>Modul dalam pengembangan.</p>`;
+            }
+        }
 
-      if (f && f[2] && f[4]) {
-        let selectedOfficeId = null, selectedOfficeName = 'Kantor Pusat';
-        if (f[0]) { const parts = f[0].split('|'); selectedOfficeId = parts[0]; selectedOfficeName = parts[1]; }
-        
-        await supabaseClient.from('cleanings').insert([{ 
-          office_id: selectedOfficeId, 
-          office_name: selectedOfficeName, 
-          location_detail: f[1] || 'Lobby Utama',
-          area_name: f[2], 
-          cleaner_name: f[3], 
-          cleaning_date: f[4] 
-        }]);
+        // ==========================================
+        // 1. DASHBOARD MODULE
+        // ==========================================
+        async function renderDashboard(container) {
+            // Fetch Realtime Counts
+            const { count: countKantor } = await db.from('kantor').select('*', { count: 'exact', head: true });
+            const { count: countAsset } = await db.from('asset').select('*', { count: 'exact', head: true });
+            const { count: countWO } = await db.from('work_orders').select('*', { count: 'exact', head: true });
+            const { count: countTeknisi } = await db.from('teknisi').select('*', { count: 'exact', head: true });
 
-        await recordInputLog('cleaning', `General Cleaning Area: ${f[2]} (${f[3] || 'Petugas'})`, selectedOfficeName, f[1] || 'Lobby Utama');
-        openMenuPopup('cleaning');
-      }
-    }
+            container.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-building"></i></div>
+                        <div class="stat-info"><h3>${countKantor || 0}</h3><p>Total Kantor</p></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+                        <div class="stat-info"><h3>${countAsset || 0}</h3><p>Total Asset</p></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                        <div class="stat-info"><h3>${countWO || 0}</h3><p>Work Orders</p></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-user-gear"></i></div>
+                        <div class="stat-info"><h3>${countTeknisi || 0}</h3><p>Teknisi Aktif</p></div>
+                    </div>
+                </div>
 
-    async function deleteCleaning(id) {
-      if (confirm("Hapus cleaning ini?")) {
-        await supabaseClient.from('cleanings').delete().eq('id', id);
-        openMenuPopup('cleaning');
-      }
-    }
+                <div class="card">
+                    <h4><i class="fa-solid fa-chart-bar"></i> Pemakaian Utilitas Harian</h4>
+                    <canvas id="chartUtilitas" style="max-height: 300px; margin-top:15px;"></canvas>
+                </div>
+            `;
 
-    async function openUploadArsipModal() {
-      const officeOptionsHTML = await getOfficeDropdownHTML();
-      const { value: f } = await Swal.fire({
-        title: 'Simpan Arsip Baru',
-        html:
-          `<select id="swal-office" class="swal2-input">${officeOptionsHTML}</select>` +
-          '<input id="swal-loc" class="swal2-input" placeholder="Lokasi Fisik Arsip (misal: Lemari A Lt. 2)">' +
-          '<input id="swal-title" class="swal2-input" placeholder="Judul Dokumen">' +
-          '<input id="swal-cat" class="swal2-input" placeholder="Kategori Dokumen">',
-        showCancelButton: true, confirmButtonText: 'Simpan ke Database', confirmButtonColor: '#0B8F4D',
-        preConfirm: () => [document.getElementById('swal-office').value, document.getElementById('swal-loc').value, document.getElementById('swal-title').value, document.getElementById('swal-cat').value]
-      });
+            // Chart Render
+            const ctx = document.getElementById('chartUtilitas').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                    datasets: [{
+                        label: 'Biaya Utilitas (Rupiah)',
+                        data: [1200000, 1900000, 1500000, 2100000, 1800000, 2500000],
+                        backgroundColor: '#198754'
+                    }]
+                },
+                options: { responsive: true }
+            });
+        }
 
-      if (f && f[2]) {
-        let selectedOfficeId = null, selectedOfficeName = 'Kantor Pusat';
-        if (f[0]) { const parts = f[0].split('|'); selectedOfficeId = parts[0]; selectedOfficeName = parts[1]; }
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        
-        await supabaseClient.from('archives').insert([{ 
-          office_id: selectedOfficeId, 
-          office_name: selectedOfficeName, 
-          location_detail: f[1] || 'Ruang Arsip Lt. 2',
-          title: f[2], 
-          category: f[3] || 'Dokumen', 
-          uploaded_by: user.id 
-        }]);
+        // ==========================================
+        // 2. KANTOR MODULE (CRUD)
+        // ==========================================
+        async function renderKantor(container) {
+            const { data: kantorList } = await db.from('kantor').select('*').order('created_at', { ascending: false });
 
-        await recordInputLog('arsip', `Simpan Arsip: ${f[2]} (${f[3] || 'Dokumen'})`, selectedOfficeName, f[1] || 'Ruang Arsip Lt. 2');
-        openMenuPopup('arsip'); loadDatabaseSummary();
-      }
-    }
+            let html = `
+                <div class="page-header">
+                    <h2>Kelola Data Kantor</h2>
+                    <button class="btn btn-primary" onclick="openFormKantor()"><i class="fa-solid fa-plus"></i> Tambah Kantor</button>
+                </div>
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Nama Kantor</th>
+                                    <th>Alamat</th>
+                                    <th>Penanggung Jawab</th>
+                                    <th>Telepon</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${kantorList && kantorList.length > 0 ? kantorList.map(k => `
+                                    <tr>
+                                        <td><b>${k.nama}</b></td>
+                                        <td>${k.alamat}</td>
+                                        <td>${k.penanggung_jawab || '-'}</td>
+                                        <td>${k.telepon || '-'}</td>
+                                        <td>
+                                            <button class="btn btn-secondary" style="padding:4px 8px;" onclick="viewMap('${k.nama}', ${k.latitude}, ${k.longitude})"><i class="fa-solid fa-map-location-dot"></i></button>
+                                            <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteKantor('${k.id}')"><i class="fa-solid fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                `).join('') : `<tr><td colspan="5" style="text-align:center;">Belum ada data kantor.</td></tr>`}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
 
-    async function deleteArchive(id) {
-      if (confirm("Hapus dokumen arsip ini?")) {
-        await supabaseClient.from('archives').delete().eq('id', id);
-        openMenuPopup('arsip'); loadDatabaseSummary();
-      }
-    }
+        window.openFormKantor = function() {
+            document.getElementById('modal-title').innerText = "Tambah Kantor Baru";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="form-kantor">
+                    <div class="form-group">
+                        <label>Nama Kantor</label>
+                        <input type="text" id="k-nama" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Alamat</label>
+                        <textarea id="k-alamat" class="form-control" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Penanggung Jawab</label>
+                        <input type="text" id="k-pj" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Telepon</label>
+                        <input type="text" id="k-telepon" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Simpan Kantor</button>
+                </form>
+            `;
+            document.getElementById('app-modal').style.display = 'flex';
 
-    async function filterScheduleByDatePopup() {
-      const selectedDate = document.getElementById("calendar-picker").value;
-      const resContainer = document.getElementById("popup-schedule-results");
-      
-      const { data } = await supabaseClient.from('maintenances').select('*').eq('scheduled_date', selectedDate);
+            document.getElementById('form-kantor').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const payload = {
+                    nama: document.getElementById('k-nama').value,
+                    alamat: document.getElementById('k-alamat').value,
+                    penanggung_jawab: document.getElementById('k-pj').value,
+                    telepon: document.getElementById('k-telepon').value
+                };
 
-      if (data && data.length > 0) {
-        resContainer.innerHTML = data.map(m => `
-          <div class="data-item" style="margin-top:6px;">
-            <div style="font-weight:700; font-size:0.75rem;">${m.title}</div>
-            <div style="font-size:0.65rem; color:gray;">Kantor: ${m.office_name || 'Kantor Pusat'} • Lokasi: ${m.location_detail || 'Lantai 1'} • Asset: ${m.asset_name || '-'}</div>
-          </div>
-        `).join('');
-      } else {
-        resContainer.innerHTML = `<p style="font-size:0.7rem; color:gray; margin-top:6px; text-align:center;">Tidak ada jadwal pada tanggal ini.</p>`;
-      }
-    }
+                const { error } = await db.from('kantor').insert([payload]);
+                if (!error) {
+                    Swal.fire('Berhasil', 'Kantor berhasil ditambahkan', 'success');
+                    closeModal();
+                    renderPage('kantor');
+                } else {
+                    Swal.fire('Gagal', error.message, 'error');
+                }
+            });
+        };
 
-    async function exportExcelFromPopup() {
-      const { data } = await supabaseClient.from('offices').select('*');
-      const ws = XLSX.utils.json_to_sheet(data || []);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "MasterKantor");
-      XLSX.writeFile(wb, "Master_Data_Kantor_BSN.xlsx");
-    }
+        window.deleteKantor = async function(id) {
+            if (confirm('Yakin ingin menghapus kantor ini?')) {
+                await db.from('kantor').delete().eq('id', id);
+                renderPage('kantor');
+            }
+        };
 
-    function initChart() {
-      new Chart(document.getElementById('mainChart'), {
-        type: 'bar',
-        data: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei'],
-          datasets: [{ label: 'Maintenance Routine', data: [12, 19, 15, 17, 22], backgroundColor: '#0B8F4D' }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-      });
-    }
+        window.viewMap = function(nama, lat, lng) {
+            document.getElementById('modal-title').innerText = `Lokasi: ${nama}`;
+            document.getElementById('modal-body').innerHTML = `
+                <iframe 
+                    width="100%" 
+                    height="300" 
+                    style="border:0; border-radius:8px;" 
+                    src="https://maps.google.com/maps?q=${lat || -6.200000},${lng || 106.816666}&z=15&output=embed">
+                </iframe>
+            `;
+            document.getElementById('app-modal').style.display = 'flex';
+        };
 
-    function openQRScanner() {
-      document.getElementById("qr-modal").style.display = "flex";
-      html5QrCode = new Html5Qrcode("reader");
-      html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 160, height: 160 } },
-        (decodedText) => { closeQRScanner(); Swal.fire('QR Code Detected', decodedText, 'success'); },
-        () => {}
-      ).catch(() => closeQRScanner());
-    }
+        // ==========================================
+        // 3. ASSET MODULE (CRUD & QR CODE)
+        // ==========================================
+        async function renderAsset(container) {
+            const { data: assetList } = await db.from('asset').select('*, kantor(nama)').order('created_at', { ascending: false });
 
-    function closeQRScanner() {
-      if (html5QrCode) {
-        html5QrCode.stop().then(() => document.getElementById("qr-modal").style.display = "none")
-        .catch(() => document.getElementById("qr-modal").style.display = "none");
-      } else {
-        document.getElementById("qr-modal").style.display = "none";
-      }
-    }
+            let html = `
+                <div class="page-header">
+                    <h2>Manajemen Asset</h2>
+                    <button class="btn btn-primary" onclick="openFormAsset()"><i class="fa-solid fa-plus"></i> Tambah Asset</button>
+                </div>
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Kode Asset</th>
+                                    <th>Nama Asset</th>
+                                    <th>Kantor</th>
+                                    <th>Kategori</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${assetList && assetList.length > 0 ? assetList.map(a => `
+                                    <tr>
+                                        <td><b>${a.kode_asset}</b></td>
+                                        <td>${a.nama_asset}</td>
+                                        <td>${a.kantor ? a.kantor.nama : '-'}</td>
+                                        <td>${a.kategori}</td>
+                                        <td><span class="badge badge-${a.status === 'Baik' ? 'success' : 'danger'}">${a.status}</span></td>
+                                        <td>
+                                            <button class="btn btn-secondary" style="padding:4px 8px;" onclick="showQR('${a.kode_asset}')"><i class="fa-solid fa-qrcode"></i></button>
+                                        </td>
+                                    </tr>
+                                `).join('') : `<tr><td colspan="6" style="text-align:center;">Belum ada asset.</td></tr>`}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
 
-    function openAIChat() {
-      Swal.fire({ title: 'AI Assistant Gedung', input: 'text', inputPlaceholder: 'Ketik pertanyaan...', confirmButtonColor: '#0B8F4D' });
-    }
+        window.openFormAsset = async function() {
+            const { data: kantorList } = await db.from('kantor').select('id, nama');
 
-    function toggleTheme() {
-      const cur = document.documentElement.getAttribute("data-theme");
-      document.documentElement.setAttribute("data-theme", cur === "light" ? "dark" : "light");
-    }
-  </script>
+            document.getElementById('modal-title').innerText = "Tambah Asset Baru";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="form-asset">
+                    <div class="form-group">
+                        <label>Pilih Kantor</label>
+                        <select id="a-kantor" class="form-control" required>
+                            ${kantorList.map(k => `<option value="${k.id}">${k.nama}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Kode Asset</label>
+                        <input type="text" id="a-kode" class="form-control" value="AST-${Date.now().toString().slice(-5)}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nama Asset</label>
+                        <input type="text" id="a-nama" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Kategori</label>
+                        <input type="text" id="a-kategori" class="form-control" placeholder="AC, Generator, Lift, dll" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Simpan Asset</button>
+                </form>
+            `;
+            document.getElementById('app-modal').style.display = 'flex';
+
+            document.getElementById('form-asset').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const payload = {
+                    kantor_id: document.getElementById('a-kantor').value,
+                    kode_asset: document.getElementById('a-kode').value,
+                    nama_asset: document.getElementById('a-nama').value,
+                    kategori: document.getElementById('a-kategori').value,
+                    status: 'Baik'
+                };
+
+                const { error } = await db.from('asset').insert([payload]);
+                if (!error) {
+                    Swal.fire('Berhasil', 'Asset berhasil disimpan', 'success');
+                    closeModal();
+                    renderPage('asset');
+                } else {
+                    Swal.fire('Gagal', error.message, 'error');
+                }
+            });
+        };
+
+        window.showQR = function(kode) {
+            document.getElementById('modal-title').innerText = `QR Code: ${kode}`;
+            document.getElementById('modal-body').innerHTML = `<div id="qrcode" style="display:flex; justify-content:center; padding:20px;"></div>`;
+            document.getElementById('app-modal').style.display = 'flex';
+
+            new QRCode(document.getElementById("qrcode"), {
+                text: kode,
+                width: 180,
+                height: 180
+            });
+        };
+
+        // Placeholder untuk modul lainnya
+        async function renderUtilitas(c) { c.innerHTML = `<h2>Data Utilitas</h2><p>Tabel pemakaian Air & Listrik.</p>`; }
+        async function renderWorkOrder(c) { c.innerHTML = `<h2>Work Orders</h2><p>Daftar perbaikan gedung.</p>`; }
+        async function renderTeknisi(c) { c.innerHTML = `<h2>Data Teknisi</h2><p>Manajemen personil perbaikan.</p>`; }
+
+    </script>
 </body>
 </html>
