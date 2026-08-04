@@ -571,7 +571,7 @@
         }
 
         // ==========================================
-        // EXPORT PDF REVISI LENGKAP & RAPI DENGAN UKURAN FOTO PAS
+        // EXPORT PDF REVISI RAPI: FOTO PRESISI & TTD POLOS
         // ==========================================
         async function exportATMPDF(id) {
             Swal.fire({ title: 'Mencetak PDF Laporan ATM...', didOpen: () => Swal.showLoading() });
@@ -609,22 +609,18 @@
             doc.text(`Periode Minggu : ${header.periode_minggu}`, 110, 33);
             doc.text(`Tanggal Cek       : ${header.tanggal_pemeriksaan}`, 14, 38);
 
-            // TABEL KRITERIA DENGAN UKURAN FOTO YANG DIKECILKAN PAS DALAM SEL
+            // TABEL KRITERIA DENGAN POSISI TEKS & FOTO TERPISAH TIDAK BERTUMPUK
             doc.autoTable({
                 startY: 42,
                 head: [['No', 'Kriteria Pemeriksaan', 'Kondisi', 'Keterangan dan Foto']],
-                body: details.map(d => {
-                    // Tambahkan space newline jika ada foto agar sel memiliki tinggi cukup
-                    const extraSpace = d.foto_bukti ? '\n\n\n' : '';
-                    return [
-                        d.no_kriteria,
-                        d.kriteria_nama, 
-                        d.kondisi === 'BAIK' ? '[ V ] BAIK    [   ] TIDAK BAIK' : '[   ] BAIK    [ V ] TIDAK BAIK',
-                        (d.keterangan || '-') + extraSpace
-                    ];
-                }),
+                body: details.map(d => [
+                    d.no_kriteria,
+                    d.kriteria_nama, 
+                    d.kondisi === 'BAIK' ? '[ V ] BAIK    [   ] TIDAK BAIK' : '[   ] BAIK    [ V ] TIDAK BAIK',
+                    (d.keterangan || '-') + (d.foto_bukti ? '\n\n\n\n\n' : '') // Beri ruang kosong untuk foto di bawah teks
+                ]),
                 theme: 'grid',
-                styles: { fontSize: 7.5, cellPadding: 2, font: 'Helvetica', valign: 'middle' },
+                styles: { fontSize: 7.5, cellPadding: 2, font: 'Helvetica', valign: 'top' },
                 headStyles: { fillColor: [232, 245, 233], textColor: [25, 135, 84], fontStyle: 'bold' },
                 columnStyles: { 
                     0: { cellWidth: 8, halign: 'center' }, 
@@ -640,15 +636,17 @@
                     }
                 },
                 didDrawCell: function(data) {
-                    // Embed Foto Bukti per Kriteria pas di dalam sel (Lebar: 18mm, Tinggi: 12mm)
+                    // Embed Foto Bukti per Kriteria Presisi di Bawah Teks Keterangan
                     if (data.section === 'body' && data.column.index === 3) {
                         const rowIdx = data.row.index;
                         const detailItem = details[rowIdx];
                         if (detailItem && detailItem.foto_bukti) {
                             try {
-                                const imgX = data.cell.x + (data.cell.width - 18) / 2;
-                                const imgY = data.cell.y + data.cell.height - 13;
-                                doc.addImage(detailItem.foto_bukti, 'JPEG', imgX, imgY, 18, 12);
+                                const imgWidth = 20;
+                                const imgHeight = 15;
+                                const imgX = data.cell.x + (data.cell.width - imgWidth) / 2;
+                                const imgY = data.cell.y + data.cell.height - imgHeight - 2;
+                                doc.addImage(detailItem.foto_bukti, 'JPEG', imgX, imgY, imgWidth, imgHeight);
                             } catch(e){}
                         }
                     }
@@ -658,7 +656,7 @@
             let finalY = doc.lastAutoTable.finalY + 8;
             if (finalY > 210) { doc.addPage(); finalY = 20; }
 
-            // TABEL LAMPIRAN FOTO PEMBERSIHAN
+            // TABEL LAMPIRAN FOTO PEMBERSIHAN (BEFORE & AFTER RAPI DALAM BINGKAI)
             doc.setFont('Helvetica', 'bold');
             doc.setFontSize(8.5);
             doc.text("LAMPIRAN PEMBERSIHAN", 14, finalY);
@@ -666,25 +664,34 @@
             doc.autoTable({
                 startY: finalY + 3,
                 head: [['Bukti Foto - SEBELUM (Before)', 'Bukti Foto - SESUDAH (After)']],
-                body: [['\n\n\n\n\n\n', '\n\n\n\n\n\n']],
+                body: [['\n\n\n\n\n\n\n', '\n\n\n\n\n\n\n']],
                 theme: 'grid',
                 styles: { fontSize: 8, halign: 'center', cellPadding: 2, font: 'Helvetica' },
                 headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },
-                columnStyles: { 0: { cellWidth: 91 }, 1: { cellWidth: 91 } }
+                columnStyles: { 0: { cellWidth: 91 }, 1: { cellWidth: 91 } },
+                didDrawCell: function(data) {
+                    if (data.section === 'body') {
+                        if (data.column.index === 0 && header.foto_pembersihan_before) {
+                            try {
+                                const imgX = data.cell.x + (data.cell.width - 38) / 2;
+                                const imgY = data.cell.y + (data.cell.height - 25) / 2;
+                                doc.addImage(header.foto_pembersihan_before, 'JPEG', imgX, imgY, 38, 25);
+                            } catch(e){}
+                        } else if (data.column.index === 1 && header.foto_pembersihan_after) {
+                            try {
+                                const imgX = data.cell.x + (data.cell.width - 38) / 2;
+                                const imgY = data.cell.y + (data.cell.height - 25) / 2;
+                                doc.addImage(header.foto_pembersihan_after, 'JPEG', imgX, imgY, 38, 25);
+                            } catch(e){}
+                        }
+                    }
+                }
             });
 
-            let imgY = finalY + 9;
-            if (header.foto_pembersihan_before) {
-                try { doc.addImage(header.foto_pembersihan_before, 'JPEG', 37, imgY, 45, 30); } catch(e){}
-            }
-            if (header.foto_pembersihan_after) {
-                try { doc.addImage(header.foto_pembersihan_after, 'JPEG', 128, imgY, 45, 30); } catch(e){}
-            }
-
             finalY = doc.lastAutoTable.finalY + 12;
-            if (finalY > 230) { doc.addPage(); finalY = 20; }
+            if (finalY > 235) { doc.addPage(); finalY = 20; }
 
-            // POLOS TANPA KOTAK PADA TANDA TANGAN (HANYA TEKS BISA DIEDIT)
+            // PENGESAHAN TANDA TANGAN POLOS (TANPA GARIS BINGKAI KOTAK)
             const vendorTitle = header.vendor_nama || 'PT Binayasa Purabatara Unit ______';
             const bankTitle = header.bank_cabang || 'PT Bank Tabungan Negara Cabang ______';
             const petugasName = header.petugas_nama ? `( ${header.petugas_nama} )` : '(_______________________)';
@@ -701,7 +708,7 @@
             doc.text("Mengetahui,", 110, finalY);
             doc.text(bankTitle, 110, finalY + 4);
 
-            // Render TTD Canvas
+            // Render Gambar TTD Digital Canvas
             if (header.tanda_tangan_petugas) {
                 try { doc.addImage(header.tanda_tangan_petugas, 'PNG', 14, finalY + 6, 35, 16); } catch (e) {}
             }
