@@ -52,6 +52,7 @@
         .btn-info { background: #0dcaf0; color: #000; }
         .btn-warning { background: #ffc107; color: #000; }
         .btn-danger { background: #dc3545; color: #fff; }
+        .btn-share { background: #0d6efd; color: #fff; }
         .btn-icon { width: 36px; height: 36px; border-radius: 50%; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-main); cursor: pointer; }
 
         /* HEADER & STATS */
@@ -289,6 +290,25 @@
             });
         }
 
+        // FUNGSI SHARE LEWAT PERANGKAT (WEB SHARE API)
+        async function shareData(title, text, url = null) {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: title,
+                        text: text,
+                        url: url || window.location.href
+                    });
+                } catch (err) {
+                    console.log('Batal berbagi:', err);
+                }
+            } else {
+                navigator.clipboard.writeText(`${title}\n${text}`);
+                Swal.fire('Tersalin!', 'Detail data berhasil disalin ke clipboard.', 'success');
+            }
+        }
+
+        // FUNGSI KOMPRESI GAMBAR OTOMATIS < 200 KB
         async function compressImage(file, maxSizeKB = 200) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -372,7 +392,7 @@
             });
         }
 
-        // ROUTER SUB PAGE LENGKAP TANPA STUCK LOADING
+        // ROUTER SUB PAGE LENGKAP BISA VIEW, EDIT, HAPUS & SHARE
         async function openSubPage(pageKey) {
             const overlay = document.getElementById('sub-page-overlay');
             const titleEl = document.getElementById('sub-page-title');
@@ -401,7 +421,9 @@
                                             <td><b>${k.nama}</b></td>
                                             <td>${k.alamat}</td>
                                             <td>
+                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Kantor', '${k.nama}', 'Alamat: ${k.alamat}')"><i class="fa-solid fa-eye"></i></button>
                                                 <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormKantor('${k.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Kantor', 'Kantor: ${k.nama}\\nAlamat: ${k.alamat}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('kantor','${k.id}','kantor')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -424,7 +446,9 @@
                                             <td>${a.nama_asset}</td>
                                             <td><span class="badge badge-${a.status === 'Baik' ? 'success' : 'danger'}">${a.status}</span></td>
                                             <td>
+                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Asset', '${a.nama_asset}', 'Kode: ${a.kode_asset}\\nKategori: ${a.kategori}\\nStatus: ${a.status}')"><i class="fa-solid fa-eye"></i></button>
                                                 <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormAsset('${a.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Asset', 'Asset: ${a.nama_asset}\\nKode: ${a.kode_asset}\\nStatus: ${a.status}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('asset','${a.id}','asset')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -451,6 +475,7 @@
                                                 <button class="btn btn-info" style="padding:4px 8px;" onclick="viewDetailATM('${atm.id}', '${atm.kantor ? atm.kantor.nama : ''}', '${atm.periode_minggu}')"><i class="fa-solid fa-eye"></i></button>
                                                 <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormPemeriksaanATM('${atm.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
                                                 <button class="btn btn-primary" style="padding:4px 8px;" onclick="exportATMPDF('${atm.id}')"><i class="fa-solid fa-file-pdf"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Laporan Pemeriksaan ATM', 'Lokasi: ${atm.kantor ? atm.kantor.nama : '-'}\\nKategori: ${atm.kategori_atm}\\nPeriode: ${atm.periode_minggu}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('pemeriksaan_atm','${atm.id}','pemeriksaan_atm')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -459,7 +484,6 @@
                             </table>
                         </div>`;
                 } else if (pageKey === 'jadwal') {
-                    // JADWAL CRUD DINAMIS FULL
                     actionBtn.style.display = 'inline-flex';
                     actionBtn.onclick = () => openFormJadwal();
                     const { data } = await db.from('jadwal').select('*').order('tanggal', {ascending:true});
@@ -475,7 +499,9 @@
                                             <td>${j.tanggal || '-'}</td>
                                             <td><span class="badge badge-${j.status === 'Selesai' ? 'success' : 'warning'}">${j.status}</span></td>
                                             <td>
+                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Jadwal', '${j.judul}', 'Kategori: ${j.kategori}\\nTanggal: ${j.tanggal}\\nStatus: ${j.status}\\nKet: ${j.keterangan}')"><i class="fa-solid fa-eye"></i></button>
                                                 <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormJadwal('${j.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Jadwal Kegiatan', 'Judul: ${j.judul}\\nTanggal: ${j.tanggal}\\nStatus: ${j.status}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('jadwal','${j.id}','jadwal')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -498,7 +524,9 @@
                                             <td>${u.jumlah_pemakaian} ${u.satuan}</td>
                                             <td>Rp ${Number(u.biaya).toLocaleString('id-ID')}</td>
                                             <td>
+                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Utilitas', '${u.jenis}', 'Pemakaian: ${u.jumlah_pemakaian} ${u.satuan}\\nBiaya: Rp ${u.biaya}')"><i class="fa-solid fa-eye"></i></button>
                                                 <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormUtilitas('${u.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Utilitas', 'Jenis: ${u.jenis}\\nPemakaian: ${u.jumlah_pemakaian} ${u.satuan}\\nBiaya: Rp ${u.biaya}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('utilitas','${u.id}','utilitas')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -521,7 +549,9 @@
                                             <td>${w.asset ? w.asset.nama_asset : '-'}</td>
                                             <td><span class="badge badge-warning">${w.status}</span></td>
                                             <td>
+                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Work Order', '${w.judul}', 'Asset: ${w.asset ? w.asset.nama_asset : '-'}\\nStatus: ${w.status}')"><i class="fa-solid fa-eye"></i></button>
                                                 <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormWO('${w.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Work Order', 'Judul: ${w.judul}\\nAsset: ${w.asset ? w.asset.nama_asset : '-'}\\nStatus: ${w.status}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('work_orders','${w.id}','workorder')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -545,6 +575,8 @@
                                             <td>${m.foto_after ? `<img src="${m.foto_after}" class="img-thumb">` : '-'}</td>
                                             <td>Rp ${Number(m.biaya).toLocaleString('id-ID')}</td>
                                             <td>
+                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Hasil Perawatan', '${m.work_orders ? m.work_orders.judul : '-'}', 'Teknisi: ${m.teknisi ? m.teknisi.nama : '-'}\\nBiaya: Rp ${m.biaya}')"><i class="fa-solid fa-eye"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Laporan Perawatan', 'WO: ${m.work_orders ? m.work_orders.judul : '-'}\\nTeknisi: ${m.teknisi ? m.teknisi.nama : '-'}\\nBiaya: Rp ${m.biaya}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('maintenances','${m.id}','perawatan')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -567,7 +599,9 @@
                                             <td>${t.spesialisasi}</td>
                                             <td><span class="badge badge-success">${t.status}</span></td>
                                             <td>
+                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Teknisi', '${t.nama}', 'Spesialisasi: ${t.spesialisasi}\\nStatus: ${t.status}')"><i class="fa-solid fa-eye"></i></button>
                                                 <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormTeknisi('${t.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Teknisi', 'Nama: ${t.nama}\\nSpesialisasi: ${t.spesialisasi}\\nStatus: ${t.status}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('teknisi','${t.id}','teknisi')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
@@ -584,7 +618,7 @@
                             <div style="display:flex; flex-direction:column; gap:8px;">
                                 <button class="btn btn-primary" onclick="exportLaporanRekap('asset')" style="width:100%; text-align:left; justify-content:flex-start;"><i class="fa-solid fa-boxes-stacked"></i> Laporan Rekap Asset (Excel)</button>
                                 <button class="btn btn-primary" onclick="exportLaporanRekap('utilitas')" style="width:100%; text-align:left; justify-content:flex-start;"><i class="fa-solid fa-bolt"></i> Laporan Rekap Utilitas (Excel)</button>
-                                <button class="btn btn-primary" onclick="exportLaporanRekap('workorder')" style="width:100%; text-align:left; justify-content:flex-start;"><i class="fa-solid fa-clipboard-list"></i> Laporan Work Order (Excel)</button>
+                                <button class="btn btn-primary" onclick="exportLaporanRekap('work_orders')" style="width:100%; text-align:left; justify-content:flex-start;"><i class="fa-solid fa-clipboard-list"></i> Laporan Work Order (Excel)</button>
                                 <button class="btn btn-danger" onclick="exportPDF()" style="width:100%; text-align:left; justify-content:flex-start;"><i class="fa-solid fa-file-pdf"></i> Laporan Master Kantor (PDF)</button>
                             </div>
                         </div>`;
@@ -625,9 +659,19 @@
             document.getElementById('sub-page-overlay').style.display = 'none';
         }
 
-        // ==========================================
-        // SCANNER QR CAMERA DENGAN WEBCAM AKSI NYATA
-        // ==========================================
+        function viewGenericDetail(title, subject, bodyText) {
+            document.getElementById('modal-title').innerText = `Detail ${title}: ${subject}`;
+            document.getElementById('modal-body').innerHTML = `
+                <div class="checklist-card">
+                    <div class="checklist-title">${subject}</div>
+                    <div style="white-space: pre-line; font-size:0.85rem; margin-top:8px;">${bodyText}</div>
+                </div>
+                <button class="btn btn-share" style="width:100%;" onclick="shareData('${title} - ${subject}', '${bodyText}')"><i class="fa-solid fa-share-nodes"></i> Bagikan Data Ini</button>
+            `;
+            document.getElementById('app-modal').style.display = 'flex';
+        }
+
+        // SCANNER QR CAMERA WEBCAM
         function scanQRModal() {
             document.getElementById('modal-title').innerText = "Scan QR Code Asset";
             document.getElementById('modal-body').innerHTML = `
@@ -660,9 +704,7 @@
             }
         }
 
-        // ==========================================
         // EXPORT PDF REVISI LENGKAP & RAPI
-        // ==========================================
         async function exportATMPDF(id) {
             Swal.fire({ title: 'Mencetak PDF Laporan ATM...', didOpen: () => Swal.showLoading() });
 
@@ -815,11 +857,7 @@
             XLSX.writeFile(wb, `Laporan_Rekap_${type}_${Date.now()}.xlsx`);
         }
 
-        // ==========================================
-        // FUNGSI FORM EDIT & TAMBAH LENGKAP
-        // ==========================================
-
-        // 1. FORM JADWAL (ADD / EDIT)
+        // FORM JADWAL (ADD / EDIT)
         async function openFormJadwal(id = null) {
             let editData = { judul: '', kategori: 'Pemeliharaan', tanggal: '', keterangan: '', status: 'Terjadwal' };
             if (id) {
@@ -873,7 +911,7 @@
             };
         }
 
-        // 2. FORM UTILITAS (ADD / EDIT)
+        // FORM UTILITAS (ADD / EDIT)
         async function openFormUtilitas(id = null) {
             const { data: kantorList } = await db.from('kantor').select('id, nama');
             if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah data kantor dulu!', 'warning');
@@ -927,7 +965,7 @@
             };
         }
 
-        // 3. FORM WORK ORDER (ADD / EDIT)
+        // FORM WORK ORDER (ADD / EDIT)
         async function openFormWO(id = null) {
             const { data: assetList } = await db.from('asset').select('id, nama_asset');
             if (!assetList || assetList.length === 0) return Swal.fire('Peringatan', 'Tambah data asset dulu!', 'warning');
@@ -982,7 +1020,7 @@
             };
         }
 
-        // 4. FORM TEKNISI (ADD / EDIT)
+        // FORM TEKNISI (ADD / EDIT)
         async function openFormTeknisi(id = null) {
             let editData = { nama: '', spesialisasi: '', status: 'Tersedia' };
             if (id) {
