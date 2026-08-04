@@ -115,7 +115,9 @@
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         .close-modal { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-sub); }
         
-        .pay-links-container { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; background: rgba(25, 135, 84, 0.05); padding: 12px; border-radius: 12px; border: 1px dashed var(--primary); }
+        .pay-banner { background: var(--primary-light); border: 1px dashed var(--primary); border-radius: 12px; padding: 12px; margin-bottom: 14px; text-align: center; }
+        .pay-banner-title { font-size: 0.8rem; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+        .pay-banner-btns { display: flex; gap: 8px; justify-content: center; }
     </style>
 </head>
 <body>
@@ -306,6 +308,31 @@
                 stopQRScanner();
                 document.getElementById('app-modal').style.display = 'none';
             });
+        }
+
+        // FUNGSI COPY ID DAN BUKA PEMBAYARAN DI TAB BARU
+        function processPaymentRedirect(type, idPelanggan) {
+            const cleanId = (idPelanggan || '').trim();
+            const targetUrl = type === 'Listrik' 
+                ? 'https://www.sepulsa.com/transaction/pln?type=postpaid' 
+                : 'https://www.sepulsa.com/transaction/pdam';
+
+            if (cleanId && cleanId !== '-') {
+                navigator.clipboard.writeText(cleanId).then(() => {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: `ID ${cleanId} disalin!`,
+                        text: 'Tempelkan ID di halaman Sepulsa',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                }).catch(() => {
+                    console.log('Gagal menyalin otomatis');
+                });
+            }
+            window.open(targetUrl, '_blank');
         }
 
         // FUNGSI SHARE LEWAT PERANGKAT
@@ -501,20 +528,52 @@
                                 </tbody>
                             </table>
                         </div>`;
+                } else if (pageKey === 'utilitas') {
+                    actionBtn.style.display = 'inline-flex';
+                    actionBtn.onclick = () => openFormUtilitas();
+                    const { data } = await db.from('utilitas').select('*, kantor(nama)').order('created_at', {ascending:false});
+                    contentEl.innerHTML = `
+                        <!-- BANNER TAUTAN QUICK PAYMENT -->
+                        <div class="pay-banner">
+                            <div class="pay-banner-title"><i class="fa-solid fa-up-right-from-square"></i> Pembayaran Cepat via Sepulsa</div>
+                            <div class="pay-banner-btns">
+                                <button class="btn btn-pay" onclick="processPaymentRedirect('Listrik')"><i class="fa-solid fa-bolt"></i> Bayar Listrik</button>
+                                <button class="btn btn-pay" onclick="processPaymentRedirect('Air')"><i class="fa-solid fa-droplet"></i> Bayar PDAM</button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead><tr><th>Jenis</th><th>ID Pelanggan</th><th>Pemakaian</th><th>Biaya (Rp)</th><th>Aksi</th></tr></thead>
+                                <tbody>
+                                    ${data && data.length > 0 ? data.map(u => `
+                                        <tr>
+                                            <td><b>${u.jenis}</b><br><small style="color:var(--text-sub);">${u.kantor ? u.kantor.nama : '-'}</small></td>
+                                            <td><span class="badge badge-warning">${u.id_pelanggan || '-'}</span></td>
+                                            <td>${u.jumlah_pemakaian} ${u.satuan}</td>
+                                            <td>Rp ${Number(u.biaya).toLocaleString('id-ID')}</td>
+                                            <td>
+                                                <div style="display:flex; gap:4px;">
+                                                    ${(u.jenis === 'Listrik' || u.jenis === 'Air') ? `
+                                                        <button class="btn btn-pay" style="padding:4px 8px;" title="Salin ID & Bayar di Sepulsa" onclick="processPaymentRedirect('${u.jenis}', '${u.id_pelanggan}')">
+                                                            <i class="fa-solid fa-credit-card"></i>
+                                                        </button>
+                                                    ` : ''}
+                                                    <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Utilitas', '${u.jenis}', 'ID Pelanggan: ${u.id_pelanggan || '-'}\nPemakaian: ${u.jumlah_pemakaian} ${u.satuan}\nBiaya: Rp ${u.biaya}')"><i class="fa-solid fa-eye"></i></button>
+                                                    <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormUtilitas('${u.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                    <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Utilitas', 'Jenis: ${u.jenis}\nID Pelanggan: ${u.id_pelanggan || '-'}\nPemakaian: ${u.jumlah_pemakaian} ${u.satuan}\nBiaya: Rp ${u.biaya}')"><i class="fa-solid fa-share-nodes"></i></button>
+                                                    <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('utilitas','${u.id}','utilitas')"><i class="fa-solid fa-trash"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `).join('') : '<tr><td colspan="5" style="text-align:center;">Belum ada data utilitas</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>`;
                 } else if (pageKey === 'cek_tagihan') {
                     contentEl.innerHTML = `
                         <div class="card">
                             <div class="card-title"><i class="fa-solid fa-receipt"></i> Cek Tagihan PLN & PDAM</div>
-                            
-                            <!-- BANYAK PILIHAN LINK TAUTAN PEMBAYARAN DIATAS FORM -->
-                            <div class="pay-links-container">
-                                <label style="font-size: 0.75rem; font-weight: 700; color: var(--primary);">Portal Pembayaran Resmi (Tab Baru):</label>
-                                <div style="display:flex; gap:8px;">
-                                    <a href="https://www.sepulsa.com/transaction/pln?type=postpaid" target="_blank" class="btn btn-pay" style="flex:1;"><i class="fa-solid fa-bolt"></i> Bayar PLN (Sepulsa)</a>
-                                    <a href="https://www.sepulsa.com/transaction/pdam" target="_blank" class="btn btn-pay" style="flex:1;"><i class="fa-solid fa-droplet"></i> Bayar PDAM (Sepulsa)</a>
-                                </div>
-                            </div>
-
                             <form id="f-cek-tagihan">
                                 <div class="form-group">
                                     <label>Jenis Layanan</label>
@@ -552,7 +611,7 @@
                                 <div class="bill-total" id="res-total">TOTAL TAGIHAN: Rp 0</div>
                                 
                                 <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
-                                    <a id="btn-redirect-pay" href="https://www.sepulsa.com/transaction/pln?type=postpaid" target="_blank" class="btn btn-pay" style="width:100%;"><i class="fa-solid fa-credit-card"></i> Bayar Sekarang via Sepulsa</a>
+                                    <button id="btn-redirect-pay" class="btn btn-pay" style="width:100%;"><i class="fa-solid fa-credit-card"></i> Bayar Sekarang via Sepulsa</button>
                                     <button class="btn btn-share" style="width:100%;" onclick="shareBillResult()"><i class="fa-solid fa-share-nodes"></i> Bagikan Tagihan</button>
                                 </div>
                             </div>
@@ -587,15 +646,9 @@
                             document.getElementById('res-status').innerHTML = `<span class="badge badge-danger">BELUM DIBAYAR</span>`;
                             document.getElementById('res-total').innerText = `TOTAL TAGIHAN: Rp ${totalAmount.toLocaleString('id-ID')}`;
                             
-                            // LINK PAY DIRECT DARI HASIL CEK TAGIHAN
+                            // ACTION BAYAR DENGAN OTOMATIS COPY ID
                             const payBtn = document.getElementById('btn-redirect-pay');
-                            if (layanan === 'PLN') {
-                                payBtn.href = "https://www.sepulsa.com/transaction/pln?type=postpaid";
-                                payBtn.innerHTML = `<i class="fa-solid fa-bolt"></i> Bayar Listrik PLN Sekarang`;
-                            } else {
-                                payBtn.href = "https://www.sepulsa.com/transaction/pdam";
-                                payBtn.innerHTML = `<i class="fa-solid fa-droplet"></i> Bayar Air PDAM Sekarang`;
-                            }
+                            payBtn.onclick = () => processPaymentRedirect(layanan === 'PLN' ? 'Listrik' : 'Air', idPel);
 
                             window.lastBillData = {
                                 layanan: layanan,
@@ -628,32 +681,6 @@
                                             </td>
                                         </tr>
                                     `).join('') : '<tr><td colspan="5" style="text-align:center;">Belum ada jadwal pemeliharaan</td></tr>'}
-                                </tbody>
-                            </table>
-                        </div>`;
-                } else if (pageKey === 'utilitas') {
-                    actionBtn.style.display = 'inline-flex';
-                    actionBtn.onclick = () => openFormUtilitas();
-                    const { data } = await db.from('utilitas').select('*, kantor(nama)').order('created_at', {ascending:false});
-                    contentEl.innerHTML = `
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead><tr><th>Jenis</th><th>ID Pelanggan</th><th>Pemakaian</th><th>Biaya (Rp)</th><th>Aksi</th></tr></thead>
-                                <tbody>
-                                    ${data && data.length > 0 ? data.map(u => `
-                                        <tr>
-                                            <td><b>${u.jenis}</b> (${u.kantor ? u.kantor.nama : '-'})</td>
-                                            <td><span class="badge badge-warning">${u.id_pelanggan || '-'}</span></td>
-                                            <td>${u.jumlah_pemakaian} ${u.satuan}</td>
-                                            <td>Rp ${Number(u.biaya).toLocaleString('id-ID')}</td>
-                                            <td>
-                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Utilitas', '${u.jenis}', 'ID Pelanggan: ${u.id_pelanggan || '-'}\nPemakaian: ${u.jumlah_pemakaian} ${u.satuan}\nBiaya: Rp ${u.biaya}')"><i class="fa-solid fa-eye"></i></button>
-                                                <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormUtilitas('${u.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Utilitas', 'Jenis: ${u.jenis}\nID Pelanggan: ${u.id_pelanggan || '-'}\nPemakaian: ${u.jumlah_pemakaian} ${u.satuan}\nBiaya: Rp ${u.biaya}')"><i class="fa-solid fa-share-nodes"></i></button>
-                                                <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('utilitas','${u.id}','utilitas')"><i class="fa-solid fa-trash"></i></button>
-                                            </td>
-                                        </tr>
-                                    `).join('') : '<tr><td colspan="5" style="text-align:center;">Belum ada data utilitas</td></tr>'}
                                 </tbody>
                             </table>
                         </div>`;
