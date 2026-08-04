@@ -286,7 +286,7 @@
         }
 
         // ==========================================
-        // FUNGSI KOMPRESI GAMBAR OTOMATIS < 200 KB
+        // KOMPRESI GAMBAR OTOMATIS < 200 KB
         // ==========================================
         async function compressImage(file, maxSizeKB = 200) {
             return new Promise((resolve, reject) => {
@@ -571,7 +571,7 @@
         }
 
         // ==========================================
-        // EXPORT PDF TAJAM HIGH RESOLUTION
+        // EXPORT PDF LENGKAP & RAPI DENGAN FOTO KRITERIA
         // ==========================================
         async function exportATMPDF(id) {
             Swal.fire({ title: 'Mencetak PDF Laporan ATM...', didOpen: () => Swal.showLoading() });
@@ -590,6 +590,7 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
 
+            // Header Dokumen
             doc.setFont('Helvetica', 'bold');
             doc.setFontSize(11);
             doc.text("LAPORAN PEMERIKSAAN ATM MINGGUAN", 105, 15, { align: 'center' });
@@ -608,24 +609,44 @@
             doc.text(`Periode Minggu : ${header.periode_minggu}`, 110, 33);
             doc.text(`Tanggal Cek       : ${header.tanggal_pemeriksaan}`, 14, 38);
 
+            // TABEL KRITERIA + EMBED FOTO DALAM KOLOM "KETERANGAN DAN FOTO"
             doc.autoTable({
                 startY: 42,
-                head: [['No', 'Kriteria Pemeriksaan', 'Kondisi', 'Keterangan']],
+                head: [['No', 'Kriteria Pemeriksaan', 'Kondisi', 'Keterangan dan Foto']],
                 body: details.map(d => [
                     d.no_kriteria,
-                    d.kriteria_nama,
+                    d.kriteria_nama, 
                     d.kondisi === 'BAIK' ? '[ V ] BAIK    [   ] TIDAK BAIK' : '[   ] BAIK    [ V ] TIDAK BAIK',
-                    d.keterangan || '-'
+                    d.keterangan ? `${d.keterangan}\n\n` : '\n\n'
                 ]),
                 theme: 'grid',
-                styles: { fontSize: 7.5, cellPadding: 2.5, font: 'Helvetica' },
+                styles: { fontSize: 7.5, cellPadding: 2.5, font: 'Helvetica', valign: 'middle' },
                 headStyles: { fillColor: [232, 245, 233], textColor: [25, 135, 84], fontStyle: 'bold' },
-                columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 1: { cellWidth: 85 }, 2: { cellWidth: 48 }, 3: { cellWidth: 41 } },
+                columnStyles: { 
+                    0: { cellWidth: 8, halign: 'center' }, 
+                    1: { cellWidth: 80 }, 
+                    2: { cellWidth: 48 }, 
+                    3: { cellWidth: 46 } 
+                },
                 didParseCell: function(data) {
                     if (data.section === 'body' && data.column.index === 1) {
                         const noK = data.row.cells[0].raw;
                         const desc = descMap[noK] ? `\n${descMap[noK]}` : '';
                         data.cell.text = [data.cell.text[0], desc]; 
+                    }
+                },
+                didDrawCell: function(data) {
+                    // Embed Foto Bukti per Kriteria jika ada di dalam kolom Keterangan dan Foto
+                    if (data.section === 'body' && data.column.index === 3) {
+                        const rowIdx = data.row.index;
+                        const detailItem = details[rowIdx];
+                        if (detailItem && detailItem.foto_bukti) {
+                            try {
+                                const imgX = data.cell.x + 3;
+                                const imgY = data.cell.y + (data.cell.height - 18) / 2;
+                                doc.addImage(detailItem.foto_bukti, 'JPEG', imgX, imgY, 24, 18);
+                            } catch(e){}
+                        }
                     }
                 }
             });
@@ -633,7 +654,7 @@
             let finalY = doc.lastAutoTable.finalY + 8;
             if (finalY > 210) { doc.addPage(); finalY = 20; }
 
-            // TABEL LAMPIRAN PEMBERSIHAN
+            // TABEL LAMPIRAN FOTO PEMBERSIHAN (BEFORE & AFTER PRESISI PRESISI CENTER)
             doc.setFont('Helvetica', 'bold');
             doc.setFontSize(8.5);
             doc.text("LAMPIRAN PEMBERSIHAN", 14, finalY);
@@ -641,25 +662,25 @@
             doc.autoTable({
                 startY: finalY + 3,
                 head: [['Bukti Foto - SEBELUM (Before)', 'Bukti Foto - SESUDAH (After)']],
-                body: [['\n\n\n\n\n', '\n\n\n\n\n']],
+                body: [['\n\n\n\n\n\n', '\n\n\n\n\n\n']],
                 theme: 'grid',
                 styles: { fontSize: 8, halign: 'center', cellPadding: 2, font: 'Helvetica' },
                 headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },
                 columnStyles: { 0: { cellWidth: 91 }, 1: { cellWidth: 91 } }
             });
 
-            let imgY = finalY + 10;
+            let imgY = finalY + 9;
             if (header.foto_pembersihan_before) {
-                try { doc.addImage(header.foto_pembersihan_before, 'JPEG', 35, imgY, 45, 30); } catch(e){}
+                try { doc.addImage(header.foto_pembersihan_before, 'JPEG', 37, imgY, 45, 30); } catch(e){}
             }
             if (header.foto_pembersihan_after) {
-                try { doc.addImage(header.foto_pembersihan_after, 'JPEG', 125, imgY, 45, 30); } catch(e){}
+                try { doc.addImage(header.foto_pembersihan_after, 'JPEG', 128, imgY, 45, 30); } catch(e){}
             }
 
             finalY = doc.lastAutoTable.finalY + 8;
             if (finalY > 230) { doc.addPage(); finalY = 20; }
 
-            // PENGESAHAN TANDA TANGAN
+            // TANDA TANGAN & PENGESAHAN DIBUAT OLEH & MENGETAHUI
             const vendorTitle = header.vendor_nama || 'PT Binayasa Purabatara Unit ______';
             const bankTitle = header.bank_cabang || 'PT Bank Tabungan Negara Cabang ______';
             const petugasName = header.petugas_nama ? `( ${header.petugas_nama} )` : '(_______________________)';
@@ -698,11 +719,11 @@
                 ["LOKASI / KCP", header.kantor ? header.kantor.alamat : '-', "PERIODE MINGGU", header.periode_minggu],
                 ["TANGGAL", header.tanggal_pemeriksaan],
                 [],
-                ["No", "Kriteria Pemeriksaan", "Kondisi", "Keterangan", "URL Foto Bukti"]
+                ["No", "Kriteria Pemeriksaan", "Kondisi", "Keterangan dan URL Foto"]
             ];
 
             details.forEach(d => {
-                excelRows.push([d.no_kriteria, d.kriteria_nama, d.kondisi === 'BAIK' ? '[V] BAIK' : '[V] TIDAK BAIK', d.keterangan || '-', d.foto_bukti || '-']);
+                excelRows.push([d.no_kriteria, d.kriteria_nama, d.kondisi === 'BAIK' ? '[V] BAIK' : '[V] TIDAK BAIK', (d.keterangan || '-') + (d.foto_bukti ? ` | ${d.foto_bukti}` : '')]);
             });
 
             excelRows.push([]);
@@ -851,7 +872,7 @@
             }
         }
 
-        // FORM LAPORAN PEMERIKSAAN ATM + KOMPRESI FOTO AUTOMATIC < 200 KB
+        // FORM LAPORAN PEMERIKSAAN ATM
         async function openFormPemeriksaanATM(id = null) {
             const [kantorRes, kriteriaRes] = await Promise.all([
                 db.from('kantor').select('id, nama'),
@@ -981,14 +1002,12 @@
                 const fileBeforePem = document.getElementById('fa-foto-before').files[0];
                 const fileAfterPem = document.getElementById('fa-foto-after').files[0];
 
-                // 1. Kompres & Upload Foto Pembersihan Before (< 200 KB)
                 if (fileBeforePem) {
                     const compressedB = await compressImage(fileBeforePem, 200);
                     const fnameB = `pem_before_${Date.now()}_${compressedB.name}`;
                     await db.storage.from('bms-photos').upload(fnameB, compressedB);
                     beforePemUrl = db.storage.from('bms-photos').getPublicUrl(fnameB).data.publicUrl;
                 }
-                // 2. Kompres & Upload Foto Pembersihan After (< 200 KB)
                 if (fileAfterPem) {
                     const compressedA = await compressImage(fileAfterPem, 200);
                     const fnameA = `pem_after_${Date.now()}_${compressedA.name}`;
@@ -1018,7 +1037,6 @@
                     if (hData) headerId = hData.id;
                 }
 
-                // 3. Kompres & Upload Foto Bukti Kriteria (< 200 KB)
                 for (let k of kriteriaList) {
                     const kondisiVal = document.querySelector(`input[name="cond_${k.no_kriteria}"]:checked`).value;
                     const ketVal = document.getElementById(`ket_${k.no_kriteria}`).value;
