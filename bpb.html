@@ -46,13 +46,14 @@
         .form-group label { display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 4px; color: var(--text-sub); }
         .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--card-bg); color: var(--text-main); outline: none; font-size: 0.9rem; }
 
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.8rem; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.8rem; text-decoration: none; }
         .btn-primary { background: var(--primary); color: #fff; }
         .btn-secondary { background: var(--border); color: var(--text-main); }
         .btn-info { background: #0dcaf0; color: #000; }
         .btn-warning { background: #ffc107; color: #000; }
         .btn-danger { background: #dc3545; color: #fff; }
         .btn-share { background: #0d6efd; color: #fff; }
+        .btn-pay { background: #10b981; color: #fff; }
         .btn-icon { width: 36px; height: 36px; border-radius: 50%; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-main); cursor: pointer; }
 
         /* HEADER & STATS */
@@ -113,6 +114,8 @@
         .modal-content { background: var(--card-bg); border-radius: var(--radius); width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; padding: 20px; position: relative; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         .close-modal { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-sub); }
+        
+        .pay-links-container { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; background: rgba(25, 135, 84, 0.05); padding: 12px; border-radius: 12px; border: 1px dashed var(--primary); }
     </style>
 </head>
 <body>
@@ -502,6 +505,16 @@
                     contentEl.innerHTML = `
                         <div class="card">
                             <div class="card-title"><i class="fa-solid fa-receipt"></i> Cek Tagihan PLN & PDAM</div>
+                            
+                            <!-- BANYAK PILIHAN LINK TAUTAN PEMBAYARAN DIATAS FORM -->
+                            <div class="pay-links-container">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: var(--primary);">Portal Pembayaran Resmi (Tab Baru):</label>
+                                <div style="display:flex; gap:8px;">
+                                    <a href="https://www.sepulsa.com/transaction/pln?type=postpaid" target="_blank" class="btn btn-pay" style="flex:1;"><i class="fa-solid fa-bolt"></i> Bayar PLN (Sepulsa)</a>
+                                    <a href="https://www.sepulsa.com/transaction/pdam" target="_blank" class="btn btn-pay" style="flex:1;"><i class="fa-solid fa-droplet"></i> Bayar PDAM (Sepulsa)</a>
+                                </div>
+                            </div>
+
                             <form id="f-cek-tagihan">
                                 <div class="form-group">
                                     <label>Jenis Layanan</label>
@@ -538,7 +551,8 @@
                                 <div class="bill-row"><span class="bill-label">Biaya Admin:</span><span class="bill-val" id="res-admin">Rp 2.500</span></div>
                                 <div class="bill-total" id="res-total">TOTAL TAGIHAN: Rp 0</div>
                                 
-                                <div style="display:flex; gap:6px; margin-top:10px;">
+                                <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
+                                    <a id="btn-redirect-pay" href="https://www.sepulsa.com/transaction/pln?type=postpaid" target="_blank" class="btn btn-pay" style="width:100%;"><i class="fa-solid fa-credit-card"></i> Bayar Sekarang via Sepulsa</a>
                                     <button class="btn btn-share" style="width:100%;" onclick="shareBillResult()"><i class="fa-solid fa-share-nodes"></i> Bagikan Tagihan</button>
                                 </div>
                             </div>
@@ -573,6 +587,16 @@
                             document.getElementById('res-status').innerHTML = `<span class="badge badge-danger">BELUM DIBAYAR</span>`;
                             document.getElementById('res-total').innerText = `TOTAL TAGIHAN: Rp ${totalAmount.toLocaleString('id-ID')}`;
                             
+                            // LINK PAY DIRECT DARI HASIL CEK TAGIHAN
+                            const payBtn = document.getElementById('btn-redirect-pay');
+                            if (layanan === 'PLN') {
+                                payBtn.href = "https://www.sepulsa.com/transaction/pln?type=postpaid";
+                                payBtn.innerHTML = `<i class="fa-solid fa-bolt"></i> Bayar Listrik PLN Sekarang`;
+                            } else {
+                                payBtn.href = "https://www.sepulsa.com/transaction/pdam";
+                                payBtn.innerHTML = `<i class="fa-solid fa-droplet"></i> Bayar Air PDAM Sekarang`;
+                            }
+
                             window.lastBillData = {
                                 layanan: layanan,
                                 idPel: idPel,
