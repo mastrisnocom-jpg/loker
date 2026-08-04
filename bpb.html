@@ -2,576 +2,652 @@
 <html lang="id" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BINAYASA BUILDING MANAGEMENT SYSTEM (BBMS) - BSN</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>BBMS Mobile - PT. Binayasa Putra Batara</title>
   
-  <!-- Manifest & Web App Specs -->
-  <link rel="manifest" href="data:application/manifest+json;base64,ewogICJzaG9ydF9uYW1lIjogIkJCTVMiLAogICJuYW1lIjogIkJJTkFZQVNBCkJVSUxESU5HIE1BTkFHRU1FTlQgU1lTVEVNIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwQjhGNEQiLAogICJ0aGVtZV9jb2xvcjogIiMwQjhGNEQiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiCn0=">
+  <!-- Web App Manifest (PWA Home Screen Install) -->
+  <link rel="manifest" href="data:application/manifest+json;base64,ewogICJzaG9ydF9uYW1lIjogIkJCTVMiLAogICJuYW1lIjogIkJJTkFZQVNBIEJVSUxESU5HIE1BTkFHRU1FTlQgU1lTVEVNIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwQjhGNEQiLAogICJ0aGVtZV9jb2xvcjogIiMwQjhGNEQiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiCn0=">
   <meta name="theme-color" content="#0B8F4D">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-  <!-- Font & Icons -->
+  <!-- Icons & Fonts -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Third-Party CDNs -->
+  <!-- Mobile Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
     /* ========================================================
-       STYLE STACK (CSS3 Modern & Dark/Light Mode Variables)
+       MOBILE-FIRST NATIVE APP STYLING (CSS3)
        ======================================================== */
     :root {
       --primary: #0B8F4D;
-      --primary-hover: #086d3a;
-      --accent-blue: #2196f3;
-      --bg-light: #f4f6f9;
-      --text-light: #333333;
-      --card-light: #ffffff;
-      --border-light: #e0e0e0;
-
-      --bg-dark: #121212;
-      --text-dark: #e0e0e0;
-      --card-dark: #1e1e1e;
-      --border-dark: #333333;
-
-      --bg-main: var(--bg-light);
-      --text-main: var(--text-light);
-      --card-bg: var(--card-light);
-      --border-color: var(--border-light);
+      --primary-dark: #055C31;
+      --accent: #2196F3;
+      --danger: #FF3B30;
+      --warning: #FF9500;
+      
+      /* Light Mode Palette */
+      --bg-body: #F2F4F7;
+      --bg-card: #FFFFFF;
+      --text-main: #1D2939;
+      --text-sub: #667085;
+      --border: #EAECF0;
+      --bottom-nav-bg: rgba(255, 255, 255, 0.95);
     }
 
     [data-theme="dark"] {
-      --bg-main: var(--bg-dark);
-      --text-main: var(--text-dark);
-      --card-bg: var(--card-dark);
-      --border-color: var(--border-dark);
+      --bg-body: #121212;
+      --bg-card: #1E1E1E;
+      --text-main: #F2F4F7;
+      --text-sub: #98A2B3;
+      --border: #2D2D2D;
+      --bottom-nav-bg: rgba(30, 30, 30, 0.95);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-    body { background-color: var(--bg-main); color: var(--text-main); transition: all 0.3s ease; }
-
-    /* Login Overlay */
-    #login-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(135deg, #0B8F4D 0%, #054726 100%);
-      display: flex; justify-content: center; align-items: center; z-index: 9999;
-    }
-    .login-card {
-      background: #ffffff; color: #333; padding: 40px; border-radius: 16px;
-      width: 90%; max-width: 400px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-    }
-    .login-card h2 { color: var(--primary); font-size: 1.5rem; text-align: center; margin-bottom: 5px; }
-    .login-card p { text-align: center; color: #666; font-size: 0.85rem; margin-bottom: 25px; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
-    .form-group input, .form-group select {
-      width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none;
-    }
-    .btn-primary {
-      width: 100%; padding: 12px; background-color: var(--primary); color: white;
-      border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;
-    }
-    .btn-primary:hover { background-color: var(--primary-hover); }
-
-    /* Main Layout */
-    .app-wrapper { display: flex; min-height: 100vh; }
-    .sidebar {
-      width: 260px; background-color: var(--card-bg); border-right: 1px solid var(--border-color);
-      display: flex; flex-direction: column; transition: 0.3s;
-    }
-    .sidebar-brand {
-      padding: 20px; font-size: 1.1rem; font-weight: 700; color: var(--primary);
-      display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color);
-    }
-    .sidebar-menu { list-style: none; padding: 15px 10px; }
-    .sidebar-menu li a {
-      display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: var(--text-main);
-      text-decoration: none; border-radius: 8px; margin-bottom: 4px; font-size: 0.9rem; font-weight: 500;
-    }
-    .sidebar-menu li a:hover, .sidebar-menu li.active a { background-color: var(--primary); color: #fff; }
-
-    .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; }
-    .top-header {
-      height: 65px; background-color: var(--card-bg); border-bottom: 1px solid var(--border-color);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 25px; sticky: top;
-    }
-    .content-body { padding: 25px; }
-
-    /* Dashboard UI Elements */
-    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
-    .metric-card {
-      background-color: var(--card-bg); padding: 20px; border-radius: 12px;
-      border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-    }
-    .metric-card .title { font-size: 0.75rem; font-weight: 700; color: #888; text-transform: uppercase; }
-    .metric-card .value { font-size: 1.6rem; font-weight: 700; color: var(--primary); margin-top: 5px; }
-
-    .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 25px; }
-    .card-box {
-      background: var(--card-bg); padding: 20px; border-radius: 12px;
-      border: 1px solid var(--border-color);
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* Tab Modules */
-    .view-module { display: none; }
-    .view-module.active { display: block; }
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      .app-wrapper { flex-direction: column; }
-      .sidebar { width: 100%; }
-      .chart-grid { grid-template-columns: 1fr; }
+    /* Target Layar Handphone Container */
+    .mobile-screen {
+      width: 100%;
+      max-width: 480px; /* Lebar maksimal smartphone */
+      min-height: 100vh;
+      background-color: var(--bg-body);
+      position: relative;
+      padding-bottom: 90px; /* Space untuk bottom navigation */
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+
+    /* Mobile Header Stack */
+    .mobile-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: var(--primary);
+      color: white;
+      padding: 16px;
+      padding-top: calc(env(safe-area-inset-top) + 16px);
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 20px;
+      box-shadow: 0 4px 12px rgba(11, 143, 77, 0.2);
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-subtitle {
+      font-size: 0.75rem;
+      opacity: 0.85;
+      margin-top: 2px;
+    }
+
+    .user-pill {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(5px);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    /* Floating Action / Mobile Quick Menu */
+    .quick-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .btn-quick {
+      flex: 1;
+      background: white;
+      color: var(--primary);
+      border: none;
+      padding: 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      cursor: pointer;
+    }
+
+    /* Content Area */
+    .mobile-body {
+      padding: 16px;
+    }
+
+    /* Mobile Card Layouts */
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* Metric Grid (2 Columns Mobile) */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .metric-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 14px;
+      border-radius: 14px;
+    }
+
+    .metric-box .label {
+      font-size: 0.7rem;
+      color: var(--text-sub);
+      font-weight: 600;
+    }
+
+    .metric-box .val {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 4px;
+    }
+
+    /* Mobile Work Order List Item */
+    .wo-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+    .wo-item:last-child { border-bottom: none; }
+
+    .wo-info h5 { font-size: 0.85rem; font-weight: 600; }
+    .wo-info p { font-size: 0.75rem; color: var(--text-sub); margin-top: 2px; }
+
+    .badge {
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.65rem;
+      font-weight: 700;
+    }
+    .badge-success { background: #E6F4EA; color: #137333; }
+    .badge-warning { background: #FEF7E0; color: #B06000; }
+    .badge-danger { background: #FCE8E6; color: #C5221F; }
+
+    /* Bottom Navigation Bar (App Native Bar) */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: var(--bottom-nav-bg);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0 calc(env(safe-area-inset-bottom) + 8px) 0;
+      z-index: 1000;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text-sub);
+      text-decoration: none;
+      font-size: 0.65rem;
+      font-weight: 600;
+      gap: 3px;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+    }
+
+    .nav-item .material-icons {
+      font-size: 22px;
+    }
+
+    /* View Switcher */
+    .mobile-view { display: none; }
+    .mobile-view.active { display: block; }
+
+    /* Login Mobile Fullscreen */
+    #mobile-login {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--primary);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 24px;
+      color: white;
+    }
+
+    .login-box {
+      background: white;
+      color: var(--text-main);
+      padding: 24px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-top: 6px;
+      margin-bottom: 14px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    /* Fullscreen QR Modal */
+    #qr-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 10000;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
     }
   </style>
 </head>
 <body>
 
   <!-- ========================================================
-       1. AUTHENTICATION OVERLAY MODULE
+       1. MOBILE LOGIN OVERLAY
        ======================================================== -->
-  <div id="login-overlay">
-    <div class="login-card">
-      <h2>BBMS BSN</h2>
-      <p>PT. Binayasa Putra Batara</p>
-      <form id="login-form">
-        <div class="form-group">
-          <label>Email User</label>
-          <input type="email" id="login-email" value="admin@bpb.my.id" required>
-        </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" id="login-password" value="123456" required>
-        </div>
-        <div class="form-group">
-          <label>Role Login Demo</label>
-          <select id="login-role">
-            <option value="administrator">Administrator</option>
-            <option value="kepala_unit">Kepala Unit</option>
-            <option value="supervisor">Supervisor</option>
-            <option value="teknisi">Teknisi</option>
-            <option value="cleaning_service">Cleaning Service</option>
-            <option value="vendor">Vendor</option>
-          </select>
-        </div>
-        <button type="submit" class="btn-primary">MASUK SISTEM</button>
+  <div id="mobile-login">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <span class="material-icons" style="font-size: 48px;">domain</span>
+      <h2 style="font-size: 1.4rem; font-weight: 700;">BBMS BSN</h2>
+      <p style="font-size: 0.8rem; opacity: 0.9;">PT. Binayasa Putra Batara</p>
+    </div>
+
+    <div class="login-box">
+      <form id="form-login">
+        <label style="font-size: 0.75rem; font-weight: 700;">Email Akun</label>
+        <input type="email" id="email" class="form-control" value="teknisi@bpb.my.id" required>
+
+        <label style="font-size: 0.75rem; font-weight: 700;">Password</label>
+        <input type="password" id="password" class="form-control" value="123456" required>
+
+        <label style="font-size: 0.75rem; font-weight: 700;">Role User HP</label>
+        <select id="role" class="form-control">
+          <option value="teknisi">Teknisi Gedung</option>
+          <option value="cleaning_service">Cleaning Service</option>
+          <option value="supervisor">Supervisor Area</option>
+          <option value="kepala_unit">Kepala Unit</option>
+          <option value="administrator">Administrator</option>
+          <option value="vendor">Vendor Outsource</option>
+        </select>
+
+        <button type="submit" style="width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 0.9rem; cursor: pointer; margin-top: 8px;">
+          MASUK APLIKASI
+        </button>
       </form>
     </div>
   </div>
 
   <!-- ========================================================
-       2. MAIN DASHBOARD APPLICATION WRAPPER
+       2. MOBILE APP CONTAINER
        ======================================================== -->
-  <div class="app-wrapper">
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <span class="material-icons">domain</span> BBMS BSN
+  <div class="mobile-screen">
+    
+    <!-- Mobile App Header -->
+    <header class="mobile-header">
+      <div class="header-top">
+        <div>
+          <div class="header-title"><span class="material-icons" style="font-size: 20px;">domain</span> BBMS Mobile</div>
+          <div class="header-subtitle">BSN Operations - PT BPB</div>
+        </div>
+        <span class="user-pill" id="badge-role">Teknisi</span>
       </div>
-      <ul class="sidebar-menu">
-        <li class="active" onclick="switchTab('dashboard', this)"><a href="#"><span class="material-icons">dashboard</span> Dashboard</a></li>
-        <li onclick="switchTab('offices', this)"><a href="#"><span class="material-icons">location_city</span> Master Kantor</a></li>
-        <li onclick="switchTab('assets', this)"><a href="#"><span class="material-icons">inventory_2</span> Asset Management</a></li>
-        <li onclick="switchTab('utility', this)"><a href="#"><span class="material-icons">receipt_long</span> Utility Bills</a></li>
-        <li onclick="switchTab('maintenance', this)"><a href="#"><span class="material-icons">build</span> Maintenance</a></li>
-        <li onclick="switchTab('workorder', this)"><a href="#"><span class="material-icons">assignment</span> Work Orders</a></li>
-        <li onclick="switchTab('sql-schema', this)"><a href="#"><span class="material-icons">storage</span> SQL Supabase Schema</a></li>
-      </ul>
-    </aside>
 
-    <!-- Main Workspace Area -->
-    <main class="main-content">
-      <!-- Top Header Nav -->
-      <header class="top-header">
-        <div style="font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px;">
-          <span>PT. BINAYASA PUTRA BATARA</span>
-          <span id="user-role-badge" style="background: var(--accent-blue); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem;">ADMINISTRATOR</span>
+      <!-- Quick Action Buttons for Handphone -->
+      <div class="quick-actions">
+        <button class="btn-quick" onclick="startQRScan()">
+          <span class="material-icons" style="font-size: 18px; color:#673ab7;">qr_code_scanner</span> Scan QR
+        </button>
+        <button class="btn-quick" onclick="openAIChat()">
+          <span class="material-icons" style="font-size: 18px; color:var(--accent);">smart_toy</span> AI Assistant
+        </button>
+        <button class="btn-quick" onclick="toggleTheme()" style="flex:0; padding:10px 12px;">
+          <span class="material-icons" style="font-size: 18px;">brightness_4</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Mobile Body Content Views -->
+    <main class="mobile-body">
+
+      <!-- TAB 1: HOME MOBILE -->
+      <div id="tab-home" class="mobile-view active">
+        <!-- Metric Grid -->
+        <div class="metric-grid">
+          <div class="metric-box">
+            <div class="label">WO AKTIF HARI INI</div>
+            <div class="val">8 Work Order</div>
+          </div>
+          <div class="metric-box">
+            <div class="label">KANTOR DIKELOLA</div>
+            <div class="val">10 Lokasi</div>
+          </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <button onclick="openQRScanner()" style="display: flex; align-items: center; gap: 5px; background: #673ab7; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;">
-            <span class="material-icons">qr_code_scanner</span> Scan QR
+
+        <!-- Overdue Warning Card -->
+        <div class="card" style="border-left: 4px solid var(--danger);">
+          <div class="card-header">
+            <span class="card-title" style="color: var(--danger); display: flex; align-items: center; gap: 4px;">
+              <span class="material-icons" style="font-size: 16px;">warning</span> Overdue Maintenance
+            </span>
+            <span class="badge badge-danger">Urgent</span>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-sub);">
+            <b>Genset Caterpillar 500kVA (KC Surabaya)</b> melewati jadwal rutin (92 Hari). Segera terbitkan WO.
+          </p>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom: 10px;">Progress Pekerjaan Maintenance</div>
+          <canvas id="mobileChart" style="height: 180px;"></canvas>
+        </div>
+
+        <!-- List Pekerjaan Hari Ini -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Tugas & WO Hari Ini</span>
+            <span style="font-size: 0.7rem; color: var(--accent); font-weight: 700;">Lihat Semua</span>
+          </div>
+
+          <div class="wo-item">
+            <div class="wo-info">
+              <h5>Service AC Precision Server</h5>
+              <p>KC Jakarta Pusat • Lantai 3 Room SVR</p>
+            </div>
+            <span class="badge badge-warning">On Progress</span>
+          </div>
+
+          <div class="wo-item">
+            <div class="wo-info">
+              <h5>General Cleaning Area Lobby</h5>
+              <p>Gedung Utama BSN • Cleaning Service</p>
+            </div>
+            <span class="badge badge-success">Done</span>
+          </div>
+
+          <div class="wo-item">
+            <div class="wo-info">
+              <h5>Pemeriksaan Pressure APAR</h5>
+              <p>KC Bandung • Lantai 1 - 5</p>
+            </div>
+            <span class="badge badge-warning">Pending</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: WORK ORDERS MOBILE -->
+      <div id="tab-wo" class="mobile-view">
+        <h3 style="font-size: 1rem; margin-bottom: 12px;">Daftar Work Order Teknisi</h3>
+        <div class="card">
+          <div class="wo-item">
+            <div class="wo-info">
+              <h5>#WO-2026-081</h5>
+              <p>Perbaikan Panel Listrik Utilitas</p>
+            </div>
+            <button onclick="takePicture()" style="background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">
+              Upload Foto
+            </button>
+          </div>
+          <div class="wo-item">
+            <div class="wo-info">
+              <h5>#WO-2026-082</h5>
+              <p>Pembersihan Wallsign BSN</p>
+            </div>
+            <button onclick="signWO()" style="background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">
+              Tanda Tangan
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: ASSET QR MOBILE -->
+      <div id="tab-assets" class="mobile-view">
+        <h3 style="font-size: 1rem; margin-bottom: 12px;">Pencarian Asset & QR Code</h3>
+        <div class="card">
+          <input type="text" placeholder="Ketik Serial Number / Kode Asset..." class="form-control" style="margin-top: 0;">
+          <button onclick="startQRScan()" style="width: 100%; padding: 12px; background: #673ab7; color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 0.85rem; display: flex; justify-content: center; align-items: center; gap: 6px;">
+            <span class="material-icons">qr_code_scanner</span> Buka Kamera Scan QR
           </button>
-          <button onclick="openAIChat()" style="display: flex; align-items: center; gap: 5px; background: var(--accent-blue); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;">
-            <span class="material-icons">smart_toy</span> AI Assistant
+        </div>
+      </div>
+
+      <!-- TAB 4: UTILITY BILLS MOBILE -->
+      <div id="tab-utility" class="mobile-view">
+        <h3 style="font-size: 1rem; margin-bottom: 12px;">Tagihan Utilitas Gedung</h3>
+        <div class="card">
+          <div class="wo-item">
+            <div class="wo-info">
+              <h5>Tagihan PLN Utama</h5>
+              <p>Agustus 2026 • Rp 48.500.000</p>
+            </div>
+            <span class="badge badge-success">Lunas</span>
+          </div>
+          <div class="wo-item">
+            <div class="wo-info">
+              <h5>Tagihan PDAM Gedung</h5>
+              <p>Agustus 2026 • Rp 12.300.000</p>
+            </div>
+            <span class="badge badge-success">Lunas</span>
+          </div>
+          <div class="wo-item">
+            <div class="wo-info">
+              <h5>Tagihan Internet Fiber</h5>
+              <p>Agustus 2026 • Rp 15.000.000</p>
+            </div>
+            <span class="badge badge-danger">Unpaid</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: PROFILE & SETTINGS MOBILE -->
+      <div id="tab-profile" class="mobile-view">
+        <div class="card" style="text-align: center; padding: 24px;">
+          <span class="material-icons" style="font-size: 54px; color: var(--primary);">account_circle</span>
+          <h4 style="margin-top: 8px;">Ahmad Teknisi</h4>
+          <p style="font-size: 0.75rem; color: var(--text-sub);">PT. Binayasa Putra Batara</p>
+          <p style="font-size: 0.7rem; color: var(--accent); margin-top: 4px;">bpb.my.id</p>
+
+          <button onclick="logout()" style="width: 100%; margin-top: 20px; padding: 12px; background: #FCE8E6; color: var(--danger); border: none; border-radius: 10px; font-weight: 700; font-size: 0.85rem;">
+            Keluar dari Aplikasi
           </button>
-          <button id="theme-toggle" style="background: none; border: none; cursor: pointer; color: var(--text-main);">
-            <span class="material-icons">brightness_4</span>
-          </button>
-          <button onclick="logout()" style="background: none; border: none; cursor: pointer; color: #e53935;">
-            <span class="material-icons">logout</span>
-          </button>
         </div>
-      </header>
+      </div>
 
-      <!-- Content Views Stack -->
-      <section class="content-body">
-        
-        <!-- MODULE: DASHBOARD -->
-        <div id="view-dashboard" class="view-module active">
-          <h2 style="margin-bottom: 20px;">Dashboard Operasional Gedung</h2>
-          <div class="metrics-grid">
-            <div class="metric-card"><div class="title">Total Kantor BSN</div><div class="value">10</div></div>
-            <div class="metric-card"><div class="title">Total Work Order</div><div class="value" id="val-wo">24</div></div>
-            <div class="metric-card"><div class="title">Tagihan PLN Bulan Ini</div><div class="value" style="color:#2196f3">Rp 48.5 M</div></div>
-            <div class="metric-card"><div class="title">Overdue Maintenance</div><div class="value" style="color:#e53935">3 Unit</div></div>
-          </div>
-
-          <div class="chart-grid">
-            <div class="card-box">
-              <h3>Grafik Maintenance Asset</h3>
-              <canvas id="maintenanceChart" style="margin-top: 15px;"></canvas>
-            </div>
-            <div class="card-box">
-              <h3>Grafik Tagihan Utilitas</h3>
-              <canvas id="utilityChart" style="margin-top: 15px;"></canvas>
-            </div>
-          </div>
-
-          <div class="card-box">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-              <h3>Jadwal Maintenance & Activity Calendar</h3>
-              <button onclick="exportCalendarPDF()" style="background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Export PDF</button>
-            </div>
-            <div id="calendar-container"></div>
-          </div>
-        </div>
-
-        <!-- MODULE: MASTER KANTOR -->
-        <div id="view-offices" class="view-module">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2>Master Data 10 Kantor BSN</h2>
-            <button onclick="exportToExcel('table-offices', 'Data_Kantor_BSN')" style="background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer;">Export Excel</button>
-          </div>
-          <div class="card-box" style="overflow-x: auto;">
-            <table id="table-offices" style="width: 100%; border-collapse: collapse; text-align: left;">
-              <thead>
-                <tr style="border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
-                  <th style="padding: 10px;">Kode</th><th style="padding: 10px;">Nama Kantor</th><th style="padding: 10px;">PIC</th><th style="padding: 10px;">Telepon</th><th style="padding: 10px;">Luas (m²)</th><th style="padding: 10px;">Lantai</th><th style="padding: 10px;">Status</th>
-                </tr>
-              </thead>
-              <tbody id="office-list">
-                <!-- Javascript Filled -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- MODULE: ASSETS -->
-        <div id="view-assets" class="view-module">
-          <h2>Asset Management</h2>
-          <p style="margin-bottom: 20px; color: #666;">Total 25 Kategori Asset terdaftar (AC, Genset, Lift, PABX, CCTV, dll)</p>
-          <div class="card-box">
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-              <input type="text" placeholder="Cari Serial Number / QR Code Asset..." style="padding: 10px; width: 300px; border: 1px solid var(--border-color); border-radius: 6px;">
-              <button style="background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 6px;">Filter</button>
-            </div>
-            <div id="asset-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-              <!-- Javascript Filled -->
-            </div>
-          </div>
-        </div>
-
-        <!-- MODULE: UTILITY BILLS -->
-        <div id="view-utility" class="view-module">
-          <h2>Utility Bills Tracker (PLN, PDAM, Internet, Gas)</h2>
-          <div class="card-box" style="margin-top: 20px;">
-            <table style="width: 100%; border-collapse: collapse;">
-              <thead>
-                <tr style="border-bottom: 2px solid var(--border-color);">
-                  <th style="padding: 10px; text-align: left;">Jenis Utilitas</th>
-                  <th style="padding: 10px; text-align: left;">No. Pelanggan</th>
-                  <th style="padding: 10px; text-align: left;">Bulan/Tahun</th>
-                  <th style="padding: 10px; text-align: left;">Nominal (Rp)</th>
-                  <th style="padding: 10px; text-align: left;">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td style="padding: 10px;">PLN Utama BSN</td><td>5342110948</td><td>Agustus 2026</td><td>Rp 48.500.000</td><td><span style="color: green; font-weight: bold;">LUNAS</span></td></tr>
-                <tr><td style="padding: 10px;">PDAM Gedung A</td><td>0098412344</td><td>Agustus 2026</td><td>Rp 12.300.000</td><td><span style="color: green; font-weight: bold;">LUNAS</span></td></tr>
-                <tr><td style="padding: 10px;">Dedicated Internet</td><td>INET-BSN-01</td><td>Agustus 2026</td><td>Rp 15.000.000</td><td><span style="color: red; font-weight: bold;">UNPAID</span></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- MODULE: MAINTENANCE & WORK ORDERS -->
-        <div id="view-maintenance" class="view-module">
-          <h2>Maintenance & General Cleaning Control</h2>
-          <div class="card-box" style="margin-top: 20px;">
-            <h3>Checklist Maintenance & Cleaning Schedule</h3>
-            <ul style="list-style: none; margin-top: 15px;">
-              <li style="padding: 10px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
-                <span>Pembersihan Wallsign & Pylon BSN</span>
-                <span style="background: #fff3cd; color: #856404; padding: 2px 8px; border-radius: 4px;">In Progress</span>
-              </li>
-              <li style="padding: 10px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
-                <span>Service Major AC Precision Server Room</span>
-                <span style="background: #d4edda; color: #155724; padding: 2px 8px; border-radius: 4px;">Completed</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div id="view-workorder" class="view-module">
-          <h2>Work Order System (Teknisi Engine)</h2>
-          <div class="card-box" style="margin-top: 20px;">
-            <p>Work Order Aktif untuk Teknisi: <b>WO-2026-08-001</b></p>
-            <div style="margin-top: 15px;">
-              <button onclick="Swal.fire('Digital Signature', 'Tanda tangan digital tersimpan.', 'success')" style="background: var(--accent-blue); color: white; border: none; padding: 8px 15px; border-radius: 6px;">Input Digital Signature</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- MODULE: SQL SUPABASE SCHEMA DISPLAY -->
-        <div id="view-sql-schema" class="view-module">
-          <h2>Supabase PostgreSQL DDL Schema</h2>
-          <p style="margin-bottom: 10px;">Skema SQL ini lengkap dengan Row Level Security (RLS) untuk deployment backend Supabase.</p>
-          <pre style="background: #1e1e1e; color: #00ff66; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 0.8rem;">
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
-CREATE TYPE user_role AS ENUM ('administrator', 'kepala_unit', 'supervisor', 'teknisi', 'cleaning_service', 'vendor');
-
-CREATE TABLE public.profiles (
-    id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
-    full_name TEXT NOT NULL,
-    role user_role DEFAULT 'teknisi',
-    phone TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE TABLE public.offices (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    code VARCHAR(20) UNIQUE NOT NULL,
-    name VARCHAR(150) NOT NULL,
-    address TEXT NOT NULL,
-    pic_name VARCHAR(100),
-    phone VARCHAR(30),
-    building_area_sqm NUMERIC(10, 2),
-    floor_count INT DEFAULT 1,
-    status VARCHAR(20) DEFAULT 'Active'
-);
-
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Public profiles viewable by auth users" ON public.profiles FOR SELECT USING (auth.role() = 'authenticated');
-          </pre>
-        </div>
-
-      </section>
     </main>
+
+    <!-- Bottom App Navigation Bar (Handphone App UI) -->
+    <nav class="bottom-nav">
+      <div class="nav-item active" onclick="switchMobileTab('home', this)">
+        <span class="material-icons">home</span>
+        <span>Beranda</span>
+      </div>
+      <div class="nav-item" onclick="switchMobileTab('wo', this)">
+        <span class="material-icons">assignment</span>
+        <span>Work Order</span>
+      </div>
+      <div class="nav-item" onclick="switchMobileTab('assets', this)">
+        <span class="material-icons">qr_code</span>
+        <span>Asset QR</span>
+      </div>
+      <div class="nav-item" onclick="switchMobileTab('utility', this)">
+        <span class="material-icons">receipt_long</span>
+        <span>Utilitas</span>
+      </div>
+      <div class="nav-item" onclick="switchMobileTab('profile', this)">
+        <span class="material-icons">person</span>
+        <span>Akun</span>
+      </div>
+    </nav>
+
   </div>
 
-  <!-- QR Scanner Modal Holder -->
-  <div id="qr-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; justify-content:center; align-items:center;">
-    <div style="background:white; padding:20px; border-radius:12px; width:320px; text-align:center;">
-      <h3>Scan QR Asset Gedung</h3>
-      <div id="reader" style="width:100%; margin-top:10px;"></div>
-      <button onclick="closeQRScanner()" style="margin-top:15px; background:red; color:white; border:none; padding:8px 15px; border-radius:6px;">Tutup</button>
+  <!-- QR Camera Modal -->
+  <div id="qr-modal">
+    <div style="background: white; padding: 16px; border-radius: 16px; width: 100%; max-width: 320px; text-align: center;">
+      <h4 style="color: #333; margin-bottom: 10px;">Scan QR Code Asset</h4>
+      <div id="reader" style="width: 100%;"></div>
+      <button onclick="stopQRScan()" style="width: 100%; margin-top: 14px; padding: 10px; background: var(--danger); color: white; border: none; border-radius: 8px; font-weight: 700;">
+        Tutup Kamera
+      </button>
     </div>
   </div>
 
   <!-- ========================================================
-       3. JAVASCRIPT APPLICATION LOGIC
+       3. MOBILE APP JAVASCRIPT LOGIC
        ======================================================== -->
   <script>
-    // Configuration Setup
-    const BBMS_CONFIG = {
-      SUPABASE_URL: "https://your-project.supabase.co",
-      SUPABASE_KEY: "YOUR_SUPABASE_ANON_KEY",
-      DOMAINS: "https://bpb.my.id"
-    };
-
-    // Initialize Supabase Engine (Mockable fallback if keys aren't attached)
-    const supabaseClient = supabase.createClient(BBMS_CONFIG.SUPABASE_URL, BBMS_CONFIG.SUPABASE_KEY);
-
-    // Initial Master Office Mock Data (Min. 10 Offices BSN)
-    const mockOffices = [
-      { code: "BSN-001", name: "BSN Kantor Pusat Jakarta", pic: "Ahmad Subarkah", phone: "021-5550101", area: 12500, floor: 18, status: "Active" },
-      { code: "BSN-002", name: "BSN KC Surabaya", pic: "Budi Santoso", phone: "031-4440202", area: 4500, floor: 6, status: "Active" },
-      { code: "BSN-003", name: "BSN KC Bandung", pic: "Dedi Suhendar", phone: "022-3330303", area: 3800, floor: 5, status: "Active" },
-      { code: "BSN-004", name: "BSN KC Medan", pic: "Rahmat Hidayat", phone: "061-2220404", area: 5000, floor: 7, status: "Active" },
-      { code: "BSN-005", name: "BSN KC Semarang", pic: "Siti Aminah", phone: "024-1110505", area: 3200, floor: 4, status: "Active" },
-      { code: "BSN-006", name: "BSN KC Makassar", pic: "Andi Wijaya", phone: "0411-9990606", area: 4100, floor: 5, status: "Active" },
-      { code: "BSN-007", name: "BSN KC Palembang", pic: "Fajri Haris", phone: "0711-8880707", area: 2900, floor: 4, status: "Active" },
-      { code: "BSN-008", name: "BSN KC Balikpapan", pic: "Hendra Gunawan", phone: "0542-7770808", area: 3000, floor: 4, status: "Active" },
-      { code: "BSN-009", name: "BSN KC Denpasar", pic: "I Made Putra", phone: "0361-6660909", area: 2500, floor: 3, status: "Active" },
-      { code: "BSN-010", name: "BSN KC Yogyakarta", pic: "Eko Prasetyo", phone: "0274-5551010", area: 3100, floor: 4, status: "Active" }
-    ];
-
-    const mockAssets = [
-      { name: "AC Precision Server", cat: "AC", status: "Good" },
-      { name: "Genset Caterpillar 500kVA", cat: "Genset", status: "Good" },
-      { name: "Pompa Hydrant Utama", cat: "Hydrant", status: "Overdue" },
-      { name: "Lift Passenger 1", cat: "Lift", status: "Good" }
-    ];
-
     let html5QrCode = null;
 
-    // DOM Ready Engine
     document.addEventListener("DOMContentLoaded", () => {
-      initTheme();
       initLogin();
-      renderOffices();
-      renderAssets();
-      initCharts();
-      initCalendar();
-      registerPWA();
+      initMobileChart();
+      registerServiceWorker();
     });
 
-    // Authentication Logic
+    // Login Controller
     function initLogin() {
-      document.getElementById("login-form").addEventListener("submit", (e) => {
+      document.getElementById("form-login").addEventListener("submit", (e) => {
         e.preventDefault();
-        const role = document.getElementById("login-role").value;
-        document.getElementById("user-role-badge").innerText = role.toUpperCase();
+        const role = document.getElementById("role").value;
+        document.getElementById("badge-role").innerText = role.toUpperCase();
+        document.getElementById("mobile-login").style.display = "none";
         
         Swal.fire({
           icon: 'success',
-          title: 'Login Berhasil',
-          text: `Selamat datang di BBMS PT. Binayasa Putra Batara (${role})`,
-          timer: 1200,
-          showConfirmButton: false
+          title: 'Selamat Datang',
+          text: `Aplikasi BBMS Mobile Siap Digunakan (${role})`,
+          toast: true,
+          position: 'top',
+          showConfirmButton: false,
+          timer: 2000
         });
-
-        document.getElementById("login-overlay").style.display = "none";
       });
     }
 
     function logout() {
-      document.getElementById("login-overlay").style.display = "flex";
+      document.getElementById("mobile-login").style.display = "flex";
     }
 
-    // Theme Switcher (Dark & Light Mode)
-    function initTheme() {
-      const toggleBtn = document.getElementById("theme-toggle");
-      toggleBtn.addEventListener("click", () => {
-        const currentTheme = document.documentElement.getAttribute("data-theme");
-        const nextTheme = currentTheme === "light" ? "dark" : "light";
-        document.documentElement.setAttribute("data-theme", nextTheme);
-      });
+    // Switch Tab Navbar Mobile
+    function switchMobileTab(tabId, el) {
+      document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
+      document.querySelectorAll(".mobile-view").forEach(view => view.classList.remove("active"));
+
+      el.classList.add("active");
+      document.getElementById(`tab-${tabId}`).classList.add("active");
     }
 
-    // Dynamic Navigation System
-    function switchTab(tabId, el) {
-      document.querySelectorAll(".sidebar-menu li").forEach(li => li.classList.remove("active"));
-      document.querySelectorAll(".view-module").forEach(view => view.classList.remove("active"));
-      
-      if(el) el.classList.add("active");
-      document.getElementById(`view-${tabId}`).classList.add("active");
-    }
-
-    // Render Data Master Kantor
-    function renderOffices() {
-      const tbody = document.getElementById("office-list");
-      tbody.innerHTML = mockOffices.map(o => `
-        <tr style="border-bottom: 1px solid var(--border-color);">
-          <td style="padding: 10px;"><b>${o.code}</b></td>
-          <td style="padding: 10px;">${o.name}</td>
-          <td style="padding: 10px;">${o.pic}</td>
-          <td style="padding: 10px;">${o.phone}</td>
-          <td style="padding: 10px;">${o.area.toLocaleString()}</td>
-          <td style="padding: 10px;">${o.floor}</td>
-          <td style="padding: 10px;"><span style="color: green;">● ${o.status}</span></td>
-        </tr>
-      `).join('');
-    }
-
-    // Render Assets
-    function renderAssets() {
-      const grid = document.getElementById("asset-grid");
-      grid.innerHTML = mockAssets.map(a => `
-        <div style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px;">
-          <h4>${a.name}</h4>
-          <p style="font-size:0.8rem; color:#666;">Kategori: ${a.cat}</p>
-          <span style="display:inline-block; margin-top:8px; font-size:0.75rem; padding:2px 6px; border-radius:4px; background:${a.status === 'Good' ? '#d4edda' : '#f8d7da'}; color:${a.status === 'Good' ? 'green' : 'red'};">${a.status}</span>
-        </div>
-      `).join('');
-    }
-
-    // Chart.js Implementations
-    function initCharts() {
-      // Maintenance Chart
-      new Chart(document.getElementById('maintenanceChart'), {
-        type: 'bar',
+    // Mobile Chart.js
+    function initMobileChart() {
+      new Chart(document.getElementById('mobileChart'), {
+        type: 'doughnut',
         data: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
-          datasets: [
-            { label: 'Cleaning AC', data: [25, 30, 28, 32, 35, 40], backgroundColor: '#0B8F4D' },
-            { label: 'Service Genset', data: [5, 4, 6, 5, 7, 6], backgroundColor: '#2196f3' }
-          ]
+          labels: ['Selesai', 'Progress', 'Overdue'],
+          datasets: [{
+            data: [65, 25, 10],
+            backgroundColor: ['#0B8F4D', '#FF9500', '#FF3B30']
+          }]
         },
-        options: { responsive: true }
-      });
-
-      // Utility Chart
-      new Chart(document.getElementById('utilityChart'), {
-        type: 'line',
-        data: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
-          datasets: [
-            { label: 'PLN (Juta Rp)', data: [42, 45, 40, 48, 50, 48.5], borderColor: '#0B8F4D', fill: false },
-            { label: 'PDAM (Juta Rp)', data: [10, 12, 11, 13, 12, 12.3], borderColor: '#2196f3', fill: false }
-          ]
-        },
-        options: { responsive: true }
-      });
-    }
-
-    // FullCalendar Initialization
-    function initCalendar() {
-      const calendarEl = document.getElementById('calendar-container');
-      const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        events: [
-          { title: 'General Cleaning Lobby Pusat', start: new Date().toISOString().split('T')[0], color: '#0B8F4D' },
-          { title: 'Overdue Test Genset KC Surabaya', start: new Date().toISOString().split('T')[0], color: '#e53935' }
-        ]
-      });
-      calendar.render();
-    }
-
-    // AI Assistant Client Logic
-    function openAIChat() {
-      Swal.fire({
-        title: 'BBMS AI Assistant',
-        input: 'text',
-        inputPlaceholder: 'Ketik: status, jadwal, rekomendasi...',
-        showCancelButton: true,
-        confirmButtonText: 'Proses AI',
-        confirmButtonColor: '#0B8F4D'
-      }).then((res) => {
-        if(res.value) {
-          let reply = "Saya AI BBMS siap membantu pengadaan dan maintenance gedung.";
-          const val = res.value.toLowerCase();
-          if(val.includes("status")) reply = "Status Sistem: 10 Kantor BSN Terhubung, 24 WO Aktif, 3 Overdue Maintenance.";
-          if(val.includes("jadwal")) reply = "Jadwal Hari Ini: General Cleaning Lobby & Perawatan AC Precision Server Room.";
-          if(val.includes("rekomendasi")) reply = "Rekomendasi: Lakukan service rutin Genset Caterpillar KC Surabaya sebelum akhir minggu.";
-
-          Swal.fire({ title: 'AI Response', text: reply, icon: 'info' });
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } }
         }
       });
     }
 
-    // QR Code Scanner Logic
-    function openQRScanner() {
+    // Camera QR Scanner untuk Handphone
+    function startQRScan() {
       document.getElementById("qr-modal").style.display = "flex";
       html5QrCode = new Html5Qrcode("reader");
+      
       html5QrCode.start(
-        { facingMode: "environment" },
+        { facingMode: "environment" }, // Kamera Belakang Smartphone
         { fps: 10, qrbox: { width: 200, height: 200 } },
         (decodedText) => {
-          closeQRScanner();
-          Swal.fire('QR Asset Ditemukan', `Asset Tag: ${decodedText}`, 'success');
+          stopQRScan();
+          Swal.fire('Asset Terdeteksi', `Kode Asset: ${decodedText}`, 'success');
         },
-        () => {}
-      ).catch(() => {});
+        (error) => {}
+      ).catch(err => {
+        stopQRScan();
+        Swal.fire('Kamera Error', 'Pastikan izin kamera diaktifkan di handphone Anda.', 'error');
+      });
     }
 
-    function closeQRScanner() {
+    function stopQRScan() {
       if(html5QrCode) {
         html5QrCode.stop().then(() => {
           document.getElementById("qr-modal").style.display = "none";
@@ -583,29 +659,69 @@ CREATE POLICY "Public profiles viewable by auth users" ON public.profiles FOR SE
       }
     }
 
-    // Export Helpers
-    function exportToExcel(tableID, filename) {
-      const table = document.getElementById(tableID);
-      const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
-      XLSX.writeFile(wb, `${filename}.xlsx`);
+    // AI Chat Mobile Assistant
+    function openAIChat() {
+      Swal.fire({
+        title: 'AI Mobile Assistant',
+        input: 'text',
+        inputPlaceholder: 'Tanyakan status maintenance...',
+        showCancelButton: true,
+        confirmButtonText: 'Kirim',
+        confirmButtonColor: '#0B8F4D'
+      }).then((res) => {
+        if(res.value) {
+          Swal.fire('AI Assistant', `Rekomendasi untuk "${res.value}": Lakukan inspeksi visual dan isi checklist digital WO-2026.`, 'info');
+        }
+      });
     }
 
-    function exportCalendarPDF() {
-      const element = document.getElementById('calendar-container');
-      html2pdf().from(element).save('Jadwal_BBMS_BSN.pdf');
+    // Handphone Camera Photo Upload Mock
+    function takePicture() {
+      Swal.fire({
+        title: 'Upload Foto Pekerjaan',
+        text: 'Ambil foto Before / After langsung dari Kamera Handphone',
+        icon: 'camera',
+        showCancelButton: true,
+        confirmButtonText: 'Buka Kamera HP'
+      }).then((result) => {
+        if(result.isConfirmed) {
+          Swal.fire('Berhasil', 'Foto pekerjaan berhasil diunggah.', 'success');
+        }
+      });
     }
 
-    // PWA Service Worker Registration
-    function registerPWA() {
+    // Digital Signature
+    function signWO() {
+      Swal.fire({
+        title: 'Tanda Tangan Digital',
+        text: 'Usap layar HP untuk tanda tangan verifikasi pekerjaan.',
+        input: 'text',
+        inputPlaceholder: 'Ketik Nama Terang Verifikator...',
+        showCancelButton: true,
+        confirmButtonText: 'Simpan TTD'
+      }).then((res) => {
+        if(res.value) {
+          Swal.fire('Verifikasi Lunas', 'Work Order telah disetujui.', 'success');
+        }
+      });
+    }
+
+    // Toggle Dark / Light Theme Mobile
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "light" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", next);
+    }
+
+    // PWA Service Worker Engine
+    function registerServiceWorker() {
       if ('serviceWorker' in navigator) {
-        const swCode = `
+        const swBlob = new Blob([`
           self.addEventListener('fetch', function(e) {
             e.respondWith(fetch(e.request).catch(function() { return caches.match(e.request); }));
           });
-        `;
-        const blob = new Blob([swCode], { type: 'text/javascript' });
-        const swUrl = URL.createObjectURL(blob);
-        navigator.serviceWorker.register(swUrl).catch(() => {});
+        `], { type: 'text/javascript' });
+        navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(()=>{});
       }
     }
   </script>
