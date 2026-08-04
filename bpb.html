@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id" data-theme="light">
 <head>
@@ -76,6 +75,9 @@
     .input-field { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; margin-top: 4px; margin-bottom: 12px; outline: none; font-size: 0.85rem; background: var(--card-bg); color: var(--text-main); }
     .archive-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: var(--icon-bg); border-radius: 12px; margin-bottom: 8px; }
     .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; padding: 16px; }
+
+    /* Admin Actions Control */
+    .admin-only { display: none; }
   </style>
 </head>
 <body>
@@ -196,25 +198,34 @@
       <div class="content-box"><h4 style="font-size: 0.85rem; margin-bottom: 10px;">Grafik Perawatan Gedung Realtime</h4><div style="height: 180px;"><canvas id="mainChart"></canvas></div></div>
     </div>
 
+    <!-- ARSIP VIEW -->
     <div id="view-arsip" class="page-view">
       <div class="content-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
           <h4 style="font-size: 0.9rem;">Penyimpanan Arsip</h4>
-          <button onclick="openUploadArsipModal()" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Simpan Arsip</button>
+          <button onclick="openUploadArsipModal()" class="admin-only" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Simpan Arsip</button>
         </div>
         <div id="arsip-list"></div>
       </div>
     </div>
 
+    <!-- MASTER KANTOR VIEW -->
     <div id="view-kantor" class="page-view">
       <div class="content-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
           <h4 style="font-size: 0.9rem;">Master Data Kantor BSN</h4>
-          <button onclick="exportExcel('table-kantor', 'Data_Kantor')" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">Export Excel</button>
+          <button onclick="addOfficeModal()" class="admin-only" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Tambah Kantor</button>
         </div>
         <div style="overflow-x: auto;">
           <table id="table-kantor" style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
-            <thead><tr style="text-align: left; border-bottom: 1px solid var(--border);"><th style="padding: 6px;">Kode</th><th style="padding: 6px;">Nama Kantor</th><th style="padding: 6px;">PIC</th></tr></thead>
+            <thead>
+              <tr style="text-align: left; border-bottom: 1px solid var(--border);">
+                <th style="padding: 6px;">Kode</th>
+                <th style="padding: 6px;">Nama Kantor</th>
+                <th style="padding: 6px;">PIC</th>
+                <th style="padding: 6px;" class="admin-only">Aksi</th>
+              </tr>
+            </thead>
             <tbody id="kantor-rows"></tbody>
           </table>
         </div>
@@ -224,7 +235,18 @@
     <div id="view-asset" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 8px;">Asset Management</h4><div id="asset-card-list"></div></div></div>
     <div id="view-utility" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 10px;">Utilitas Gedung</h4><div id="utility-list"></div></div></div>
     <div id="view-maintenance" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 8px;">Perawatan Routine</h4><div id="maintenance-list"></div></div></div>
-    <div id="view-workorder" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 8px;">Work Order Execution</h4><div id="wo-list"></div></div></div>
+    
+    <!-- WORK ORDER VIEW -->
+    <div id="view-workorder" class="page-view">
+      <div class="content-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="font-size: 0.9rem;">Work Order Execution</h4>
+          <button onclick="addWOModal()" class="admin-only" style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">+ Buat WO Baru</button>
+        </div>
+        <div id="wo-list"></div>
+      </div>
+    </div>
+
     <div id="view-cleaning" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem;">General Cleaning</h4><p style="font-size: 0.75rem; color: var(--text-sub); margin-top: 4px;">Area: Lobby, Toilet, Kaca, Wallsign.</p></div></div>
     <div id="view-schedule" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 8px;">Jadwal Gedung</h4><input type="date" class="input-field"></div></div>
     <div id="view-reports" class="page-view"><div class="content-box"><h4 style="font-size: 0.9rem; margin-bottom: 10px;">Laporan & Export</h4><button onclick="window.print()" class="btn-primary">Export PDF / Print</button></div></div>
@@ -247,6 +269,7 @@
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let html5QrCode = null;
+    let currentUserRole = 'guest';
 
     document.addEventListener("DOMContentLoaded", async () => {
       initAuthListeners();
@@ -265,7 +288,7 @@
     }
 
     function initAuthListeners() {
-      // HANDLE REGISTER
+      // REGISTER
       document.getElementById("register-form").addEventListener("submit", async (e) => {
         e.preventDefault();
         const email = document.getElementById("reg-email").value;
@@ -290,15 +313,13 @@
           Swal.fire({
             icon: 'success',
             title: 'Pendaftaran Berhasil',
-            text: 'Akun telah terbuat. Silakan login dengan akun baru Anda.',
+            text: 'Akun telah terbuat. Silakan login dengan akun Anda.',
             confirmButtonColor: '#0B8F4D'
-          }).then(() => {
-            toggleAuthMode('login');
-          });
+          }).then(() => toggleAuthMode('login'));
         }
       });
 
-      // HANDLE LOGIN
+      // LOGIN
       document.getElementById("login-form").addEventListener("submit", async (e) => {
         e.preventDefault();
         const email = document.getElementById("login-email").value;
@@ -326,7 +347,6 @@
       if (session) {
         document.getElementById("auth-overlay").style.display = "none";
         
-        // Fetch User Profile
         const { data: profile } = await supabaseClient
           .from('profiles')
           .select('*')
@@ -334,14 +354,19 @@
           .single();
 
         if (profile) {
+          currentUserRole = profile.role;
           document.getElementById("user-name").innerText = profile.full_name;
           document.getElementById("user-role-display").innerText = profile.role.replace('_', ' ');
           document.getElementById("avatar-initials").innerText = profile.full_name.substring(0, 2).toUpperCase();
-        } else {
-          document.getElementById("user-name").innerText = session.user.email.split('@')[0];
         }
 
-        // Fetch Real Database Tables Data
+        // Tampilkan fitur khusus Administrator
+        if (currentUserRole === 'administrator') {
+          document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'inline-block');
+        } else {
+          document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        }
+
         loadDatabaseData();
       } else {
         document.getElementById("auth-overlay").style.display = "flex";
@@ -354,7 +379,7 @@
     }
 
     async function loadDatabaseData() {
-      // 1. Fetch Offices
+      // 1. Offices
       const { data: offices, count: officeCount } = await supabaseClient.from('offices').select('*', { count: 'exact' });
       document.getElementById('val-total-kantor').innerText = officeCount || 0;
       
@@ -365,30 +390,167 @@
             <td style="padding: 6px;"><b>${o.code}</b></td>
             <td style="padding: 6px;">${o.name}</td>
             <td style="padding: 6px;">${o.pic_name || '-'}</td>
+            <td style="padding: 6px;" class="admin-only">
+              <span class="material-symbols-rounded" onclick="editOffice('${o.id}', '${o.name}', '${o.pic_name}')" style="cursor:pointer; font-size:16px; color:#2196F3;">edit</span>
+              <span class="material-symbols-rounded" onclick="deleteOffice('${o.id}')" style="cursor:pointer; font-size:16px; color:#E53935;">delete</span>
+            </td>
           </tr>
         `).join('');
       } else {
-        tbody.innerHTML = `<tr><td colspan="3" style="padding:10px; text-align:center; color:gray;">Belum ada data kantor di database.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" style="padding:10px; text-align:center; color:gray;">Belum ada data kantor.</td></tr>`;
       }
 
-      // 2. Fetch Work Orders
+      // 2. Work Orders
       const { data: wos, count: woCount } = await supabaseClient.from('work_orders').select('*', { count: 'exact' });
       document.getElementById('val-total-wo').innerText = woCount || 0;
+      renderWOList(wos || []);
 
-      // 3. Fetch Archives
+      // 3. Archives
       const { data: archives, count: archiveCount } = await supabaseClient.from('archives').select('*', { count: 'exact' });
       document.getElementById('val-total-arsip').innerText = archiveCount || 0;
       renderArsipList(archives || []);
 
-      // 4. Fetch Assets
-      const { data: assets, count: assetCount } = await supabaseClient.from('assets').select('*', { count: 'exact' });
-      document.getElementById('val-total-asset').innerText = assetCount || 0;
+      // Re-apply admin visibility
+      if (currentUserRole === 'administrator') {
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'inline-block');
+      }
     }
 
+    // ==========================================
+    // ADMINISTRATOR CRUD ACTIONS
+    // ==========================================
+
+    // CRUD KANTOR
+    async function addOfficeModal() {
+      const { value: formValues } = await Swal.fire({
+        title: 'Tambah Kantor Baru',
+        html:
+          '<input id="swal-code" class="swal2-input" placeholder="Kode Kantor (misal: BSN-001)">' +
+          '<input id="swal-name" class="swal2-input" placeholder="Nama Kantor">' +
+          '<input id="swal-pic" class="swal2-input" placeholder="Nama PIC">',
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Simpan Kantor',
+        confirmButtonColor: '#0B8F4D',
+        preConfirm: () => [
+          document.getElementById('swal-code').value,
+          document.getElementById('swal-name').value,
+          document.getElementById('swal-pic').value
+        ]
+      });
+
+      if (formValues && formValues[0] && formValues[1]) {
+        const { error } = await supabaseClient.from('offices').insert([
+          { code: formValues[0], name: formValues[1], pic_name: formValues[2], address: 'Alamat BSN' }
+        ]);
+
+        if (error) Swal.fire('Gagal', error.message, 'error');
+        else { Swal.fire('Berhasil', 'Kantor baru telah ditambahkan', 'success'); loadDatabaseData(); }
+      }
+    }
+
+    async function editOffice(id, currentName, currentPic) {
+      const { value: formValues } = await Swal.fire({
+        title: 'Edit Data Kantor',
+        html:
+          `<input id="swal-name" class="swal2-input" value="${currentName}" placeholder="Nama Kantor">` +
+          `<input id="swal-pic" class="swal2-input" value="${currentPic}" placeholder="Nama PIC">`,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Update Kantor',
+        confirmButtonColor: '#0B8F4D',
+        preConfirm: () => [
+          document.getElementById('swal-name').value,
+          document.getElementById('swal-pic').value
+        ]
+      });
+
+      if (formValues) {
+        const { error } = await supabaseClient.from('offices').update({
+          name: formValues[0], pic_name: formValues[1]
+        }).eq('id', id);
+
+        if (error) Swal.fire('Gagal Edit', error.message, 'error');
+        else { Swal.fire('Berhasil', 'Data kantor diperbarui', 'success'); loadDatabaseData(); }
+      }
+    }
+
+    async function deleteOffice(id) {
+      const result = await Swal.fire({
+        title: 'Hapus Kantor?',
+        text: 'Data kantor ini akan dihapus permanen!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#E53935',
+        confirmButtonText: 'Ya, Hapus'
+      });
+
+      if (result.isConfirmed) {
+        const { error } = await supabaseClient.from('offices').delete().eq('id', id);
+        if (error) Swal.fire('Gagal Hapus', error.message, 'error');
+        else { Swal.fire('Terhapus', 'Kantor berhasil dihapus', 'success'); loadDatabaseData(); }
+      }
+    }
+
+    // CRUD WORK ORDER
+    async function addWOModal() {
+      const { value: formValues } = await Swal.fire({
+        title: 'Buat Work Order Baru',
+        html:
+          '<input id="swal-wonum" class="swal2-input" placeholder="No. WO (misal: WO-001)">' +
+          '<input id="swal-wotitle" class="swal2-input" placeholder="Judul Pekerjaan WO">',
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Simpan WO',
+        confirmButtonColor: '#0B8F4D',
+        preConfirm: () => [
+          document.getElementById('swal-wonum').value,
+          document.getElementById('swal-wotitle').value
+        ]
+      });
+
+      if (formValues && formValues[0] && formValues[1]) {
+        const { error } = await supabaseClient.from('work_orders').insert([
+          { wo_number: formValues[0], title: formValues[1], status: 'open' }
+        ]);
+
+        if (error) Swal.fire('Gagal', error.message, 'error');
+        else { Swal.fire('Berhasil', 'WO baru berhasil terbit', 'success'); loadDatabaseData(); }
+      }
+    }
+
+    function renderWOList(items) {
+      const container = document.getElementById("wo-list");
+      if (items.length === 0) {
+        container.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center; padding:10px;">Belum ada Work Order.</p>`;
+        return;
+      }
+
+      container.innerHTML = items.map(w => `
+        <div class="archive-item">
+          <div>
+            <div style="font-weight: 700; font-size: 0.8rem;">${w.wo_number} - ${w.title}</div>
+            <div style="font-size: 0.7rem; color: var(--text-sub);">Status: ${w.status}</div>
+          </div>
+          <div class="admin-only">
+            <span class="material-symbols-rounded" onclick="deleteWO('${w.id}')" style="cursor:pointer; font-size:16px; color:#E53935;">delete</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function deleteWO(id) {
+      if (confirm("Hapus Work Order ini?")) {
+        await supabaseClient.from('work_orders').delete().eq('id', id);
+        loadDatabaseData();
+      }
+    }
+
+    // CRUD ARSIP
     function renderArsipList(items) {
       const container = document.getElementById("arsip-list");
       if (items.length === 0) {
-        container.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center; padding:10px;">Belum ada file arsip tersimpan.</p>`;
+        container.innerHTML = `<p style="font-size:0.75rem; color:gray; text-align:center; padding:10px;">Belum ada file arsip.</p>`;
         return;
       }
 
@@ -398,7 +560,10 @@
             <div style="font-weight: 700; font-size: 0.8rem;">${a.title}</div>
             <div style="font-size: 0.7rem; color: var(--text-sub);">${a.category}</div>
           </div>
-          <span class="material-symbols-rounded" style="color: var(--primary); font-size: 18px; cursor: pointer;">download</span>
+          <div>
+            <span class="material-symbols-rounded admin-only" onclick="deleteArchive('${a.id}')" style="color: #E53935; font-size: 18px; cursor: pointer; margin-right:6px;">delete</span>
+            <span class="material-symbols-rounded" style="color: var(--primary); font-size: 18px; cursor: pointer;">download</span>
+          </div>
         </div>
       `).join('');
     }
@@ -413,12 +578,10 @@
         showCancelButton: true,
         confirmButtonText: 'Simpan ke Database',
         confirmButtonColor: '#0B8F4D',
-        preConfirm: () => {
-          return [
-            document.getElementById('swal-title').value,
-            document.getElementById('swal-cat').value
-          ]
-        }
+        preConfirm: () => [
+          document.getElementById('swal-title').value,
+          document.getElementById('swal-cat').value
+        ]
       });
 
       if (formValues && formValues[0]) {
@@ -427,15 +590,19 @@
           { title: formValues[0], category: formValues[1] || 'Dokumen', uploaded_by: user.id }
         ]);
 
-        if (error) {
-          Swal.fire('Gagal Simpan', error.message, 'error');
-        } else {
-          Swal.fire('Tersimpan', 'Arsip baru berhasil disimpan di database', 'success');
-          loadDatabaseData();
-        }
+        if (error) Swal.fire('Gagal Simpan', error.message, 'error');
+        else { Swal.fire('Tersimpan', 'Arsip baru berhasil disimpan', 'success'); loadDatabaseData(); }
       }
     }
 
+    async function deleteArchive(id) {
+      if (confirm("Hapus dokumen arsip ini?")) {
+        await supabaseClient.from('archives').delete().eq('id', id);
+        loadDatabaseData();
+      }
+    }
+
+    // HELPER UTILITIES
     function showPage(pageId) {
       document.querySelectorAll(".page-view").forEach(p => p.classList.remove("active"));
       document.getElementById(`view-${pageId}`).classList.add("active");
