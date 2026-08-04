@@ -49,6 +49,7 @@
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
         .btn-primary { background: var(--primary); color: #fff; width: 100%; }
         .btn-secondary { background: var(--border); color: var(--text-main); }
+        .btn-info { background: #0dcaf0; color: #000; }
         .btn-danger { background: #dc3545; color: #fff; }
         .btn-icon { width: 36px; height: 36px; border-radius: 50%; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-main); cursor: pointer; }
 
@@ -65,7 +66,7 @@
         .stat-box h3 { font-size: 1.1rem; font-weight: 800; }
         .stat-box p { font-size: 0.7rem; color: var(--text-sub); }
 
-        /* APP GRID (4 COLUMNS) */
+        /* APP GRID */
         .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 8px; margin-bottom: 24px; }
         .grid-item { display: flex; flex-direction: column; align-items: center; color: var(--text-main); cursor: pointer; }
         .grid-icon-wrapper { width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 4px; border: 1px solid rgba(0,0,0,0.04); }
@@ -84,12 +85,12 @@
         .table th, .table td { padding: 8px; border-bottom: 1px solid var(--border); text-align: left; }
         .table th { background: var(--primary-light); color: var(--primary); font-weight: 700; }
 
-        .img-thumb { width: 42px; height: 42px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+        .img-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
         .badge { padding: 3px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; }
         .badge-success { background: #d1e7dd; color: #0f5132; }
         .badge-danger { background: #f8d7da; color: #842029; }
 
-        /* CHECKLIST ITEM FORM STYLING */
+        /* CHECKLIST STYLING */
         .checklist-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
         .checklist-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; color: var(--primary); }
         .checklist-desc { font-size: 0.75rem; color: var(--text-sub); margin-bottom: 8px; }
@@ -160,7 +161,7 @@
                 </div>
             </div>
 
-            <!-- APP GRID MENU (11 MENU TERMASUK CEK ATM) -->
+            <!-- APP GRID MENU -->
             <div class="app-grid">
                 <div class="grid-item" onclick="openSubPage('kantor')"><div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-building"></i></div><span class="grid-label">Kantor</span></div>
                 <div class="grid-item" onclick="openSubPage('asset')"><div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-boxes-stacked"></i></div><span class="grid-label">Asset</span></div>
@@ -214,6 +215,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
+        // TOKEN TERBARU TAHUN 2036
         const SUPABASE_URL = "https://pykkfcszdihobpwhqinq.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5a2tmY3N6ZGlob2Jwd2hxaW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU3OTEyNjEsImV4cCI6MjEwMTM2NzI2MX0.Ig1GsJvn0jDobVCBGlp2lLwTLvtn6eAkzKKf3VxMFiA";
         
@@ -369,7 +371,10 @@
                                         <td><b>${atm.kantor ? atm.kantor.nama : '-'}</b></td>
                                         <td><span class="badge badge-success">${atm.kategori_atm}</span></td>
                                         <td>${atm.periode_minggu}</td>
-                                        <td><button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('pemeriksaan_atm','${atm.id}','pemeriksaan_atm')"><i class="fa-solid fa-trash"></i></button></td>
+                                        <td>
+                                            <button class="btn btn-info" style="padding:4px 8px;" onclick="viewDetailATM('${atm.id}', '${atm.kantor ? atm.kantor.nama : ''}', '${atm.periode_minggu}')"><i class="fa-solid fa-eye"></i></button>
+                                            <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('pemeriksaan_atm','${atm.id}','pemeriksaan_atm')"><i class="fa-solid fa-trash"></i></button>
+                                        </td>
                                     </tr>
                                 `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada pemeriksaan ATM</td></tr>'}
                             </tbody>
@@ -483,7 +488,32 @@
             document.getElementById('sub-page-overlay').style.display = 'none';
         }
 
-        // --- MODUL PEMERIKSAAN ATM MINGGUAN (CHECKLIST INTEGRATED) ---
+        // FITUR VIEW DETAIL DATA ATM
+        async function viewDetailATM(id, lokasi, periode) {
+            Swal.fire({ title: 'Memuat detail...', didOpen: () => Swal.showLoading() });
+            
+            const { data, error } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id).order('no_kriteria', {ascending:true});
+            Swal.close();
+
+            if (error || !data) return Swal.fire('Error', 'Gagal memuat detail hasil pemeriksaan.', 'error');
+
+            document.getElementById('modal-title').innerText = `Detail: ${lokasi} (${periode})`;
+            document.getElementById('modal-body').innerHTML = `
+                <div style="font-size: 0.8rem;">
+                    ${data.map(d => `
+                        <div class="checklist-card">
+                            <div class="checklist-title">${d.no_kriteria}. ${d.kriteria_nama}</div>
+                            <div style="margin-bottom: 4px;">Kondisi: <span class="badge badge-${d.kondisi === 'BAIK' ? 'success' : 'danger'}">${d.kondisi}</span></div>
+                            <div style="color:var(--text-sub); margin-bottom:6px;">Keterangan: ${d.keterangan || '-'}</div>
+                            ${d.foto_bukti ? `<div><a href="${d.foto_bukti}" target="_blank"><img src="${d.foto_bukti}" class="img-thumb" style="width:100px; height:100px;"></a></div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('app-modal').style.display = 'flex';
+        }
+
+        // MODUL FORM PEMERIKSAAN ATM
         function openFormPemeriksaanATM() {
             db.from('kantor').select('id, nama').then(({data: kantorList}) => {
                 if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Silakan tambah Data Kantor/KCP terlebih dahulu!', 'warning');
@@ -510,7 +540,7 @@
                         </div>
                         <div class="form-group">
                             <label>Periode Minggu</label>
-                            <input type="text" id="fa-periode" class="form-control" placeholder="Minggu I / Agustus 2026" required>
+                            <input type="text" id="fa-periode" class="form-control" placeholder="Minggu 1 Agustus" required>
                         </div>
 
                         <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
@@ -538,7 +568,6 @@
                     e.preventDefault();
                     Swal.fire({ title: 'Menyimpan Laporan ATM...', didOpen: () => Swal.showLoading() });
 
-                    // 1. Insert Header ATM
                     const { data: headerData, error: errH } = await db.from('pemeriksaan_atm').insert([{
                         kantor_id: document.getElementById('fa-kantor').value,
                         kategori_atm: document.getElementById('fa-kat').value,
@@ -547,7 +576,6 @@
 
                     if (errH) return Swal.fire('Gagal', errH.message, 'error');
 
-                    // 2. Insert Detail Kriteria (6 Items)
                     for (let k of kriteriaList) {
                         const kondisiVal = document.querySelector(`input[name="cond_${k.no}"]:checked`).value;
                         const ketVal = document.getElementById(`ket_${k.no}`).value;
@@ -578,7 +606,7 @@
             });
         }
 
-        // CRUD LAINNYA
+        // FORM CRUD KANTOR, ASSET, UTILITAS, WO, MAINTENANCE, TEKNISI
         function openFormKantor() {
             document.getElementById('modal-title').innerText = "Tambah Kantor";
             document.getElementById('modal-body').innerHTML = `
