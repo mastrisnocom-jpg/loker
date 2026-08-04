@@ -493,7 +493,7 @@
         }
 
         // ==========================================
-        // EXPORT PDF FIX (FORMAT TANDA CENTANG [ V ])
+        // EXPORT PDF SESUAI DRAFT GAMBAR RESMI (VENDOR & BANK)
         // ==========================================
         async function exportATMPDF(id) {
             Swal.fire({ title: 'Mencetak PDF Laporan ATM...', didOpen: () => Swal.showLoading() });
@@ -542,24 +542,26 @@
             });
 
             let finalY = doc.lastAutoTable.finalY + 8;
-            if (finalY > 230) { doc.addPage(); finalY = 20; }
+            if (finalY > 220) { doc.addPage(); finalY = 20; }
 
-            doc.setFont('Helvetica', 'bold');
-            doc.setFontSize(8.5);
-            doc.text("LAMPIRAN PEMBERSIHAN & TANDA TANGAN", 14, finalY);
+            // LAMPIRAN TANDA TANGAN DIBUAT DENGAN TULISAN PERUSAHAAN SAMA PERSIS GAMBAR USER
+            const vendorTitle = header.vendor_nama || 'PT Binayasa Purabatara Unit ______';
+            const bankTitle = header.bank_cabang || 'PT Bank Tabungan Negara Cabang ______';
+            const petugasName = header.petugas_nama ? `( ${header.petugas_nama} )` : '(_______________________)';
+            const supervisorName = header.supervisor_nama ? `( ${header.supervisor_nama} )` : '(_______________________)';
 
             doc.autoTable({
                 startY: finalY + 4,
-                head: [['Petugas Pemeriksa', 'Supervisor / Penanggung Jawab']],
-                body: [['\n\n\n\n_______________________\nNama: ' + (header.petugas_nama || 'Petugas ATM'), '\n\n\n\n_______________________\nNama: ' + (header.supervisor_nama || 'Supervisor')]],
+                head: [['Dibuat oleh,\n' + vendorTitle, 'Mengetahui,\n' + bankTitle]],
+                body: [['\n\n\n' + petugasName, '\n\n\n' + supervisorName]],
                 theme: 'grid',
-                styles: { fontSize: 8, halign: 'center', cellPadding: 4, font: 'Helvetica' },
-                headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' },
+                styles: { fontSize: 8, halign: 'left', cellPadding: 4, font: 'Helvetica' },
+                headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'normal' },
                 columnStyles: { 0: { cellWidth: 91 }, 1: { cellWidth: 91 } }
             });
 
             if (header.tanda_tangan_petugas) {
-                try { doc.addImage(header.tanda_tangan_petugas, 'PNG', 35, finalY + 12, 35, 18); } catch (e) {}
+                try { doc.addImage(header.tanda_tangan_petugas, 'PNG', 20, finalY + 14, 35, 18); } catch (e) {}
             }
 
             Swal.close();
@@ -589,8 +591,8 @@
             });
 
             excelRows.push([]);
-            excelRows.push(["TANDA TANGAN PETUGAS", header.petugas_nama || 'Petugas']);
-            excelRows.push(["TANDA TANGAN SUPERVISOR", header.supervisor_nama || 'Supervisor']);
+            excelRows.push(["DIBUAT OLEH", header.vendor_nama || 'PT Binayasa Purabatara Unit ______', "NAMA PETUGAS", header.petugas_nama || '-']);
+            excelRows.push(["MENGETAHUI", header.bank_cabang || 'PT Bank Tabungan Negara Cabang ______', "NAMA SUPERVISOR", header.supervisor_nama || '-']);
 
             const worksheet = XLSX.utils.aoa_to_sheet(excelRows);
             const workbook = XLSX.utils.book_new();
@@ -670,13 +672,15 @@
                     `).join('')}
 
                     <div class="checklist-card" style="margin-top:12px;">
-                        <div class="checklist-title">TANDA TANGAN PETUGAS & SUPERVISOR</div>
+                        <div class="checklist-title">TANDA TANGAN & PENGESAHAN</div>
                         <div style="display:flex; justify-content:space-between; margin-top:8px;">
                             <div>
+                                <small><b>Dibuat oleh:</b><br>${header.vendor_nama || 'PT Binayasa Purabatara Unit ______'}</small><br>
                                 <small>Petugas: <b>${header.petugas_nama || '-'}</b></small><br>
                                 ${header.tanda_tangan_petugas ? `<img src="${header.tanda_tangan_petugas}" style="width:100px; height:50px; border:1px solid var(--border); border-radius:4px; margin-top:4px;">` : ''}
                             </div>
                             <div>
+                                <small><b>Mengetahui:</b><br>${header.bank_cabang || 'PT Bank Tabungan Negara Cabang ______'}</small><br>
                                 <small>Supervisor: <b>${header.supervisor_nama || '-'}</b></small>
                             </div>
                         </div>
@@ -732,7 +736,168 @@
             }
         }
 
-        // FORMS & UTILITY ACTIONS
+        // FORMS & UTILITY ACTIONS (EDITABLE VENDOR & BANK NAME INCLUDED)
+        async function openFormPemeriksaanATM(id = null) {
+            const [kantorRes, kriteriaRes] = await Promise.all([
+                db.from('kantor').select('id, nama'),
+                db.from('kriteria_atm').select('*').order('no_kriteria', {ascending:true})
+            ]);
+
+            const kantorList = kantorRes.data;
+            const kriteriaList = kriteriaRes.data;
+
+            if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Silakan tambah Data Kantor terlebih dahulu!', 'warning');
+            if (!kriteriaList || kriteriaList.length === 0) return Swal.fire('Peringatan', 'Master Kriteria ATM kosong!', 'warning');
+
+            let editHeader = { 
+                kantor_id: '', 
+                kategori_atm: 'Onsite', 
+                periode_minggu: '', 
+                petugas_nama: '', 
+                supervisor_nama: '',
+                vendor_nama: 'PT Binayasa Purabatara Unit ______',
+                bank_cabang: 'PT Bank Tabungan Negara Cabang ______'
+            };
+            let editDetailsMap = {};
+
+            if (id) {
+                const { data: h } = await db.from('pemeriksaan_atm').select('*').eq('id', id).single();
+                const { data: dList } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id);
+                if (h) editHeader = h;
+                if (dList) {
+                    dList.forEach(d => { editDetailsMap[d.no_kriteria] = d; });
+                }
+            }
+
+            document.getElementById('modal-title').innerText = id ? "Edit Laporan ATM" : "Laporan Pemeriksaan ATM";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="f-atm">
+                    <div class="form-group">
+                        <label>Lokasi / KCP</label>
+                        <select id="fa-kantor" class="form-control" required>
+                            ${kantorList.map(k=>`<option value="${k.id}" ${k.id === editHeader.kantor_id ? 'selected':''}>${k.nama}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Kategori ATM</label>
+                        <select id="fa-kat" class="form-control">
+                            <option value="Onsite" ${editHeader.kategori_atm === 'Onsite' ? 'selected':''}>Onsite</option>
+                            <option value="Offsite" ${editHeader.kategori_atm === 'Offsite' ? 'selected':''}>Offsite</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Periode Minggu</label>
+                        <input type="text" id="fa-periode" class="form-control" value="${editHeader.periode_minggu}" placeholder="Minggu 1 Agustus" required>
+                    </div>
+
+                    <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
+                    <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 10px;">KRITERIA PEMERIKSAAN</div>
+
+                    ${kriteriaList.map(k => {
+                        const existingDetail = editDetailsMap[k.no_kriteria] || { kondisi: 'BAIK', keterangan: '' };
+                        return `
+                            <div class="checklist-card">
+                                <div class="checklist-title">${k.no_kriteria}. ${k.title}</div>
+                                <div class="checklist-desc">${k.deskripsi || ''}</div>
+                                <div class="radio-group">
+                                    <label><input type="radio" name="cond_${k.no_kriteria}" value="BAIK" ${existingDetail.kondisi === 'BAIK' ? 'checked':''}> BAIK</label>
+                                    <label><input type="radio" name="cond_${k.no_kriteria}" value="TIDAK BAIK" ${existingDetail.kondisi === 'TIDAK BAIK' ? 'checked':''}> TIDAK BAIK</label>
+                                </div>
+                                <input type="text" id="ket_${k.no_kriteria}" class="form-control" value="${existingDetail.keterangan || ''}" placeholder="Keterangan..." style="margin-bottom:6px; font-size:0.8rem;">
+                                <input type="file" id="foto_${k.no_kriteria}" class="form-control" accept="image/*" style="font-size:0.75rem;">
+                            </div>
+                        `;
+                    }).join('')}
+
+                    <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
+                    <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 10px;">PENGESAHAN & TANDA TANGAN</div>
+                    
+                    <div class="form-group">
+                        <label>Sisi Kiri (Dibuat oleh)</label>
+                        <input type="text" id="fa-vendor" class="form-control" value="${editHeader.vendor_nama}" placeholder="PT Binayasa Purabatara Unit ______" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nama Petugas Pemeriksa</label>
+                        <input type="text" id="fa-petugas" class="form-control" value="${editHeader.petugas_nama || ''}" placeholder="Nama Petugas" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Sisi Kanan (Mengetahui)</label>
+                        <input type="text" id="fa-bank" class="form-control" value="${editHeader.bank_cabang}" placeholder="PT Bank Tabungan Negara Cabang ______" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nama Supervisor / Penanggung Jawab</label>
+                        <input type="text" id="fa-supervisor" class="form-control" value="${editHeader.supervisor_nama || ''}" placeholder="Nama Supervisor" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tanda Tangan Digital Petugas</label>
+                        <canvas id="canvas-ttd" class="signature-pad"></canvas>
+                        <button type="button" class="btn btn-secondary" onclick="clearCanvasTTD()" style="margin-top:4px; font-size:0.7rem; padding:4px 8px;">Clear TTD</button>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:12px;">${id ? 'Update Laporan ATM' : 'Simpan Laporan ATM'}</button>
+                </form>`;
+
+            document.getElementById('app-modal').style.display = 'flex';
+            initCanvasTTD();
+
+            document.getElementById('f-atm').onsubmit = async (e) => {
+                e.preventDefault();
+                Swal.fire({ title: 'Menyimpan Laporan ATM...', didOpen: () => Swal.showLoading() });
+
+                const canvasEl = document.getElementById('canvas-ttd');
+                const ttdDataUrl = canvasEl.toDataURL();
+
+                let headerId = id;
+                const headerPayload = {
+                    kantor_id: document.getElementById('fa-kantor').value,
+                    kategori_atm: document.getElementById('fa-kat').value,
+                    periode_minggu: document.getElementById('fa-periode').value,
+                    vendor_nama: document.getElementById('fa-vendor').value,
+                    petugas_nama: document.getElementById('fa-petugas').value,
+                    bank_cabang: document.getElementById('fa-bank').value,
+                    supervisor_nama: document.getElementById('fa-supervisor').value,
+                    tanda_tangan_petugas: ttdDataUrl
+                };
+
+                if (id) {
+                    await db.from('pemeriksaan_atm').update(headerPayload).eq('id', id);
+                    await db.from('pemeriksaan_atm_detail').delete().eq('pemeriksaan_id', id);
+                } else {
+                    const { data: hData } = await db.from('pemeriksaan_atm').insert([headerPayload]).select().single();
+                    if (hData) headerId = hData.id;
+                }
+
+                for (let k of kriteriaList) {
+                    const kondisiVal = document.querySelector(`input[name="cond_${k.no_kriteria}"]:checked`).value;
+                    const ketVal = document.getElementById(`ket_${k.no_kriteria}`).value;
+                    const fileEl = document.getElementById(`foto_${k.no_kriteria}`).files[0];
+                    let fotoUrl = editDetailsMap[k.no_kriteria] ? editDetailsMap[k.no_kriteria].foto_bukti : null;
+
+                    if (fileEl) {
+                        const fname = `atm_${Date.now()}_${k.no_kriteria}_${fileEl.name}`;
+                        await db.storage.from('bms-photos').upload(fname, fileEl);
+                        fotoUrl = db.storage.from('bms-photos').getPublicUrl(fname).data.publicUrl;
+                    }
+
+                    await db.from('pemeriksaan_atm_detail').insert([{
+                        pemeriksaan_id: headerId,
+                        no_kriteria: k.no_kriteria,
+                        kriteria_nama: k.title,
+                        kondisi: kondisiVal,
+                        keterangan: ketVal,
+                        foto_bukti: fotoUrl
+                    }]);
+                }
+
+                Swal.fire('Berhasil', 'Laporan ATM tersimpan', 'success');
+                document.getElementById('app-modal').style.display = 'none';
+                openSubPage('pemeriksaan_atm');
+                loadDashboardStats();
+            };
+        }
+
         async function openFormKantor(id = null) {
             let editData = { nama: '', alamat: '' };
             if (id) {
@@ -833,147 +998,6 @@
                     openSubPage('asset');
                     loadDashboardStats();
                 }
-            };
-        }
-
-        async function openFormPemeriksaanATM(id = null) {
-            const [kantorRes, kriteriaRes] = await Promise.all([
-                db.from('kantor').select('id, nama'),
-                db.from('kriteria_atm').select('*').order('no_kriteria', {ascending:true})
-            ]);
-
-            const kantorList = kantorRes.data;
-            const kriteriaList = kriteriaRes.data;
-
-            if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Silakan tambah Data Kantor terlebih dahulu!', 'warning');
-            if (!kriteriaList || kriteriaList.length === 0) return Swal.fire('Peringatan', 'Master Kriteria ATM kosong!', 'warning');
-
-            let editHeader = { kantor_id: '', kategori_atm: 'Onsite', periode_minggu: '', petugas_nama: '', supervisor_nama: '' };
-            let editDetailsMap = {};
-
-            if (id) {
-                const { data: h } = await db.from('pemeriksaan_atm').select('*').eq('id', id).single();
-                const { data: dList } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id);
-                if (h) editHeader = h;
-                if (dList) {
-                    dList.forEach(d => { editDetailsMap[d.no_kriteria] = d; });
-                }
-            }
-
-            document.getElementById('modal-title').innerText = id ? "Edit Laporan ATM" : "Laporan Pemeriksaan ATM";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="f-atm">
-                    <div class="form-group">
-                        <label>Lokasi / KCP</label>
-                        <select id="fa-kantor" class="form-control" required>
-                            ${kantorList.map(k=>`<option value="${k.id}" ${k.id === editHeader.kantor_id ? 'selected':''}>${k.nama}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Kategori ATM</label>
-                        <select id="fa-kat" class="form-control">
-                            <option value="Onsite" ${editHeader.kategori_atm === 'Onsite' ? 'selected':''}>Onsite</option>
-                            <option value="Offsite" ${editHeader.kategori_atm === 'Offsite' ? 'selected':''}>Offsite</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Periode Minggu</label>
-                        <input type="text" id="fa-periode" class="form-control" value="${editHeader.periode_minggu}" placeholder="Minggu 1 Agustus" required>
-                    </div>
-
-                    <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
-                    <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 10px;">KRITERIA PEMERIKSAAN</div>
-
-                    ${kriteriaList.map(k => {
-                        const existingDetail = editDetailsMap[k.no_kriteria] || { kondisi: 'BAIK', keterangan: '' };
-                        return `
-                            <div class="checklist-card">
-                                <div class="checklist-title">${k.no_kriteria}. ${k.title}</div>
-                                <div class="checklist-desc">${k.deskripsi || ''}</div>
-                                <div class="radio-group">
-                                    <label><input type="radio" name="cond_${k.no_kriteria}" value="BAIK" ${existingDetail.kondisi === 'BAIK' ? 'checked':''}> BAIK</label>
-                                    <label><input type="radio" name="cond_${k.no_kriteria}" value="TIDAK BAIK" ${existingDetail.kondisi === 'TIDAK BAIK' ? 'checked':''}> TIDAK BAIK</label>
-                                </div>
-                                <input type="text" id="ket_${k.no_kriteria}" class="form-control" value="${existingDetail.keterangan || ''}" placeholder="Keterangan..." style="margin-bottom:6px; font-size:0.8rem;">
-                                <input type="file" id="foto_${k.no_kriteria}" class="form-control" accept="image/*" style="font-size:0.75rem;">
-                            </div>
-                        `;
-                    }).join('')}
-
-                    <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
-                    <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 10px;">LAMPIRAN TANDA TANGAN</div>
-                    
-                    <div class="form-group">
-                        <label>Nama Petugas Pemeriksa</label>
-                        <input type="text" id="fa-petugas" class="form-control" value="${editHeader.petugas_nama || ''}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Nama Supervisor / Penanggung Jawab</label>
-                        <input type="text" id="fa-supervisor" class="form-control" value="${editHeader.supervisor_nama || ''}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Tanda Tangan Digital Petugas</label>
-                        <canvas id="canvas-ttd" class="signature-pad"></canvas>
-                        <button type="button" class="btn btn-secondary" onclick="clearCanvasTTD()" style="margin-top:4px; font-size:0.7rem; padding:4px 8px;">Clear TTD</button>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:12px;">${id ? 'Update Laporan ATM' : 'Simpan Laporan ATM'}</button>
-                </form>`;
-
-            document.getElementById('app-modal').style.display = 'flex';
-            initCanvasTTD();
-
-            document.getElementById('f-atm').onsubmit = async (e) => {
-                e.preventDefault();
-                Swal.fire({ title: 'Menyimpan Laporan ATM...', didOpen: () => Swal.showLoading() });
-
-                const canvasEl = document.getElementById('canvas-ttd');
-                const ttdDataUrl = canvasEl.toDataURL();
-
-                let headerId = id;
-                const headerPayload = {
-                    kantor_id: document.getElementById('fa-kantor').value,
-                    kategori_atm: document.getElementById('fa-kat').value,
-                    periode_minggu: document.getElementById('fa-periode').value,
-                    petugas_nama: document.getElementById('fa-petugas').value,
-                    supervisor_nama: document.getElementById('fa-supervisor').value,
-                    tanda_tangan_petugas: ttdDataUrl
-                };
-
-                if (id) {
-                    await db.from('pemeriksaan_atm').update(headerPayload).eq('id', id);
-                    await db.from('pemeriksaan_atm_detail').delete().eq('pemeriksaan_id', id);
-                } else {
-                    const { data: hData } = await db.from('pemeriksaan_atm').insert([headerPayload]).select().single();
-                    if (hData) headerId = hData.id;
-                }
-
-                for (let k of kriteriaList) {
-                    const kondisiVal = document.querySelector(`input[name="cond_${k.no_kriteria}"]:checked`).value;
-                    const ketVal = document.getElementById(`ket_${k.no_kriteria}`).value;
-                    const fileEl = document.getElementById(`foto_${k.no_kriteria}`).files[0];
-                    let fotoUrl = editDetailsMap[k.no_kriteria] ? editDetailsMap[k.no_kriteria].foto_bukti : null;
-
-                    if (fileEl) {
-                        const fname = `atm_${Date.now()}_${k.no_kriteria}_${fileEl.name}`;
-                        await db.storage.from('bms-photos').upload(fname, fileEl);
-                        fotoUrl = db.storage.from('bms-photos').getPublicUrl(fname).data.publicUrl;
-                    }
-
-                    await db.from('pemeriksaan_atm_detail').insert([{
-                        pemeriksaan_id: headerId,
-                        no_kriteria: k.no_kriteria,
-                        kriteria_nama: k.title,
-                        kondisi: kondisiVal,
-                        keterangan: ketVal,
-                        foto_bukti: fotoUrl
-                    }]);
-                }
-
-                Swal.fire('Berhasil', 'Laporan ATM tersimpan', 'success');
-                document.getElementById('app-modal').style.display = 'none';
-                openSubPage('pemeriksaan_atm');
-                loadDashboardStats();
             };
         }
 
