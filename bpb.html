@@ -493,20 +493,27 @@
         }
 
         // ==========================================
-        // EXPORT PDF TAJAM HIGH RESOLUTION & ANTI BLUR
+        // EXPORT PDF TAJAM + DESKRIPSI KETERANGAN KRITERIA
         // ==========================================
         async function exportATMPDF(id) {
             Swal.fire({ title: 'Mencetak PDF Laporan ATM...', didOpen: () => Swal.showLoading() });
 
             const { data: header } = await db.from('pemeriksaan_atm').select('*, kantor(nama, alamat)').eq('id', id).single();
             const { data: details } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id).order('no_kriteria', {ascending:true});
+            const { data: masterKriteria } = await db.from('kriteria_atm').select('*');
 
             if (!header || !details) return Swal.fire('Error', 'Gagal mengambil data laporan ATM', 'error');
+
+            // Map deskripsi kriteria agar bisa dimuat di bawah nama kriteria
+            const descMap = {};
+            if (masterKriteria) {
+                masterKriteria.forEach(m => { descMap[m.no_kriteria] = m.deskripsi || ''; });
+            }
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
 
-            // Set Font Vektor Murni
+            // Header Dokumen Resmi
             doc.setFont('Helvetica', 'bold');
             doc.setFontSize(11);
             doc.text("LAPORAN PEMERIKSAAN ATM MINGGUAN", 105, 15, { align: 'center' });
@@ -525,12 +532,16 @@
             doc.text(`Periode Minggu : ${header.periode_minggu}`, 110, 33);
             doc.text(`Tanggal Cek       : ${header.tanggal_pemeriksaan}`, 14, 38);
 
-            const tableBody = details.map(d => [
-                d.no_kriteria,
-                d.kriteria_nama,
-                d.kondisi === 'BAIK' ? '[ V ] BAIK    [   ] TIDAK BAIK' : '[   ] BAIK    [ V ] TIDAK BAIK',
-                d.keterangan || '-'
-            ]);
+            // TABEL DENGAN NAMA KRITERIA + DESKRIPSI KETERANGANNYA
+            const tableBody = details.map(d => {
+                const kriteriaDesc = descMap[d.no_kriteria] ? `\n${descMap[d.no_kriteria]}` : '';
+                return [
+                    d.no_kriteria,
+                    `${d.kriteria_nama}${kriteriaDesc}`,
+                    d.kondisi === 'BAIK' ? '[ V ] BAIK    [   ] TIDAK BAIK' : '[   ] BAIK    [ V ] TIDAK BAIK',
+                    d.keterangan || '-'
+                ];
+            });
 
             doc.autoTable({
                 startY: 42,
@@ -634,7 +645,7 @@
                 <form id="f-add-kriteria">
                     <div class="form-group"><label>No. Kriteria</label><input type="number" id="fk-no" class="form-control" value="${nextNo}" required></div>
                     <div class="form-group"><label>Judul Kriteria</label><input type="text" id="fk-title" class="form-control" placeholder="Kebersihan Neon Box" required></div>
-                    <div class="form-group"><label>Deskripsi</label><textarea id="fk-desc" class="form-control" placeholder="Neon box menyala terang"></textarea></div>
+                    <div class="form-group"><label>Deskripsi Keterangan Kriteria</label><textarea id="fk-desc" class="form-control" placeholder="Tidak ada sampah berserakan..."></textarea></div>
                     <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Simpan Kriteria</button>
                 </form>`;
 
@@ -736,7 +747,7 @@
             }
         }
 
-        // FORMS & UTILITY ACTIONS
+        // FORMS ACTIONS
         async function openFormKantor(id = null) {
             let editData = { nama: '', alamat: '' };
             if (id) {
