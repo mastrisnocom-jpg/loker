@@ -139,7 +139,6 @@
   <!-- MAIN APP CONTAINER -->
   <div class="app-container">
 
-    <!-- USER HEADER DENGAN TOMBOL EDIT PROFIL -->
     <header class="user-header">
       <div class="user-info">
         <div class="avatar" id="avatar-initials">--</div>
@@ -344,13 +343,13 @@
     }
 
     function initAuthListeners() {
-      // REGISTER
+      // PROSES REGISTER
       document.getElementById("register-form").addEventListener("submit", async (e) => {
         e.preventDefault();
-        const email = document.getElementById("reg-email").value;
+        const email = document.getElementById("reg-email").value.trim();
         const password = document.getElementById("reg-password").value;
-        const fullName = document.getElementById("reg-fullname").value;
-        const phone = document.getElementById("reg-phone").value;
+        const fullName = document.getElementById("reg-fullname").value.trim();
+        const phone = document.getElementById("reg-phone").value.trim();
         const role = document.getElementById("reg-role").value;
 
         Swal.fire({ title: 'Mendaftarkan Akun...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -366,19 +365,29 @@
         if (error) {
           Swal.fire('Registrasi Gagal', error.message, 'error');
         } else {
+          // Manual Fallback Insert Profil Jika Auto-Trigger Terlambat
+          if (data.user) {
+            await supabaseClient.from('profiles').upsert([
+              { id: data.user.id, full_name: fullName, phone: phone, role: role }
+            ]);
+          }
+
           Swal.fire({
             icon: 'success',
-            title: 'Pendaftaran Berhasil',
-            text: 'Akun telah terbuat. Silakan login.',
+            title: 'Pendaftaran Berhasil!',
+            text: 'Akun Anda terdaftar. Silakan login.',
             confirmButtonColor: '#0B8F4D'
-          }).then(() => toggleAuthMode('login'));
+          }).then(() => {
+            toggleAuthMode('login');
+            document.getElementById("login-email").value = email;
+          });
         }
       });
 
-      // LOGIN
+      // PROSES LOGIN
       document.getElementById("login-form").addEventListener("submit", async (e) => {
         e.preventDefault();
-        const email = document.getElementById("login-email").value;
+        const email = document.getElementById("login-email").value.trim();
         const password = document.getElementById("login-password").value;
 
         Swal.fire({ title: 'Memverifikasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -416,6 +425,8 @@
           document.getElementById("user-name").innerText = profile.full_name;
           document.getElementById("user-role-display").innerText = profile.role.replace('_', ' ');
           document.getElementById("avatar-initials").innerText = profile.full_name.substring(0, 2).toUpperCase();
+        } else {
+          document.getElementById("user-name").innerText = session.user.email.split('@')[0];
         }
 
         if (currentUserRole === 'administrator') {
@@ -430,7 +441,6 @@
       }
     }
 
-    // FITUR EDIT PROFIL REALTIME
     async function editProfileModal() {
       if (!currentUserId || !currentProfile) return;
 
@@ -454,12 +464,9 @@
       if (formValues && formValues[0]) {
         Swal.fire({ title: 'Memperbarui Profil...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-        const { data, error } = await supabaseClient
+        const { error } = await supabaseClient
           .from('profiles')
-          .update({
-            full_name: formValues[0],
-            phone: formValues[1]
-          })
+          .update({ full_name: formValues[0], phone: formValues[1] })
           .eq('id', currentUserId);
 
         if (error) {
@@ -477,35 +484,35 @@
     }
 
     async function loadDatabaseData() {
-      // 1. Offices
+      // 1. Fetch Offices
       const { data: offices, count: officeCount } = await supabaseClient.from('offices').select('*', { count: 'exact' });
       document.getElementById('val-total-kantor').innerText = officeCount || 0;
       renderOfficeRows(offices || []);
 
-      // 2. Assets
+      // 2. Fetch Assets
       const { data: assets, count: assetCount } = await supabaseClient.from('assets').select('*', { count: 'exact' });
       document.getElementById('val-total-asset').innerText = assetCount || 0;
       renderAssetList(assets || []);
 
-      // 3. Work Orders
+      // 3. Fetch Work Orders
       const { data: wos, count: woCount } = await supabaseClient.from('work_orders').select('*', { count: 'exact' });
       document.getElementById('val-total-wo').innerText = woCount || 0;
       renderWOList(wos || []);
 
-      // 4. Archives
+      // 4. Fetch Archives
       const { data: archives, count: archiveCount } = await supabaseClient.from('archives').select('*', { count: 'exact' });
       document.getElementById('val-total-arsip').innerText = archiveCount || 0;
       renderArsipList(archives || []);
 
-      // 5. Utility Bills
+      // 5. Fetch Utility Bills
       const { data: bills } = await supabaseClient.from('utility_bills').select('*');
       renderUtilityList(bills || []);
 
-      // 6. Maintenances
+      // 6. Fetch Maintenances
       const { data: maintenances } = await supabaseClient.from('maintenances').select('*');
       renderMaintenanceList(maintenances || []);
 
-      // 7. Cleanings
+      // 7. Fetch Cleanings
       const { data: cleanings } = await supabaseClient.from('cleanings').select('*');
       renderCleaningList(cleanings || []);
 
