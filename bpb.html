@@ -65,7 +65,7 @@
         .stat-box h3 { font-size: 1.1rem; font-weight: 800; }
         .stat-box p { font-size: 0.7rem; color: var(--text-sub); }
 
-        /* APP GRID */
+        /* APP GRID (4 COLUMNS) */
         .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 8px; margin-bottom: 24px; }
         .grid-item { display: flex; flex-direction: column; align-items: center; color: var(--text-main); cursor: pointer; }
         .grid-icon-wrapper { width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 4px; border: 1px solid rgba(0,0,0,0.04); }
@@ -87,12 +87,17 @@
         .img-thumb { width: 42px; height: 42px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
         .badge { padding: 3px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; }
         .badge-success { background: #d1e7dd; color: #0f5132; }
-        .badge-warning { background: #fff3cd; color: #664d03; }
         .badge-danger { background: #f8d7da; color: #842029; }
+
+        /* CHECKLIST ITEM FORM STYLING */
+        .checklist-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+        .checklist-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; color: var(--primary); }
+        .checklist-desc { font-size: 0.75rem; color: var(--text-sub); margin-bottom: 8px; }
+        .radio-group { display: flex; gap: 16px; margin-bottom: 8px; font-size: 0.8rem; font-weight: 600; }
 
         /* MODAL */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: var(--card-bg); border-radius: var(--radius); width: 100%; max-width: 420px; max-height: 85vh; overflow-y: auto; padding: 20px; position: relative; }
+        .modal-content { background: var(--card-bg); border-radius: var(--radius); width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; padding: 20px; position: relative; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         .close-modal { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-sub); }
     </style>
@@ -149,19 +154,20 @@
                     <p>Asset</p>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-icon" style="background:#e3f2fd; color:#1e88e5;"><i class="fa-solid fa-clipboard-list"></i></div>
-                    <h3 id="stat-wo">0</h3>
-                    <p>Work Order</p>
+                    <div class="stat-icon" style="background:#e3f2fd; color:#1e88e5;"><i class="fa-solid fa-credit-card"></i></div>
+                    <h3 id="stat-atm">0</h3>
+                    <p>Cek ATM</p>
                 </div>
             </div>
 
-            <!-- APP GRID MENU -->
+            <!-- APP GRID MENU (11 MENU TERMASUK CEK ATM) -->
             <div class="app-grid">
                 <div class="grid-item" onclick="openSubPage('kantor')"><div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-building"></i></div><span class="grid-label">Kantor</span></div>
                 <div class="grid-item" onclick="openSubPage('asset')"><div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-boxes-stacked"></i></div><span class="grid-label">Asset</span></div>
                 <div class="grid-item" onclick="openSubPage('utilitas')"><div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-bolt"></i></div><span class="grid-label">Utilitas</span></div>
                 <div class="grid-item" onclick="openSubPage('perawatan')"><div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-screwdriver-wrench"></i></div><span class="grid-label">Perawatan</span></div>
                 <div class="grid-item" onclick="openSubPage('workorder')"><div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-clipboard-list"></i></div><span class="grid-label">Work Order</span></div>
+                <div class="grid-item" onclick="openSubPage('pemeriksaan_atm')"><div class="grid-icon-wrapper" style="background:#e0f2fe; color:#0284c7;"><i class="fa-solid fa-credit-card"></i></div><span class="grid-label">Cek ATM</span></div>
                 <div class="grid-item" onclick="openSubPage('teknisi')"><div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-user-gear"></i></div><span class="grid-label">Teknisi</span></div>
                 <div class="grid-item" onclick="openSubPage('jadwal')"><div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-calendar-days"></i></div><span class="grid-label">Jadwal</span></div>
                 <div class="grid-item" onclick="openSubPage('laporan')"><div class="grid-icon-wrapper" style="background:#e8f5e9; color:#198754;"><i class="fa-solid fa-file-invoice"></i></div><span class="grid-label">Laporan</span></div>
@@ -208,9 +214,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
-        // SUPABASE CONFIG (TOKEN ASLI LENGKAP BISA LOGIN)
         const SUPABASE_URL = "https://pykkfcszdihobpwhqinq.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5a2tmY3N6ZGlob2Jwd2hxaW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU3OTEyNjEsImV4cCI6MjEwMTM2NzI2MX0.Ig1GsJvn0jDobVCBGlp2lLwTLvtn6eAkzKKf3VxMFiA";
+        const SUPABASE_ANON_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5a2tmY3N6ZGlob2Jwd2hxaW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU3OTEyNjEsImV4cCI6MjA0NDQ3NzI2MX0.Ig1GsJvn0jDobVCBGlp2lLwTLvtn6eAkzKKf3VxMFiA";
         
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
@@ -276,11 +281,11 @@
         async function loadDashboardStats() {
             const { count: countKantor } = await db.from('kantor').select('*', { count: 'exact', head: true });
             const { count: countAsset } = await db.from('asset').select('*', { count: 'exact', head: true });
-            const { count: countWO } = await db.from('work_orders').select('*', { count: 'exact', head: true });
+            const { count: countATM } = await db.from('pemeriksaan_atm').select('*', { count: 'exact', head: true });
 
             document.getElementById('stat-kantor').innerText = countKantor || 0;
             document.getElementById('stat-asset').innerText = countAsset || 0;
-            document.getElementById('stat-wo').innerText = countWO || 0;
+            document.getElementById('stat-atm').innerText = countATM || 0;
 
             renderChart();
         }
@@ -297,14 +302,14 @@
             });
         }
 
-        // SUB PAGE ROUTER
+        // ROUTER SUB PAGE
         async function openSubPage(pageKey) {
             const overlay = document.getElementById('sub-page-overlay');
             const titleEl = document.getElementById('sub-page-title');
             const contentEl = document.getElementById('sub-page-content');
             const actionBtn = document.getElementById('sub-action-btn');
 
-            titleEl.innerText = pageKey.toUpperCase();
+            titleEl.innerText = pageKey.replace('_', ' ').toUpperCase();
             contentEl.innerHTML = `<p style="text-align:center; padding:20px; color:var(--text-sub);"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data...</p>`;
             actionBtn.style.display = 'none';
             overlay.style.display = 'block';
@@ -347,6 +352,26 @@
                                         <td><button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('asset','${a.id}','asset')"><i class="fa-solid fa-trash"></i></button></td>
                                     </tr>
                                 `).join('') : '<tr><td colspan="5" style="text-align:center;">Belum ada data asset</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>`;
+            } else if (pageKey === 'pemeriksaan_atm') {
+                actionBtn.style.display = 'inline-flex';
+                actionBtn.onclick = () => openFormPemeriksaanATM();
+                const { data } = await db.from('pemeriksaan_atm').select('*, kantor(nama)').order('tanggal_pemeriksaan', {ascending:false});
+                contentEl.innerHTML = `
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead><tr><th>Lokasi/KCP</th><th>Kategori</th><th>Periode</th><th>Aksi</th></tr></thead>
+                            <tbody>
+                                ${data && data.length > 0 ? data.map(atm => `
+                                    <tr>
+                                        <td><b>${atm.kantor ? atm.kantor.nama : '-'}</b></td>
+                                        <td><span class="badge badge-success">${atm.kategori_atm}</span></td>
+                                        <td>${atm.periode_minggu}</td>
+                                        <td><button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('pemeriksaan_atm','${atm.id}','pemeriksaan_atm')"><i class="fa-solid fa-trash"></i></button></td>
+                                    </tr>
+                                `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada pemeriksaan ATM</td></tr>'}
                             </tbody>
                         </table>
                     </div>`;
@@ -432,7 +457,6 @@
                 contentEl.innerHTML = `
                     <div class="card">
                         <div class="card-title"><i class="fa-solid fa-calendar-check"></i> Kalender Pemeliharaan</div>
-                        <p style="font-size:0.85rem; color:var(--text-sub);">Jadwal maintenance gedung mendatang:</p>
                         <ul style="margin-top:10px; font-size:0.85rem; padding-left:20px; line-height:1.6;">
                             <li><b>28 Aug:</b> Routine Maintenance Service Lift Utama</li>
                             <li><b>30 Aug:</b> Pemeliharaan Sistem AC Gedung B</li>
@@ -459,7 +483,102 @@
             document.getElementById('sub-page-overlay').style.display = 'none';
         }
 
-        // CRUD FORMS ACTIONS
+        // --- MODUL PEMERIKSAAN ATM MINGGUAN (CHECKLIST INTEGRATED) ---
+        function openFormPemeriksaanATM() {
+            db.from('kantor').select('id, nama').then(({data: kantorList}) => {
+                if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Silakan tambah Data Kantor/KCP terlebih dahulu!', 'warning');
+
+                const kriteriaList = [
+                    { no: 1, title: "Kebersihan Lantai & Ruangan", desc: "Tidak ada sampah berserakan, lantai tidak kotor/lengket" },
+                    { no: 2, title: "Tempat Sampah", desc: "Kondisi tidak penuh/meluber, sudah dikosongkan" },
+                    { no: 3, title: "Pewangi Ruangan", desc: "Tersedia pewangi ruangan dan berfungsi (tidak berbau)" },
+                    { no: 4, title: "Kondisi Fisik Mesin ATM", desc: "Layar, Keypad, Card Reader & Dispenser bersih & normal" },
+                    { no: 5, title: "Fungsi AC / Suhu Ruangan", desc: "AC menyala baik, terasa dingin, tidak ada kebocoran" },
+                    { no: 6, title: "Penerangan / Lampu", desc: "Lampu utama ruangan dan Neon Box ATM menyala terang" }
+                ];
+
+                document.getElementById('modal-title').innerText = "Laporan Pemeriksaan ATM";
+                document.getElementById('modal-body').innerHTML = `
+                    <form id="f-atm">
+                        <div class="form-group">
+                            <label>Lokasi / KCP</label>
+                            <select id="fa-kantor" class="form-control" required>${kantorList.map(k=>`<option value="${k.id}">${k.nama}</option>`).join('')}</select>
+                        </div>
+                        <div class="form-group">
+                            <label>Kategori ATM</label>
+                            <select id="fa-kat" class="form-control"><option value="Onsite">Onsite</option><option value="Offsite">Offsite</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Periode Minggu</label>
+                            <input type="text" id="fa-periode" class="form-control" placeholder="Minggu I / Agustus 2026" required>
+                        </div>
+
+                        <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
+                        <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 10px;">KRITERIA PEMERIKSAAN</div>
+
+                        ${kriteriaList.map(k => `
+                            <div class="checklist-card">
+                                <div class="checklist-title">${k.no}. ${k.title}</div>
+                                <div class="checklist-desc">${k.desc}</div>
+                                <div class="radio-group">
+                                    <label><input type="radio" name="cond_${k.no}" value="BAIK" checked> BAIK</label>
+                                    <label><input type="radio" name="cond_${k.no}" value="TIDAK BAIK"> TIDAK BAIK</label>
+                                </div>
+                                <input type="text" id="ket_${k.no}" class="form-control" placeholder="Keterangan..." style="margin-bottom:6px; font-size:0.8rem;">
+                                <input type="file" id="foto_${k.no}" class="form-control" accept="image/*" style="font-size:0.75rem;">
+                            </div>
+                        `).join('')}
+
+                        <button type="submit" class="btn btn-primary" style="margin-top:12px;">Simpan Laporan ATM</button>
+                    </form>`;
+
+                document.getElementById('app-modal').style.display = 'flex';
+
+                document.getElementById('f-atm').onsubmit = async (e) => {
+                    e.preventDefault();
+                    Swal.fire({ title: 'Menyimpan Laporan ATM...', didOpen: () => Swal.showLoading() });
+
+                    // 1. Insert Header ATM
+                    const { data: headerData, error: errH } = await db.from('pemeriksaan_atm').insert([{
+                        kantor_id: document.getElementById('fa-kantor').value,
+                        kategori_atm: document.getElementById('fa-kat').value,
+                        periode_minggu: document.getElementById('fa-periode').value
+                    }]).select().single();
+
+                    if (errH) return Swal.fire('Gagal', errH.message, 'error');
+
+                    // 2. Insert Detail Kriteria (6 Items)
+                    for (let k of kriteriaList) {
+                        const kondisiVal = document.querySelector(`input[name="cond_${k.no}"]:checked`).value;
+                        const ketVal = document.getElementById(`ket_${k.no}`).value;
+                        const fileEl = document.getElementById(`foto_${k.no}`).files[0];
+                        let fotoUrl = null;
+
+                        if (fileEl) {
+                            const fname = `atm_${Date.now()}_${k.no}_${fileEl.name}`;
+                            await db.storage.from('bms-photos').upload(fname, fileEl);
+                            fotoUrl = db.storage.from('bms-photos').getPublicUrl(fname).data.publicUrl;
+                        }
+
+                        await db.from('pemeriksaan_atm_detail').insert([{
+                            pemeriksaan_id: headerData.id,
+                            no_kriteria: k.no,
+                            kriteria_nama: k.title,
+                            kondisi: kondisiVal,
+                            keterangan: ketVal,
+                            foto_bukti: fotoUrl
+                        }]);
+                    }
+
+                    Swal.fire('Berhasil', 'Laporan pemeriksaan ATM berhasil disimpan', 'success');
+                    document.getElementById('app-modal').style.display = 'none';
+                    openSubPage('pemeriksaan_atm');
+                    loadDashboardStats();
+                };
+            });
+        }
+
+        // CRUD LAINNYA
         function openFormKantor() {
             document.getElementById('modal-title').innerText = "Tambah Kantor";
             document.getElementById('modal-body').innerHTML = `
@@ -473,15 +592,9 @@
             document.getElementById('f-kantor').onsubmit = async (e) => {
                 e.preventDefault();
                 Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-
-                const { error } = await db.from('kantor').insert([{ 
-                    nama: document.getElementById('fk-nama').value, 
-                    alamat: document.getElementById('fk-alamat').value 
-                }]);
-
-                if (error) {
-                    Swal.fire('Gagal Menyimpan', error.message, 'error');
-                } else {
+                const { error } = await db.from('kantor').insert([{ nama: document.getElementById('fk-nama').value, alamat: document.getElementById('fk-alamat').value }]);
+                if (error) Swal.fire('Gagal', error.message, 'error');
+                else {
                     Swal.fire('Berhasil', 'Data kantor tersimpan', 'success');
                     document.getElementById('app-modal').style.display = 'none';
                     openSubPage('kantor');
@@ -491,20 +604,12 @@
         }
 
         function openFormAsset() {
-            db.from('kantor').select('id, nama').then(({data: kantorList, error: errK}) => {
-                if (errK || !kantorList || kantorList.length === 0) {
-                    return Swal.fire('Peringatan', 'Silakan tambah Data Kantor terlebih dahulu!', 'warning');
-                }
-
+            db.from('kantor').select('id, nama').then(({data: kantorList}) => {
+                if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah Data Kantor dulu!', 'warning');
                 document.getElementById('modal-title').innerText = "Tambah Asset";
                 document.getElementById('modal-body').innerHTML = `
                     <form id="f-asset">
-                        <div class="form-group">
-                            <label>Kantor</label>
-                            <select id="fa-kantor" class="form-control" required>
-                                ${kantorList.map(k => `<option value="${k.id}">${k.nama}</option>`).join('')}
-                            </select>
-                        </div>
+                        <div class="form-group"><label>Kantor</label><select id="fa-kantor" class="form-control" required>${kantorList.map(k => `<option value="${k.id}">${k.nama}</option>`).join('')}</select></div>
                         <div class="form-group"><label>Kode Asset</label><input type="text" id="fa-kode" class="form-control" value="AST-${Date.now().toString().slice(-4)}" required></div>
                         <div class="form-group"><label>Nama Asset</label><input type="text" id="fa-nama" class="form-control" required></div>
                         <div class="form-group"><label>Kategori</label><input type="text" id="fa-kat" class="form-control" placeholder="AC, Lift, Genset" required></div>
@@ -515,7 +620,6 @@
                 document.getElementById('f-asset').onsubmit = async (e) => {
                     e.preventDefault();
                     Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-
                     const { error } = await db.from('asset').insert([{
                         kantor_id: document.getElementById('fa-kantor').value,
                         kode_asset: document.getElementById('fa-kode').value,
@@ -523,10 +627,8 @@
                         kategori: document.getElementById('fa-kat').value,
                         status: 'Baik'
                     }]);
-
-                    if (error) {
-                        Swal.fire('Gagal Menyimpan', error.message, 'error');
-                    } else {
+                    if (error) Swal.fire('Gagal', error.message, 'error');
+                    else {
                         Swal.fire('Berhasil', 'Data asset tersimpan', 'success');
                         document.getElementById('app-modal').style.display = 'none';
                         openSubPage('asset');
@@ -539,18 +641,11 @@
         function openFormUtilitas() {
             db.from('kantor').select('id, nama').then(({data: kantorList}) => {
                 if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah data kantor dulu!', 'warning');
-
                 document.getElementById('modal-title').innerText = "Catat Utilitas";
                 document.getElementById('modal-body').innerHTML = `
                     <form id="f-utilitas">
-                        <div class="form-group">
-                            <label>Kantor</label>
-                            <select id="fu-kantor" class="form-control">${kantorList.map(k=>`<option value="${k.id}">${k.nama}</option>`).join('')}</select>
-                        </div>
-                        <div class="form-group">
-                            <label>Jenis Utilitas</label>
-                            <select id="fu-jenis" class="form-control"><option value="Listrik">Listrik</option><option value="Air">Air</option><option value="Gas">Gas</option></select>
-                        </div>
+                        <div class="form-group"><label>Kantor</label><select id="fu-kantor" class="form-control">${kantorList.map(k=>`<option value="${k.id}">${k.nama}</option>`).join('')}</select></div>
+                        <div class="form-group"><label>Jenis Utilitas</label><select id="fu-jenis" class="form-control"><option value="Listrik">Listrik</option><option value="Air">Air</option><option value="Gas">Gas</option></select></div>
                         <div class="form-group"><label>Pemakaian</label><input type="number" id="fu-jumlah" class="form-control" required></div>
                         <div class="form-group"><label>Satuan</label><input type="text" id="fu-satuan" class="form-control" value="kWh" required></div>
                         <div class="form-group"><label>Biaya (Rp)</label><input type="number" id="fu-biaya" class="form-control" required></div>
@@ -562,7 +657,6 @@
                 document.getElementById('f-utilitas').onsubmit = async (e) => {
                     e.preventDefault();
                     Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-
                     const { error } = await db.from('utilitas').insert([{
                         kantor_id: document.getElementById('fu-kantor').value,
                         jenis: document.getElementById('fu-jenis').value,
@@ -571,11 +665,9 @@
                         biaya: document.getElementById('fu-biaya').value,
                         bulan_tahun: document.getElementById('fu-bulan').value
                     }]);
-
-                    if (error) {
-                        Swal.fire('Gagal Menyimpan', error.message, 'error');
-                    } else {
-                        Swal.fire('Berhasil', 'Data utilitas tersimpan', 'success');
+                    if (error) Swal.fire('Gagal', error.message, 'error');
+                    else {
+                        Swal.fire('Berhasil', 'Utilitas tersimpan', 'success');
                         document.getElementById('app-modal').style.display = 'none';
                         openSubPage('utilitas');
                     }
@@ -586,14 +678,10 @@
         function openFormWO() {
             db.from('asset').select('id, nama_asset').then(({data: assetList}) => {
                 if (!assetList || assetList.length === 0) return Swal.fire('Peringatan', 'Tambah data asset dulu!', 'warning');
-
                 document.getElementById('modal-title').innerText = "Buat Work Order";
                 document.getElementById('modal-body').innerHTML = `
                     <form id="f-wo">
-                        <div class="form-group">
-                            <label>Asset</label>
-                            <select id="fw-asset" class="form-control">${assetList.map(a=>`<option value="${a.id}">${a.nama_asset}</option>`).join('')}</select>
-                        </div>
+                        <div class="form-group"><label>Asset</label><select id="fw-asset" class="form-control">${assetList.map(a=>`<option value="${a.id}">${a.nama_asset}</option>`).join('')}</select></div>
                         <div class="form-group"><label>Judul Pekerjaan</label><input type="text" id="fw-judul" class="form-control" required></div>
                         <button type="submit" class="btn btn-primary" style="margin-top:8px;">Simpan Work Order</button>
                     </form>`;
@@ -602,17 +690,14 @@
                 document.getElementById('f-wo').onsubmit = async (e) => {
                     e.preventDefault();
                     Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-
                     const { error } = await db.from('work_orders').insert([{
                         asset_id: document.getElementById('fw-asset').value,
                         judul: document.getElementById('fw-judul').value,
                         status: 'Pending'
                     }]);
-
-                    if (error) {
-                        Swal.fire('Gagal Menyimpan', error.message, 'error');
-                    } else {
-                        Swal.fire('Berhasil', 'Work order tersimpan', 'success');
+                    if (error) Swal.fire('Gagal', error.message, 'error');
+                    else {
+                        Swal.fire('Berhasil', 'WO tersimpan', 'success');
                         document.getElementById('app-modal').style.display = 'none';
                         openSubPage('workorder');
                         loadDashboardStats();
@@ -623,8 +708,7 @@
 
         function openFormPerawatan() {
             Promise.all([db.from('work_orders').select('id, judul'), db.from('teknisi').select('id, nama')]).then(([woRes, tekRes]) => {
-                if (!woRes.data || woRes.data.length === 0) return Swal.fire('Peringatan', 'Buat Work Order terlebih dahulu!', 'warning');
-
+                if (!woRes.data || woRes.data.length === 0) return Swal.fire('Peringatan', 'Buat Work Order dulu!', 'warning');
                 document.getElementById('modal-title').innerText = "Input Hasil Perawatan";
                 document.getElementById('modal-body').innerHTML = `
                     <form id="f-main">
@@ -632,7 +716,7 @@
                         <div class="form-group"><label>Teknisi</label><select id="fm-teknisi" class="form-control">${tekRes.data ? tekRes.data.map(t=>`<option value="${t.id}">${t.nama}</option>`).join('') : '<option value="">-</option>'}</select></div>
                         <div class="form-group"><label>Foto Before</label><input type="file" id="fm-before" class="form-control" accept="image/*"></div>
                         <div class="form-group"><label>Foto After</label><input type="file" id="fm-after" class="form-control" accept="image/*"></div>
-                        <div class="form-group"><label>Biaya Perbaikan (Rp)</label><input type="number" id="fm-biaya" class="form-control" value="0"></div>
+                        <div class="form-group"><label>Biaya (Rp)</label><input type="number" id="fm-biaya" class="form-control" value="0"></div>
                         <button type="submit" class="btn btn-primary" style="margin-top:8px;">Simpan Pengerjaan</button>
                     </form>`;
                 document.getElementById('app-modal').style.display = 'flex';
@@ -640,7 +724,6 @@
                 document.getElementById('f-main').onsubmit = async (e) => {
                     e.preventDefault();
                     Swal.fire({ title: 'Mengunggah...', didOpen: () => Swal.showLoading() });
-
                     let beforeUrl = null, afterUrl = null;
                     const fileBefore = document.getElementById('fm-before').files[0];
                     const fileAfter = document.getElementById('fm-after').files[0];
@@ -659,16 +742,14 @@
                     const { error } = await db.from('maintenances').insert([{
                         work_order_id: document.getElementById('fm-wo').value,
                         teknisi_id: document.getElementById('fm-teknisi').value || null,
-                        foto_before: beforeUrl,
-                        foto_after: afterUrl,
+                        foto_before: beforeUrl, foto_after: afterUrl,
                         biaya: document.getElementById('fm-biaya').value,
                         tanggal_selesai: new Date()
                     }]);
 
-                    if (error) {
-                        Swal.fire('Gagal Menyimpan', error.message, 'error');
-                    } else {
-                        Swal.fire('Berhasil', 'Data pengerjaan tersimpan', 'success');
+                    if (error) Swal.fire('Gagal', error.message, 'error');
+                    else {
+                        Swal.fire('Berhasil', 'Pengerjaan tersimpan', 'success');
                         document.getElementById('app-modal').style.display = 'none';
                         openSubPage('perawatan');
                     }
@@ -681,7 +762,7 @@
             document.getElementById('modal-body').innerHTML = `
                 <form id="f-teknisi">
                     <div class="form-group"><label>Nama Lengkap</label><input type="text" id="ft-nama" class="form-control" required></div>
-                    <div class="form-group"><label>Spesialisasi</label><input type="text" id="ft-spesialisasi" class="form-control" placeholder="AC, Electrical, Plumbing" required></div>
+                    <div class="form-group"><label>Spesialisasi</label><input type="text" id="ft-spesialisasi" class="form-control" placeholder="AC, Electrical" required></div>
                     <button type="submit" class="btn btn-primary" style="margin-top:8px;">Simpan Teknisi</button>
                 </form>`;
             document.getElementById('app-modal').style.display = 'flex';
@@ -689,16 +770,9 @@
             document.getElementById('f-teknisi').onsubmit = async (e) => {
                 e.preventDefault();
                 Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-
-                const { error } = await db.from('teknisi').insert([{
-                    nama: document.getElementById('ft-nama').value,
-                    spesialisasi: document.getElementById('ft-spesialisasi').value,
-                    status: 'Tersedia'
-                }]);
-
-                if (error) {
-                    Swal.fire('Gagal Menyimpan', error.message, 'error');
-                } else {
+                const { error } = await db.from('teknisi').insert([{ nama: document.getElementById('ft-nama').value, spesialisasi: document.getElementById('ft-spesialisasi').value, status: 'Tersedia' }]);
+                if (error) Swal.fire('Gagal', error.message, 'error');
+                else {
                     Swal.fire('Berhasil', 'Teknisi tersimpan', 'success');
                     document.getElementById('app-modal').style.display = 'none';
                     openSubPage('teknisi');
@@ -707,7 +781,7 @@
         }
 
         async function deleteRecord(table, id, page) {
-            if (confirm('Yakin ingin menghapus data ini?')) {
+            if (confirm('Hapus data ini?')) {
                 await db.from(table).delete().eq('id', id);
                 openSubPage(page);
                 loadDashboardStats();
@@ -716,10 +790,7 @@
 
         function viewMap(nama, lat, lng) {
             document.getElementById('modal-title').innerText = `Peta: ${nama}`;
-            document.getElementById('modal-body').innerHTML = `
-                <iframe width="100%" height="240" style="border:0; border-radius:8px;" 
-                    src="https://maps.google.com/maps?q=${lat || -6.200000},${lng || 106.816666}&z=15&output=embed">
-                </iframe>`;
+            document.getElementById('modal-body').innerHTML = `<iframe width="100%" height="240" style="border:0; border-radius:8px;" src="https://maps.google.com/maps?q=${lat || -6.200000},${lng || 106.816666}&z=15&output=embed"></iframe>`;
             document.getElementById('app-modal').style.display = 'flex';
         }
 
