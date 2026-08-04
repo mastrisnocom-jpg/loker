@@ -407,7 +407,7 @@
             });
         }
 
-        // ROUTER SUB PAGE LENGKAP
+        // ROUTER SUB PAGE
         async function openSubPage(pageKey) {
             const overlay = document.getElementById('sub-page-overlay');
             const titleEl = document.getElementById('sub-page-title');
@@ -436,7 +436,7 @@
                                             <td><b>${k.nama}</b></td>
                                             <td>${k.alamat}</td>
                                             <td>
-                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Kantor', '${k.nama}', 'Alamat: ${k.alamat}')"><i class="fa-solid fa-eye"></i></button>
+                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Kantor', '${k.nama}', 'Alamat: ${k.alamat}\\nPLN ID: ${k.id_pelanggan_pln || '-'}\\nPDAM ID: ${k.id_pelanggan_pdam || '-'}')"><i class="fa-solid fa-eye"></i></button>
                                                 <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormKantor('${k.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
                                                 <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Kantor', 'Kantor: ${k.nama}\nAlamat: ${k.alamat}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('kantor','${k.id}','kantor')"><i class="fa-solid fa-trash"></i></button>
@@ -614,21 +614,22 @@
                     contentEl.innerHTML = `
                         <div class="table-responsive">
                             <table class="table">
-                                <thead><tr><th>Jenis</th><th>Pemakaian</th><th>Biaya (Rp)</th><th>Aksi</th></tr></thead>
+                                <thead><tr><th>Jenis</th><th>ID Pelanggan</th><th>Pemakaian</th><th>Biaya (Rp)</th><th>Aksi</th></tr></thead>
                                 <tbody>
                                     ${data && data.length > 0 ? data.map(u => `
                                         <tr>
                                             <td><b>${u.jenis}</b> (${u.kantor ? u.kantor.nama : '-'})</td>
+                                            <td><span class="badge badge-warning">${u.id_pelanggan || '-'}</span></td>
                                             <td>${u.jumlah_pemakaian} ${u.satuan}</td>
                                             <td>Rp ${Number(u.biaya).toLocaleString('id-ID')}</td>
                                             <td>
-                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Utilitas', '${u.jenis}', 'Pemakaian: ${u.jumlah_pemakaian} ${u.satuan}\nBiaya: Rp ${u.biaya}')"><i class="fa-solid fa-eye"></i></button>
+                                                <button class="btn btn-info" style="padding:4px 8px;" onclick="viewGenericDetail('Utilitas', '${u.jenis}', 'ID Pelanggan: ${u.id_pelanggan || '-'}\nPemakaian: ${u.jumlah_pemakaian} ${u.satuan}\nBiaya: Rp ${u.biaya}')"><i class="fa-solid fa-eye"></i></button>
                                                 <button class="btn btn-warning" style="padding:4px 8px;" onclick="openFormUtilitas('${u.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Utilitas', 'Jenis: ${u.jenis}\nPemakaian: ${u.jumlah_pemakaian} ${u.satuan}\nBiaya: Rp ${u.biaya}')"><i class="fa-solid fa-share-nodes"></i></button>
+                                                <button class="btn btn-share" style="padding:4px 8px;" onclick="shareData('Data Utilitas', 'Jenis: ${u.jenis}\nID Pelanggan: ${u.id_pelanggan || '-'}\nPemakaian: ${u.jumlah_pemakaian} ${u.satuan}\nBiaya: Rp ${u.biaya}')"><i class="fa-solid fa-share-nodes"></i></button>
                                                 <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteRecord('utilitas','${u.id}','utilitas')"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
-                                    `).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada data utilitas</td></tr>'}
+                                    `).join('') : '<tr><td colspan="5" style="text-align:center;">Belum ada data utilitas</td></tr>'}
                                 </tbody>
                             </table>
                         </div>`;
@@ -972,6 +973,166 @@
             XLSX.writeFile(wb, `Laporan_Rekap_${type}_${Date.now()}.xlsx`);
         }
 
+        // FORM KANTOR (MENAMPUNG ID PELANGGAN PLN & PDAM)
+        async function openFormKantor(id = null) {
+            let editData = { nama: '', alamat: '', id_pelanggan_pln: '', id_pelanggan_pdam: '' };
+            if (id) {
+                const { data } = await db.from('kantor').select('*').eq('id', id).single();
+                if (data) editData = data;
+            }
+
+            document.getElementById('modal-title').innerText = id ? "Edit Data Kantor" : "Tambah Kantor";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="f-kantor">
+                    <div class="form-group"><label>Nama Kantor</label><input type="text" id="fk-nama" class="form-control" value="${editData.nama}" required></div>
+                    <div class="form-group"><label>Alamat</label><textarea id="fk-alamat" class="form-control" required>${editData.alamat}</textarea></div>
+                    <div class="form-group"><label>ID Pelanggan PLN (Listrik)</label><input type="text" id="fk-pln" class="form-control" value="${editData.id_pelanggan_pln || ''}" placeholder="Contoh: 531234567890"></div>
+                    <div class="form-group"><label>ID Pelanggan PDAM (Air)</label><input type="text" id="fk-pdam" class="form-control" value="${editData.id_pelanggan_pdam || ''}" placeholder="Contoh: 00123456"></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Kantor' : 'Simpan Kantor'}</button>
+                </form>`;
+            document.getElementById('app-modal').style.display = 'flex';
+
+            document.getElementById('f-kantor').onsubmit = async (e) => {
+                e.preventDefault();
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+                const payload = { 
+                    nama: document.getElementById('fk-nama').value, 
+                    alamat: document.getElementById('fk-alamat').value,
+                    id_pelanggan_pln: document.getElementById('fk-pln').value,
+                    id_pelanggan_pdam: document.getElementById('fk-pdam').value
+                };
+                
+                let err = null;
+                if (id) {
+                    const { error } = await db.from('kantor').update(payload).eq('id', id);
+                    err = error;
+                } else {
+                    const { error } = await db.from('kantor').insert([payload]);
+                    err = error;
+                }
+
+                if (err) Swal.fire('Gagal', err.message, 'error');
+                else {
+                    Swal.fire('Berhasil', 'Data kantor tersimpan', 'success');
+                    document.getElementById('app-modal').style.display = 'none';
+                    openSubPage('kantor');
+                    loadDashboardStats();
+                }
+            };
+        }
+
+        // FORM UTILITAS (AUTO FILL ID PELANGGAN)
+        async function openFormUtilitas(id = null) {
+            const { data: kantorList } = await db.from('kantor').select('id, nama, id_pelanggan_pln, id_pelanggan_pdam');
+            if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah data kantor dulu!', 'warning');
+
+            let editData = { kantor_id: kantorList[0].id, jenis: 'Listrik', id_pelanggan: '', jumlah_pemakaian: 0, satuan: 'kWh', biaya: 0, bulan_tahun: '' };
+            if (id) {
+                const { data } = await db.from('utilitas').select('*').eq('id', id).single();
+                if (data) editData = data;
+            }
+
+            // Simpan peta ID pelanggan di window
+            window.kantorMap = {};
+            kantorList.forEach(k => {
+                window.kantorMap[k.id] = { pln: k.id_pelanggan_pln || '', pdam: k.id_pelanggan_pdam || '' };
+            });
+
+            document.getElementById('modal-title').innerText = id ? "Edit Utilitas" : "Catat Utilitas";
+            document.getElementById('modal-body').innerHTML = `
+                <form id="f-utilitas">
+                    <div class="form-group">
+                        <label>Kantor</label>
+                        <select id="fu-kantor" class="form-control" onchange="autoFillIDPelanggan()">
+                            ${kantorList.map(k=>`<option value="${k.id}" ${k.id === editData.kantor_id ? 'selected':''}>${k.nama}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Jenis Utilitas</label>
+                        <select id="fu-jenis" class="form-control" onchange="autoFillIDPelanggan()">
+                            <option value="Listrik" ${editData.jenis === 'Listrik' ? 'selected':''}>Listrik</option>
+                            <option value="Air" ${editData.jenis === 'Air' ? 'selected':''}>Air (PDAM)</option>
+                            <option value="Gas" ${editData.jenis === 'Gas' ? 'selected':''}>Gas</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ID Pelanggan (Otomatis)</label>
+                        <input type="text" id="fu-id-pelanggan" class="form-control" value="${editData.id_pelanggan || ''}" placeholder="ID Pelanggan PLN / PDAM" style="background-color: var(--primary-light); font-weight: bold;">
+                    </div>
+                    <div class="form-group">
+                        <label>Pemakaian</label>
+                        <input type="number" id="fu-jumlah" class="form-control" value="${editData.jumlah_pemakaian}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Satuan</label>
+                        <input type="text" id="fu-satuan" class="form-control" value="${editData.satuan}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Biaya (Rp)</label>
+                        <input type="number" id="fu-biaya" class="form-control" value="${editData.biaya}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal</label>
+                        <input type="date" id="fu-bulan" class="form-control" value="${editData.bulan_tahun}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Utilitas' : 'Simpan Utilitas'}</button>
+                </form>`;
+            
+            document.getElementById('app-modal').style.display = 'flex';
+            autoFillIDPelanggan();
+
+            document.getElementById('f-utilitas').onsubmit = async (e) => {
+                e.preventDefault();
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+                const payload = {
+                    kantor_id: document.getElementById('fu-kantor').value,
+                    jenis: document.getElementById('fu-jenis').value,
+                    id_pelanggan: document.getElementById('fu-id-pelanggan').value,
+                    jumlah_pemakaian: document.getElementById('fu-jumlah').value,
+                    satuan: document.getElementById('fu-satuan').value,
+                    biaya: document.getElementById('fu-biaya').value,
+                    bulan_tahun: document.getElementById('fu-bulan').value
+                };
+
+                let err = null;
+                if (id) {
+                    const { error } = await db.from('utilitas').update(payload).eq('id', id);
+                    err = error;
+                } else {
+                    const { error } = await db.from('utilitas').insert([payload]);
+                    err = error;
+                }
+
+                if (err) Swal.fire('Gagal', err.message, 'error');
+                else {
+                    Swal.fire('Berhasil', 'Utilitas tersimpan', 'success');
+                    document.getElementById('app-modal').style.display = 'none';
+                    openSubPage('utilitas');
+                }
+            };
+        }
+
+        function autoFillIDPelanggan() {
+            const kantorId = document.getElementById('fu-kantor').value;
+            const jenis = document.getElementById('fu-jenis').value;
+            const idPelInput = document.getElementById('fu-id-pelanggan');
+            const satuanInput = document.getElementById('fu-satuan');
+
+            if (window.kantorMap && window.kantorMap[kantorId]) {
+                const infoKantor = window.kantorMap[kantorId];
+                if (jenis === 'Listrik') {
+                    idPelInput.value = infoKantor.pln || '-';
+                    satuanInput.value = 'kWh';
+                } else if (jenis === 'Air') {
+                    idPelInput.value = infoKantor.pdam || '-';
+                    satuanInput.value = 'm³';
+                } else {
+                    idPelInput.value = '-';
+                    satuanInput.value = 'Unit';
+                }
+            }
+        }
+
         // FORM JADWAL (ADD / EDIT)
         async function openFormJadwal(id = null) {
             let editData = { judul: '', kategori: 'Pemeliharaan', tanggal: '', keterangan: '', status: 'Terjadwal' };
@@ -1022,60 +1183,6 @@
                     Swal.fire('Berhasil', 'Jadwal berhasil disimpan', 'success');
                     document.getElementById('app-modal').style.display = 'none';
                     openSubPage('jadwal');
-                }
-            };
-        }
-
-        // FORM UTILITAS (ADD / EDIT)
-        async function openFormUtilitas(id = null) {
-            const { data: kantorList } = await db.from('kantor').select('id, nama');
-            if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah data kantor dulu!', 'warning');
-
-            let editData = { kantor_id: '', jenis: 'Listrik', jumlah_pemakaian: 0, satuan: 'kWh', biaya: 0, bulan_tahun: '' };
-            if (id) {
-                const { data } = await db.from('utilitas').select('*').eq('id', id).single();
-                if (data) editData = data;
-            }
-
-            document.getElementById('modal-title').innerText = id ? "Edit Utilitas" : "Catat Utilitas";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="f-utilitas">
-                    <div class="form-group"><label>Kantor</label><select id="fu-kantor" class="form-control">${kantorList.map(k=>`<option value="${k.id}" ${k.id === editData.kantor_id ? 'selected':''}>${k.nama}</option>`).join('')}</select></div>
-                    <div class="form-group"><label>Jenis Utilitas</label><select id="fu-jenis" class="form-control"><option value="Listrik" ${editData.jenis === 'Listrik' ? 'selected':''}>Listrik</option><option value="Air" ${editData.jenis === 'Air' ? 'selected':''}>Air</option><option value="Gas" ${editData.jenis === 'Gas' ? 'selected':''}>Gas</option></select></div>
-                    <div class="form-group"><label>Pemakaian</label><input type="number" id="fu-jumlah" class="form-control" value="${editData.jumlah_pemakaian}" required></div>
-                    <div class="form-group"><label>Satuan</label><input type="text" id="fu-satuan" class="form-control" value="${editData.satuan}" required></div>
-                    <div class="form-group"><label>Biaya (Rp)</label><input type="number" id="fu-biaya" class="form-control" value="${editData.biaya}" required></div>
-                    <div class="form-group"><label>Tanggal</label><input type="date" id="fu-bulan" class="form-control" value="${editData.bulan_tahun}" required></div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Utilitas' : 'Simpan Utilitas'}</button>
-                </form>`;
-            document.getElementById('app-modal').style.display = 'flex';
-
-            document.getElementById('f-utilitas').onsubmit = async (e) => {
-                e.preventDefault();
-                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-                const payload = {
-                    kantor_id: document.getElementById('fu-kantor').value,
-                    jenis: document.getElementById('fu-jenis').value,
-                    jumlah_pemakaian: document.getElementById('fu-jumlah').value,
-                    satuan: document.getElementById('fu-satuan').value,
-                    biaya: document.getElementById('fu-biaya').value,
-                    bulan_tahun: document.getElementById('fu-bulan').value
-                };
-
-                let err = null;
-                if (id) {
-                    const { error } = await db.from('utilitas').update(payload).eq('id', id);
-                    err = error;
-                } else {
-                    const { error } = await db.from('utilitas').insert([payload]);
-                    err = error;
-                }
-
-                if (err) Swal.fire('Gagal', err.message, 'error');
-                else {
-                    Swal.fire('Berhasil', 'Utilitas tersimpan', 'success');
-                    document.getElementById('app-modal').style.display = 'none';
-                    openSubPage('utilitas');
                 }
             };
         }
@@ -1185,47 +1292,7 @@
             };
         }
 
-        // OTHER FORMS (KANTOR, ASSET, PERAWATAN, KRITERIA, DETAIL ATM, CANVAS TTD)
-        async function openFormKantor(id = null) {
-            let editData = { nama: '', alamat: '' };
-            if (id) {
-                const { data } = await db.from('kantor').select('*').eq('id', id).single();
-                if (data) editData = data;
-            }
-
-            document.getElementById('modal-title').innerText = id ? "Edit Data Kantor" : "Tambah Kantor";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="f-kantor">
-                    <div class="form-group"><label>Nama Kantor</label><input type="text" id="fk-nama" class="form-control" value="${editData.nama}" required></div>
-                    <div class="form-group"><label>Alamat</label><textarea id="fk-alamat" class="form-control" required>${editData.alamat}</textarea></div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Kantor' : 'Simpan Kantor'}</button>
-                </form>`;
-            document.getElementById('app-modal').style.display = 'flex';
-
-            document.getElementById('f-kantor').onsubmit = async (e) => {
-                e.preventDefault();
-                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-                const payload = { nama: document.getElementById('fk-nama').value, alamat: document.getElementById('fk-alamat').value };
-                
-                let err = null;
-                if (id) {
-                    const { error } = await db.from('kantor').update(payload).eq('id', id);
-                    err = error;
-                } else {
-                    const { error } = await db.from('kantor').insert([payload]);
-                    err = error;
-                }
-
-                if (err) Swal.fire('Gagal', err.message, 'error');
-                else {
-                    Swal.fire('Berhasil', 'Data kantor tersimpan', 'success');
-                    document.getElementById('app-modal').style.display = 'none';
-                    openSubPage('kantor');
-                    loadDashboardStats();
-                }
-            };
-        }
-
+        // OTHER FORMS (ASSET, PERAWATAN, KRITERIA, DETAIL ATM, CANVAS TTD)
         async function openFormAsset(id = null) {
             const { data: kantorList } = await db.from('kantor').select('id, nama');
             if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah Data Kantor dulu!', 'warning');
