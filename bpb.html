@@ -126,6 +126,7 @@
         .pay-banner-title { font-size: 0.8rem; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
         .pay-banner-btns { display: flex; gap: 8px; justify-content: center; }
         .img-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+        .form-section-title { font-size: 0.78rem; font-weight: 700; color: var(--primary); margin: 10px 0 6px 0; text-transform: uppercase; border-bottom: 1px solid var(--border); padding-bottom: 2px; }
     </style>
 </head>
 <body>
@@ -668,7 +669,7 @@
                                 <thead><tr><th>Nama</th><th>Alamat</th><th style="width:40px; text-align:center;">Aksi</th></tr></thead>
                                 <tbody>
                                     ${data && data.length > 0 ? data.map(k => {
-                                        const detailStr = `Nama: ${k.nama}\nAlamat: ${k.alamat}\nID PLN: ${k.id_pelanggan_pln || '-'}\nID PDAM: ${k.id_pelanggan_pdam || '-'}`;
+                                        const detailStr = `Nama: ${k.nama}\nAlamat: ${k.alamat}\n\n[PLN]\nPelanggan: ${k.nama_pelanggan_pln || '-'}\nID: ${k.id_pelanggan_pln || '-'}\nTarif/Daya: ${k.tarif_daya_pln || '-'}\n\n[PDAM]\nPelanggan: ${k.nama_pelanggan_pdam || '-'}\nID: ${k.id_pelanggan_pdam || '-'}\nTarif/Daya: ${k.tarif_daya_pdam || '-'}`;
                                         return `
                                         <tr>
                                             <td><b>${k.nama}</b></td>
@@ -724,7 +725,7 @@
                 } else if (pageKey === 'utilitas') {
                     actionBtn.style.display = 'inline-flex';
                     actionBtn.onclick = () => openFormUtilitas();
-                    const { data } = await db.from('utilitas').select('*, kantor(nama)').order('created_at', {ascending:false});
+                    const { data } = await db.from('utilitas').select('*, kantor(*)').order('created_at', {ascending:false});
                     contentEl.innerHTML = `
                         <div class="pay-banner">
                             <div class="pay-banner-title"><i class="fa-solid fa-up-right-from-square"></i> Pembayaran Cepat via Sepulsa</div>
@@ -739,10 +740,16 @@
                                 <thead><tr><th>Jenis</th><th>ID Pelanggan</th><th>Pemakaian</th><th>Biaya (Rp)</th><th style="width:40px; text-align:center;">Aksi</th></tr></thead>
                                 <tbody>
                                     ${data && data.length > 0 ? data.map(u => {
-                                        const detailStr = `Jenis Utilitas: ${u.jenis}\nKantor: ${u.kantor ? u.kantor.nama : '-'}\nNama Pelanggan: ${u.nama_pelanggan || '-'}\nID Pelanggan: ${u.id_pelanggan || '-'}\nPeriode Bulan: ${u.periode_bulan || '-'}\nTarif/Daya: ${u.tarif_daya || '-'}\nPemakaian: ${u.jumlah_pemakaian} ${u.satuan}\nBiaya: Rp ${Number(u.biaya).toLocaleString('id-ID')}\nTanggal Input: ${u.bulan_tahun || '-'}`;
+                                        const k = u.kantor || {};
+                                        const isPLN = u.jenis === 'Listrik';
+                                        const namaPel = isPLN ? k.nama_pelanggan_pln : k.nama_pelanggan_pdam;
+                                        const tarifDaya = isPLN ? k.tarif_daya_pln : k.tarif_daya_pdam;
+                                        
+                                        const detailStr = `Jenis Utilitas: ${u.jenis}\nKantor: ${k.nama || '-'}\nNama Pelanggan: ${namaPel || '-'}\nID Pelanggan: ${u.id_pelanggan || '-'}\nPeriode Bulan: ${u.periode_bulan || '-'}\nTarif/Daya: ${tarifDaya || '-'}\nPemakaian: ${u.jumlah_pemakaian} ${u.satuan}\nBiaya: Rp ${Number(u.biaya).toLocaleString('id-ID')}\nTanggal Input: ${u.bulan_tahun || '-'}`;
+                                        
                                         return `
                                         <tr>
-                                            <td><b>${u.jenis}</b><br><small style="color:var(--text-sub);">${u.kantor ? u.kantor.nama : '-'}</small></td>
+                                            <td><b>${u.jenis}</b><br><small style="color:var(--text-sub);">${k.nama || '-'}</small></td>
                                             <td><span class="badge badge-warning">${u.id_pelanggan || '-'}</span></td>
                                             <td>${u.jumlah_pemakaian} ${u.satuan}</td>
                                             <td>Rp ${Number(u.biaya).toLocaleString('id-ID')}</td>
@@ -1078,9 +1085,13 @@
             }
         }
 
-        // FORM KANTOR
+        // FORM KANTOR (LENGKAP DENGAN NAMA PELANGGAN & TARIF/DAYA UNTUK PLN DAN PDAM)
         async function openFormKantor(id = null) {
-            let editData = { nama: '', alamat: '', id_pelanggan_pln: '', id_pelanggan_pdam: '' };
+            let editData = { 
+                nama: '', alamat: '', 
+                id_pelanggan_pln: '', nama_pelanggan_pln: '', tarif_daya_pln: '',
+                id_pelanggan_pdam: '', nama_pelanggan_pdam: '', tarif_daya_pdam: ''
+            };
             if (id) {
                 const { data } = await db.from('kantor').select('*').eq('id', id).single();
                 if (data) editData = data;
@@ -1091,9 +1102,18 @@
                 <form id="f-kantor">
                     <div class="form-group"><label>Nama Kantor</label><input type="text" id="fk-nama" class="form-control" value="${editData.nama}" required></div>
                     <div class="form-group"><label>Alamat</label><textarea id="fk-alamat" class="form-control" required>${editData.alamat}</textarea></div>
-                    <div class="form-group"><label>ID Pelanggan PLN (Listrik)</label><input type="text" id="fk-pln" class="form-control" value="${editData.id_pelanggan_pln || ''}" placeholder="Contoh: 531234567890"></div>
-                    <div class="form-group"><label>ID Pelanggan PDAM (Air)</label><input type="text" id="fk-pdam" class="form-control" value="${editData.id_pelanggan_pdam || ''}" placeholder="Contoh: 00123456"></div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Kantor' : 'Simpan Kantor'}</button>
+                    
+                    <div class="form-section-title"><i class="fa-solid fa-bolt"></i> Layanan Listrik (PLN)</div>
+                    <div class="form-group"><label>Nama Pelanggan PLN</label><input type="text" id="fk-pln-nama" class="form-control" value="${editData.nama_pelanggan_pln || ''}" placeholder="Contoh: PT BINAYASA PURABATARA"></div>
+                    <div class="form-group"><label>ID Pelanggan PLN</label><input type="text" id="fk-pln-id" class="form-control" value="${editData.id_pelanggan_pln || ''}" placeholder="Contoh: 531234567890"></div>
+                    <div class="form-group"><label>Tarif / Daya PLN</label><input type="text" id="fk-pln-tarif" class="form-control" value="${editData.tarif_daya_pln || ''}" placeholder="Contoh: R1M / 1300 VA"></div>
+
+                    <div class="form-section-title"><i class="fa-solid fa-droplet"></i> Layanan Air (PDAM)</div>
+                    <div class="form-group"><label>Nama Pelanggan PDAM</label><input type="text" id="fk-pdam-nama" class="form-control" value="${editData.nama_pelanggan_pdam || ''}" placeholder="Contoh: PT BINAYASA PURABATARA"></div>
+                    <div class="form-group"><label>ID Pelanggan PDAM</label><input type="text" id="fk-pdam-id" class="form-control" value="${editData.id_pelanggan_pdam || ''}" placeholder="Contoh: 00123456"></div>
+                    <div class="form-group"><label>Golongan Tarif PDAM</label><input type="text" id="fk-pdam-tarif" class="form-control" value="${editData.tarif_daya_pdam || ''}" placeholder="Contoh: Golongan IIB"></div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:12px;">${id ? 'Update Kantor' : 'Simpan Kantor'}</button>
                 </form>`;
             document.getElementById('app-modal').style.display = 'flex';
 
@@ -1103,8 +1123,12 @@
                 const payload = { 
                     nama: document.getElementById('fk-nama').value, 
                     alamat: document.getElementById('fk-alamat').value,
-                    id_pelanggan_pln: document.getElementById('fk-pln').value,
-                    id_pelanggan_pdam: document.getElementById('fk-pdam').value
+                    nama_pelanggan_pln: document.getElementById('fk-pln-nama').value,
+                    id_pelanggan_pln: document.getElementById('fk-pln-id').value,
+                    tarif_daya_pln: document.getElementById('fk-pln-tarif').value,
+                    nama_pelanggan_pdam: document.getElementById('fk-pdam-nama').value,
+                    id_pelanggan_pdam: document.getElementById('fk-pdam-id').value,
+                    tarif_daya_pdam: document.getElementById('fk-pdam-tarif').value
                 };
                 
                 let err = null;
@@ -1126,12 +1150,12 @@
             };
         }
 
-        // FORM UTILITAS (OTOMATIS NAMA PELANGGAN & TARIF/DAYA KETIKA DIKLIK KANTOR)
+        // FORM UTILITAS (OTOMATIS NAMA PELANGGAN, ID, DAN TARIF DARI MASTER KANTOR)
         async function openFormUtilitas(id = null) {
-            const { data: kantorList } = await db.from('kantor').select('id, nama, id_pelanggan_pln, id_pelanggan_pdam');
+            const { data: kantorList } = await db.from('kantor').select('*');
             if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah data kantor dulu!', 'warning');
 
-            let editData = { kantor_id: kantorList[0].id, jenis: 'Listrik', nama_pelanggan: '', id_pelanggan: '', periode_bulan: 'Agustus', tarif_daya: '', jumlah_pemakaian: 0, satuan: 'kWh', biaya: 0, bulan_tahun: '' };
+            let editData = { kantor_id: kantorList[0].id, jenis: 'Listrik', id_pelanggan: '', periode_bulan: 'Agustus', jumlah_pemakaian: 0, satuan: 'kWh', biaya: 0, bulan_tahun: '' };
             if (id) {
                 const { data } = await db.from('utilitas').select('*').eq('id', id).single();
                 if (data) editData = data;
@@ -1139,7 +1163,7 @@
 
             window.kantorMap = {};
             kantorList.forEach(k => {
-                window.kantorMap[k.id] = { name: k.nama, pln: k.id_pelanggan_pln || '', pdam: k.id_pelanggan_pdam || '' };
+                window.kantorMap[k.id] = k;
             });
 
             document.getElementById('modal-title').innerText = id ? "Edit Utilitas" : "Catat Utilitas";
@@ -1161,11 +1185,15 @@
                     </div>
                     <div class="form-group">
                         <label>Nama Pelanggan (Otomatis)</label>
-                        <input type="text" id="fu-nama-pelanggan" class="form-control" value="${editData.nama_pelanggan || ''}" placeholder="Otomatis mengikuti kantor..." style="background-color: var(--primary-light); font-weight: bold;" required>
+                        <input type="text" id="fu-nama-pelanggan" class="form-control" placeholder="Otomatis terisi..." style="background-color: var(--primary-light); font-weight: bold;" readonly>
                     </div>
                     <div class="form-group">
                         <label>ID Pelanggan (Otomatis)</label>
-                        <input type="text" id="fu-id-pelanggan" class="form-control" value="${editData.id_pelanggan || ''}" placeholder="ID Pelanggan PLN / PDAM" style="background-color: var(--primary-light); font-weight: bold;">
+                        <input type="text" id="fu-id-pelanggan" class="form-control" value="${editData.id_pelanggan || ''}" placeholder="ID Pelanggan PLN / PDAM" style="background-color: var(--primary-light); font-weight: bold;" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Tarif / Daya (Otomatis)</label>
+                        <input type="text" id="fu-tarif-daya" class="form-control" placeholder="Otomatis terisi..." style="background-color: var(--primary-light); font-weight: bold;" readonly>
                     </div>
                     <div class="form-group">
                         <label>Periode Bulan</label>
@@ -1183,10 +1211,6 @@
                             <option value="November" ${editData.periode_bulan === 'November' ? 'selected':''}>November</option>
                             <option value="Desember" ${editData.periode_bulan === 'Desember' ? 'selected':''}>Desember</option>
                         </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Tarif / Daya (Otomatis)</label>
-                        <input type="text" id="fu-tarif-daya" class="form-control" value="${editData.tarif_daya || ''}" placeholder="Otomatis terisi..." style="background-color: var(--primary-light); font-weight: bold;" required>
                     </div>
                     <div class="form-group">
                         <label>Pemakaian</label>
@@ -1208,11 +1232,7 @@
                 </form>`;
             
             document.getElementById('app-modal').style.display = 'flex';
-            
-            // Auto fill pertama kali jika baru tambah data
-            if (!id) {
-                autoFillIDPelanggan();
-            }
+            autoFillIDPelanggan();
 
             document.getElementById('f-utilitas').onsubmit = async (e) => {
                 e.preventDefault();
@@ -1247,10 +1267,8 @@
                 const payload = {
                     kantor_id: kantorId,
                     jenis: jenisVal,
-                    nama_pelanggan: document.getElementById('fu-nama-pelanggan').value,
                     id_pelanggan: document.getElementById('fu-id-pelanggan').value,
                     periode_bulan: document.getElementById('fu-periode-bulan').value,
-                    tarif_daya: document.getElementById('fu-tarif-daya').value,
                     jumlah_pemakaian: document.getElementById('fu-jumlah').value,
                     satuan: document.getElementById('fu-satuan').value,
                     biaya: document.getElementById('fu-biaya').value,
@@ -1277,10 +1295,11 @@
             };
         }
 
-        // FUNGSI AUTO-FILL DINAMIS KETIKA KANTOR ATAU JENIS UTILITAS DIUBAH
+        // FUNGSI AUTO-FILL DARI KANTOR DENGAN DATA DARI TABEL KANTOR
         function autoFillIDPelanggan() {
             const kantorId = document.getElementById('fu-kantor').value;
             const jenis = document.getElementById('fu-jenis').value;
+            
             const idPelInput = document.getElementById('fu-id-pelanggan');
             const namaPelInput = document.getElementById('fu-nama-pelanggan');
             const tarifDayaInput = document.getElementById('fu-tarif-daya');
@@ -1288,24 +1307,22 @@
 
             if (window.kantorMap && window.kantorMap[kantorId]) {
                 const infoKantor = window.kantorMap[kantorId];
-                
-                // Otomatisasi Nama Pelanggan mengikuti Kantor
-                namaPelangganVal = infoKantor.name ? `${infoKantor.name}` : 'PT BINAYASA PURABATARA';
-                namaPelInput.value = namaPelangganVal;
 
-                // Otomatisasi ID, Tarif/Daya, dan Satuan berdasarkan Jenis Utilitas
                 if (jenis === 'Listrik') {
-                    idPelInput.value = infoKantor.pln || '-';
+                    namaPelInput.value = infoKantor.nama_pelanggan_pln || infoKantor.nama || '-';
+                    idPelInput.value = infoKantor.id_pelanggan_pln || '-';
+                    tarifDayaInput.value = infoKantor.tarif_daya_pln || 'R1M / 1300 VA';
                     satuanInput.value = 'kWh';
-                    tarifDayaInput.value = 'R1M / 1300 VA';
                 } else if (jenis === 'Air') {
-                    idPelInput.value = infoKantor.pdam || '-';
+                    namaPelInput.value = infoKantor.nama_pelanggan_pdam || infoKantor.nama || '-';
+                    idPelInput.value = infoKantor.id_pelanggan_pdam || '-';
+                    tarifDayaInput.value = infoKantor.tarif_daya_pdam || 'Golongan IIB';
                     satuanInput.value = 'm³';
-                    tarifDayaInput.value = 'Golongan IIB';
                 } else {
+                    namaPelInput.value = infoKantor.nama || '-';
                     idPelInput.value = '-';
-                    satuanInput.value = 'Unit';
                     tarifDayaInput.value = '-';
+                    satuanInput.value = 'Unit';
                 }
             }
         }
