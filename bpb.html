@@ -283,6 +283,7 @@
         let currentUser = null;
         let qrScanner = null;
         let chartInstance = null;
+        let chartLaporanInstance = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
@@ -1023,7 +1024,39 @@
                         }, 1200);
                     };
                 } else if (pageKey === 'laporan') {
+                    const { data: kantorList } = await db.from('kantor').select('id, nama');
+                    const currentYear = new Date().getFullYear();
+
                     contentEl.innerHTML = `
+                        <!-- CARD GRAFIK REKAP LAPORAN -->
+                        <div class="card">
+                            <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+                                <span><i class="fa-solid fa-chart-bar" style="color:var(--primary);"></i> Rekap Utilitas Tahun ${currentYear}</span>
+                            </div>
+                            
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:12px;">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Kantor</label>
+                                    <select id="lap-filter-kantor" class="form-control" style="font-size:0.78rem;" onchange="renderLaporanChart()">
+                                        <option value="ALL">Semua Kantor</option>
+                                        ${kantorList ? kantorList.map(k => `<option value="${k.id}">${k.nama}</option>`).join('') : ''}
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Tipe Rekap</label>
+                                    <select id="lap-filter-tipe" class="form-control" style="font-size:0.78rem;" onchange="renderLaporanChart()">
+                                        <option value="BULANAN">Bulanan (Tahun ${currentYear})</option>
+                                        <option value="TAHUNAN">Tahunan (Multi-Tahun)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="position: relative; height: 200px; width: 100%; margin-bottom: 10px;">
+                                <canvas id="chartLaporan"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- PUSAT EKSPOR LAPORAN -->
                         <div class="card">
                             <div class="card-title"><i class="fa-solid fa-file-export"></i> Pusat Ekspor Laporan System</div>
                             <p style="font-size:0.8rem; color:var(--text-sub); margin-bottom:12px;">Pilih jenis laporan yang ingin di-download dalam format PDF atau Excel:</p>
@@ -1035,6 +1068,10 @@
                                 <button class="btn btn-danger" onclick="exportPDF()" style="width:100%; text-align:left; justify-content:flex-start;"><i class="fa-solid fa-file-pdf"></i> Laporan Master Kantor (PDF)</button>
                             </div>
                         </div>`;
+
+                    setTimeout(() => {
+                        renderLaporanChart();
+                    }, 100);
                 } else if (pageKey === 'pengaturan') {
                     contentEl.innerHTML = `
                         <div class="card">
@@ -1068,6 +1105,108 @@
             }
         }
 
+        async function renderLaporanChart() {
+            const canvasEl = document.getElementById('chartLaporan');
+            if (!canvasEl) return;
+            
+            const ctx = canvasEl.getContext('2d');
+            const selectedKantor = document.getElementById('lap-filter-kantor').value;
+            const selectedTipe = document.getElementById('lap-filter-tipe').value;
+            const currentYear = new Date().getFullYear();
+
+            let labels = [];
+            let dataListrik = [];
+            let dataAir = [];
+
+            if (selectedTipe === 'BULANAN') {
+                labels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                dataListrik = new Array(12).fill(0);
+                dataAir = new Array(12).fill(0);
+            } else {
+                labels = [(currentYear - 2).toString(), (currentYear - 1).toString(), currentYear.toString()];
+                dataListrik = new Array(3).fill(0);
+                dataAir = new Array(3).fill(0);
+            }
+
+            try {
+                let query = db.from('utilitas').select('*');
+                if (selectedKantor !== 'ALL') {
+                    query = query.eq('kantor_id', selectedKantor);
+                }
+
+                const { data } = await query;
+
+                if (data && data.length > 0) {
+                    data.forEach(item => {
+                        if (!item.bulan_tahun) return;
+                        const d = new Date(item.bulan_tahun);
+                        const itemYear = d.getFullYear();
+                        const itemMonth = d.getMonth();
+                        const biaya = Number(item.biaya || 0);
+
+                        if (selectedTipe === 'BULANAN') {
+                            if (itemYear === currentYear) {
+                                if (item.jenis === 'Listrik') dataListrik[itemMonth] += biaya;
+                                if (item.jenis === 'Air') dataAir[itemMonth] += biaya;
+                            }
+                        } else {
+                            const idx = labels.indexOf(itemYear.toString());
+                            if (idx !== -1) {
+                                if (item.jenis === 'Listrik') dataListrik[idx] += biaya;
+                                if (item.jenis === 'Air') dataAir[idx] += biaya;
+                            }
+                        }
+                    });
+                }
+
+                if (chartLaporanInstance) {
+                    chartLaporanInstance.destroy();
+                }
+
+                chartLaporanInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Listrik (Rp)',
+                                data: dataListrik,
+                                backgroundColor: '#198754',
+                                borderRadius: 6
+                            },
+                            {
+                                label: 'Air (Rp)',
+                                data: dataAir,
+                                backgroundColor: '#0dcaf0',
+                                borderRadius: 6
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: true, position: 'top' },
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) => `${ctx.dataset.label}: Rp ${Number(ctx.raw).toLocaleString('id-ID')}`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    callback: (val) => val >= 1000000 ? (val/1000000).toFixed(1) + 'Jt' : val >= 1000 ? (val/1000) + 'rb' : val
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error("Error renderLaporanChart:", err);
+            }
+        }
+
         function togglePDAMPicker() {
             const layanan = document.getElementById('ft-layanan').value;
             const pdamPicker = document.getElementById('group-pdam-wilayah');
@@ -1085,7 +1224,7 @@
             }
         }
 
-        // FORM KANTOR (LENGKAP DENGAN NAMA PELANGGAN & TARIF/DAYA UNTUK PLN DAN PDAM)
+        // FORM KANTOR
         async function openFormKantor(id = null) {
             let editData = { 
                 nama: '', alamat: '', 
@@ -1150,7 +1289,7 @@
             };
         }
 
-        // FORM UTILITAS (OTOMATIS NAMA PELANGGAN, ID, DAN TARIF DARI MASTER KANTOR)
+        // FORM UTILITAS
         async function openFormUtilitas(id = null) {
             const { data: kantorList } = await db.from('kantor').select('*');
             if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah data kantor dulu!', 'warning');
@@ -1295,7 +1434,6 @@
             };
         }
 
-        // FUNGSI AUTO-FILL DARI KANTOR DENGAN DATA DARI TABEL KANTOR
         function autoFillIDPelanggan() {
             const kantorId = document.getElementById('fu-kantor').value;
             const jenis = document.getElementById('fu-jenis').value;
