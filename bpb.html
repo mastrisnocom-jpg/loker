@@ -203,7 +203,7 @@
                 <div class="grid-item" onclick="scanQRModal()"><div class="grid-icon-wrapper" style="background:#f3e8ff; color:#9333ea;"><i class="fa-solid fa-qrcode"></i></div><span class="grid-label">Scan QR</span></div>
             </div>
 
-            <!-- CARD GRAFIK UTILITAS -->
+            <!-- CARD GRAFIK UTILITAS DOKUMEN -->
             <div class="card">
                 <div class="card-title" style="display:flex; flex-direction:column; gap:10px; margin-bottom:12px;">
                     <span style="font-size:0.95rem; font-weight:700;"><i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Tren Biaya Utilitas</span>
@@ -1031,7 +1031,7 @@
                         <!-- CARD GRAFIK REKAP LAPORAN -->
                         <div class="card">
                             <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
-                                <span><i class="fa-solid fa-chart-bar" style="color:var(--primary);"></i> Rekap Utilitas Tahun ${currentYear}</span>
+                                <span><i class="fa-solid fa-chart-bar" style="color:var(--primary);"></i> Visualisasi Tren Biaya</span>
                             </div>
                             
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:12px;">
@@ -1043,7 +1043,7 @@
                                     </select>
                                 </div>
                                 <div class="form-group" style="margin-bottom:0;">
-                                    <label>Tipe Rekap</label>
+                                    <label>Tipe Rekap Grafik</label>
                                     <select id="lap-filter-tipe" class="form-control" style="font-size:0.78rem;" onchange="renderLaporanChart()">
                                         <option value="BULANAN">Bulanan (Tahun ${currentYear})</option>
                                         <option value="TAHUNAN">Tahunan (Multi-Tahun)</option>
@@ -1051,27 +1051,62 @@
                                 </div>
                             </div>
 
-                            <div style="position: relative; height: 200px; width: 100%; margin-bottom: 10px;">
+                            <div style="position: relative; height: 180px; width: 100%; margin-bottom: 10px;">
                                 <canvas id="chartLaporan"></canvas>
                             </div>
                         </div>
 
-                        <!-- PUSAT EKSPOR LAPORAN -->
+                        <!-- PUSAT EKSPOR LAPORAN CUSTOM -->
                         <div class="card">
-                            <div class="card-title"><i class="fa-solid fa-file-export"></i> Pusat Ekspor Laporan System</div>
-                            <p style="font-size:0.8rem; color:var(--text-sub); margin-bottom:12px;">Pilih jenis laporan yang ingin di-download dalam format PDF atau Excel:</p>
+                            <div class="card-title"><i class="fa-solid fa-file-export"></i> Pusat Ekspor Laporan Custom</div>
+                            <p style="font-size:0.78rem; color:var(--text-sub); margin-bottom:12px;">Atur parameter periode laporan yang ingin dicetak:</p>
                             
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:12px;">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Filter Periode Bulan</label>
+                                    <select id="exp-bulan" class="form-control" style="font-size:0.8rem;">
+                                        <option value="ALL">Semua Bulan (Full Year)</option>
+                                        <option value="01">Januari</option>
+                                        <option value="02">Februari</option>
+                                        <option value="03">Maret</option>
+                                        <option value="04">April</option>
+                                        <option value="05">Mei</option>
+                                        <option value="06">Juni</option>
+                                        <option value="07">Juli</option>
+                                        <option value="08" selected>Agustus</option>
+                                        <option value="09">September</option>
+                                        <option value="10">Oktober</option>
+                                        <option value="11">November</option>
+                                        <option value="12">Desember</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Filter Tahun</label>
+                                    <select id="exp-tahun" class="form-control" style="font-size:0.8rem;">
+                                        <option value="2026" selected>2026</option>
+                                        <option value="2025">2025</option>
+                                        <option value="2024">2024</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <div style="display:flex; flex-direction:column; gap:8px;">
-                                <button class="btn btn-primary" onclick="exportLaporanRekap('asset')" style="width:100%; text-align:left; justify-content:flex-start;"><i class="fa-solid fa-boxes-stacked"></i> Laporan Rekap Asset (Excel)</button>
-                                <button class="btn btn-primary" onclick="exportLaporanRekap('utilitas')" style="width:100%; text-align:left; justify-content:flex-start;"><i class="fa-solid fa-bolt"></i> Laporan Rekap Utilitas (Excel)</button>
-                                <button class="btn btn-primary" onclick="exportLaporanRekap('work_orders')" style="width:100%; text-align:left; justify-content:flex-start;"><i class="fa-solid fa-clipboard-list"></i> Laporan Work Order (Excel)</button>
-                                <button class="btn btn-danger" onclick="exportPDF()" style="width:100%; text-align:left; justify-content:flex-start;"><i class="fa-solid fa-file-pdf"></i> Laporan Master Kantor (PDF)</button>
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                                    <button class="btn btn-primary" onclick="generateReport('utilitas', 'excel')"><i class="fa-solid fa-file-excel"></i> Utilitas (Excel)</button>
+                                    <button class="btn btn-danger" onclick="generateReport('utilitas', 'pdf')"><i class="fa-solid fa-file-pdf"></i> Utilitas (PDF)</button>
+                                </div>
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                                    <button class="btn btn-primary" onclick="generateReport('asset', 'excel')"><i class="fa-solid fa-boxes-stacked"></i> Asset (Excel)</button>
+                                    <button class="btn btn-danger" onclick="generateReport('asset', 'pdf')"><i class="fa-solid fa-file-pdf"></i> Asset (PDF)</button>
+                                </div>
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                                    <button class="btn btn-primary" onclick="generateReport('work_orders', 'excel')"><i class="fa-solid fa-clipboard-list"></i> Work Order (Excel)</button>
+                                    <button class="btn btn-danger" onclick="generateReport('work_orders', 'pdf')"><i class="fa-solid fa-file-pdf"></i> Work Order (PDF)</button>
+                                </div>
                             </div>
                         </div>`;
 
-                    setTimeout(() => {
-                        renderLaporanChart();
-                    }, 100);
+                    setTimeout(() => { renderLaporanChart(); }, 100);
                 } else if (pageKey === 'pengaturan') {
                     contentEl.innerHTML = `
                         <div class="card">
@@ -1204,6 +1239,195 @@
                 });
             } catch (err) {
                 console.error("Error renderLaporanChart:", err);
+            }
+        }
+
+        // LOGIKA ANALISIS TREN ANOMALI & HOOK
+        async function analyzeUtilityTrends(dataUtilitas, filterBulan, filterTahun) {
+            let insights = [];
+            let hookMessage = "⚠️ TIDAK ADA ANOMALI: Seluruh pemakaian dalam batas wajar.";
+
+            if (!dataUtilitas || dataUtilitas.length === 0) {
+                return { insights: ["Data tidak ditemukan pada periode ini."], hook: "ℹ️ Harap lakukan input data pemakaian terlebih dahulu." };
+            }
+
+            let kantorMap = {};
+            dataUtilitas.forEach(u => {
+                const kName = u.kantor ? u.kantor.nama : 'Kantor Unassigned';
+                if (!kantorMap[kName]) kantorMap[kName] = { listrik: 0, air: 0 };
+                if (u.jenis === 'Listrik') kantorMap[kName].listrik += Number(u.biaya || 0);
+                if (u.jenis === 'Air') kantorMap[kName].air += Number(u.biaya || 0);
+            });
+
+            let spikeCount = 0;
+            let dropCount = 0;
+
+            Object.keys(kantorMap).forEach(kName => {
+                const listrik = kantorMap[kName].listrik;
+                const air = kantorMap[kName].air;
+
+                if (listrik > 350000) {
+                    insights.push(`• [${kName}] 🚨 KENAIKAN LISTRIK: Biaya mencatatkan nilai tinggi Rp ${listrik.toLocaleString('id-ID')}. Perlu pengecekan modul HVAC/AC.`);
+                    spikeCount++;
+                } else if (listrik > 0 && listrik < 200000) {
+                    insights.push(`• [${kName}] 📉 PENURUNAN LISTRIK: Penghematan tercapai dengan total Rp ${listrik.toLocaleString('id-ID')}.`);
+                    dropCount++;
+                } else if (listrik > 0) {
+                    insights.push(`• [${kName}] 🟢 LISTRIK STABIL: Total biaya Rp ${listrik.toLocaleString('id-ID')}.`);
+                }
+
+                if (air > 150000) {
+                    insights.push(`• [${kName}] 🚨 LONJAKAN PDAM: Biaya Air mencapai Rp ${air.toLocaleString('id-ID')}. Potensi kebocoran pipa utama!`);
+                    spikeCount++;
+                }
+            });
+
+            if (spikeCount > 0) {
+                hookMessage = `🚨 PERHATIAN BMS: Terdeteksi ${spikeCount} lonjakan biaya signifikan! SEGERA LAKUKAN INSPEKSI TEKNIS Lapangan untuk mencegah kebocoran anggaran!`;
+            } else if (dropCount > 0) {
+                hookMessage = `💡 ANOMALI POSITIF: Terdeteksi penurunan pemakaian di beberapa lokasi. Lakukan verifikasi apakah disebabkan oleh efisiensi atau kesalahan input kWH.`;
+            }
+
+            return { insights, hook: hookMessage };
+        }
+
+        // GENERATOR EKSPOR (EXCEL / PDF)
+        async function generateReport(type, format) {
+            const selBulan = document.getElementById('exp-bulan').value;
+            const selTahun = document.getElementById('exp-tahun').value;
+
+            Swal.fire({ title: 'Menyiapkan Laporan...', didOpen: () => Swal.showLoading() });
+
+            try {
+                let query = db.from(type).select(type === 'utilitas' ? '*, kantor(*)' : type === 'asset' ? '*, kantor(*)' : '*');
+                const { data } = await query;
+
+                let filteredData = (data || []).filter(item => {
+                    if (!item.bulan_tahun && !item.created_at) return true;
+                    const targetDate = new Date(item.bulan_tahun || item.created_at);
+                    const yyyy = targetDate.getFullYear().toString();
+                    const mm = (targetDate.getMonth() + 1).toString().padStart(2, '0');
+
+                    const matchYear = selTahun === 'ALL' || yyyy === selTahun;
+                    const matchMonth = selBulan === 'ALL' || mm === selBulan;
+                    return matchYear && matchMonth;
+                });
+
+                if (filteredData.length === 0) {
+                    Swal.close();
+                    return Swal.fire('Data Kosong', `Tidak ada data ${type} untuk periode terpilih (${selBulan}/${selTahun}).`, 'info');
+                }
+
+                const analysis = await analyzeUtilityTrends(filteredData, selBulan, selTahun);
+
+                if (format === 'excel') {
+                    const excelRows = [];
+                    excelRows.push({ "LAPORAN BIKINAN SYSTEM": "PUSAT EVALUASI BIAYA & ASSET BMS" });
+                    excelRows.push({ "LAPORAN BIKINAN SYSTEM": `PERIODE: BULAN ${selBulan} - TAHUN ${selTahun}` });
+                    excelRows.push({ "LAPORAN BIKINAN SYSTEM": `STATUS ANOMALI: ${analysis.hook}` });
+                    excelRows.push({}); 
+
+                    excelRows.push({ "LAPORAN BIKINAN SYSTEM": "--- NOTIFIKASI PENCEGAHAN & INSIGHT TEKNIS ---" });
+                    analysis.insights.forEach(msg => {
+                        excelRows.push({ "LAPORAN BIKINAN SYSTEM": msg });
+                    });
+                    excelRows.push({}); 
+
+                    filteredData.forEach((row, idx) => {
+                        if (type === 'utilitas') {
+                            excelRows.push({
+                                "No": idx + 1,
+                                "Kantor": row.kantor ? row.kantor.nama : '-',
+                                "Jenis Layanan": row.jenis,
+                                "ID Pelanggan": row.id_pelanggan || '-',
+                                "Periode": row.periode_bulan || '-',
+                                "Pemakaian": `${row.jumlah_pemakaian} ${row.satuan}`,
+                                "Biaya (Rp)": Number(row.biaya || 0),
+                                "Tanggal Record": row.bulan_tahun || '-'
+                            });
+                        } else {
+                            excelRows.push(row);
+                        }
+                    });
+
+                    const ws = XLSX.utils.json_to_sheet(excelRows);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "Laporan_BMS");
+                    XLSX.writeFile(wb, `Laporan_${type}_${selBulan}_${selTahun}.xlsx`);
+                    Swal.close();
+
+                } else if (format === 'pdf') {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+
+                    doc.setFontSize(14);
+                    doc.setTextColor(25, 135, 84);
+                    doc.text(`LAPORAN REKAP ${type.toUpperCase()} - BMS`, 14, 15);
+                    doc.setFontSize(9);
+                    doc.setTextColor(100);
+                    doc.text(`Periode Filter: Bulan ${selBulan} / Tahun ${selTahun}`, 14, 21);
+
+                    doc.setFillColor(254, 242, 242);
+                    doc.setDrawColor(239, 68, 68);
+                    doc.roundedRect(14, 25, 182, 16, 2, 2, 'FD');
+                    
+                    doc.setFontSize(8);
+                    doc.setTextColor(185, 28, 28);
+                    doc.text(doc.splitTextToSize(analysis.hook, 176), 18, 31);
+
+                    let yPos = 48;
+                    doc.setFontSize(9);
+                    doc.setTextColor(0);
+                    doc.text("Catatan Evaluasi Kenaikan / Penurunan Biaya:", 14, yPos);
+                    yPos += 5;
+
+                    doc.setFontSize(8);
+                    doc.setTextColor(70);
+                    analysis.insights.forEach(insight => {
+                        doc.text(insight, 14, yPos);
+                        yPos += 5;
+                    });
+
+                    yPos += 4;
+
+                    let tableBody = [];
+                    let tableHeaders = [];
+
+                    if (type === 'utilitas') {
+                        tableHeaders = [["No", "Kantor", "Jenis", "ID Pel", "Pemakaian", "Biaya (Rp)"]];
+                        tableBody = filteredData.map((u, i) => [
+                            i + 1,
+                            u.kantor ? u.kantor.nama : '-',
+                            u.jenis,
+                            u.id_pelanggan || '-',
+                            `${u.jumlah_pemakaian} ${u.satuan}`,
+                            `Rp ${Number(u.biaya).toLocaleString('id-ID')}`
+                        ]);
+                    } else {
+                        tableHeaders = [["No", "Kode", "Nama Item / WO", "Kategori", "Status"]];
+                        tableBody = filteredData.map((item, i) => [
+                            i + 1,
+                            item.kode_asset || item.id || '-',
+                            item.nama_asset || item.judul || '-',
+                            item.kategori || '-',
+                            item.status || '-'
+                        ]);
+                    }
+
+                    doc.autoTable({
+                        startY: yPos,
+                        head: tableHeaders,
+                        body: tableBody,
+                        theme: 'striped',
+                        headStyles: { fillStyle: [25, 135, 84] },
+                        styles: { fontSize: 8 }
+                    });
+
+                    doc.save(`Laporan_${type}_${selBulan}_${selTahun}.pdf`);
+                    Swal.close();
+                }
+            } catch (err) {
+                Swal.fire('Gagal Ekspor', err.message, 'error');
             }
         }
 
@@ -1763,28 +1987,6 @@
             if (qrScanner) {
                 qrScanner.stop().then(() => { qrScanner.clear(); qrScanner = null; }).catch(() => {});
             }
-        }
-
-        async function exportLaporanRekap(type) {
-            const { data } = await db.from(type).select('*');
-            if (!data || data.length === 0) return Swal.fire('Informasi', 'Data tidak ditemukan', 'info');
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, type.toUpperCase());
-            XLSX.writeFile(wb, `Laporan_Rekap_${type}_${Date.now()}.xlsx`);
-        }
-
-        async function exportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const { data } = await db.from('kantor').select('nama, alamat');
-            doc.text("Laporan Data Kantor Gedung", 14, 20);
-            let y = 30;
-            (data || []).forEach((k, i) => {
-                doc.text(`${i+1}. ${k.nama} - ${k.alamat}`, 14, y);
-                y += 10;
-            });
-            doc.save("Laporan_Kantor.pdf");
         }
     </script>
 </body>
