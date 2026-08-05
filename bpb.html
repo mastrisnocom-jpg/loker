@@ -195,10 +195,10 @@
                 <div class="grid-item" onclick="scanQRModal()"><div class="grid-icon-wrapper" style="background:#f3e8ff; color:#9333ea;"><i class="fa-solid fa-qrcode"></i></div><span class="grid-label">Scan QR</span></div>
             </div>
 
-            <!-- REALTIME CHART UTILITAS -->
+            <!-- REALTIME CHART BIAYA UTILITAS KANTOR -->
             <div class="card">
-                <div class="card-title"><i class="fa-solid fa-chart-column" style="color:var(--primary);"></i> Grafik Pemakaian Utilitas Realtime</div>
-                <canvas id="chartRealtime" style="max-height: 200px;"></canvas>
+                <div class="card-title"><i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Grafik Biaya Utilitas Kantor Realtime</div>
+                <canvas id="chartRealtime" style="max-height: 220px;"></canvas>
             </div>
         </div>
 
@@ -425,48 +425,75 @@
             renderChart();
         }
 
-        // RENDER GRAFIK PEMAKAIAN UTILITAS REALTIME
+        // RENDER GRAFIK BIAYA UTILITAS PER KANTOR & BULAN (REALTIME)
         async function renderChart() {
             const ctx = document.getElementById('chartRealtime').getContext('2d');
-            
-            let listPemakaian = [0, 0, 0, 0, 0];
-            let listAir = [0, 0, 0, 0, 0];
 
             try {
-                const { data } = await db.from('utilitas').select('*');
+                const { data } = await db.from('utilitas').select('*, kantor(nama)');
+                
+                let labels = [];
+                let costsListrik = [];
+                let costsAir = [];
+
                 if (data && data.length > 0) {
+                    const groupedMap = {};
+
                     data.forEach(item => {
-                        const idx = Math.floor(Math.random() * 5);
+                        const kantorNama = item.kantor ? item.kantor.nama : 'Kantor Umum';
+                        const bulan = item.bulan_tahun ? item.bulan_tahun.slice(0, 7) : '2026-08';
+                        const key = `${kantorNama} (${bulan})`;
+
+                        if (!groupedMap[key]) {
+                            groupedMap[key] = { listrik: 0, air: 0 };
+                        }
+
                         if (item.jenis === 'Listrik') {
-                            listPemakaian[idx] += Number(item.jumlah_pemakaian || item.biaya || 0);
-                        } else {
-                            listAir[idx] += Number(item.jumlah_pemakaian || item.biaya || 0);
+                            groupedMap[key].listrik += Number(item.biaya || 0);
+                        } else if (item.jenis === 'Air') {
+                            groupedMap[key].air += Number(item.biaya || 0);
                         }
                     });
+
+                    labels = Object.keys(groupedMap);
+                    costsListrik = labels.map(k => groupedMap[k].listrik);
+                    costsAir = labels.map(k => groupedMap[k].air);
                 } else {
-                    listPemakaian = [120, 190, 150, 170, 220];
-                    listAir = [80, 110, 95, 130, 140];
+                    labels = ['KCP Mulyosari (2026-08)', 'KCP Rungkut (2026-08)', 'KC Surabaya (2026-08)'];
+                    costsListrik = [450000, 320000, 780000];
+                    costsAir = [150000, 95000, 230000];
                 }
-            } catch (e) {
-                listPemakaian = [120, 190, 150, 170, 220];
-                listAir = [80, 110, 95, 130, 140];
-            }
 
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
 
-            chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei'],
-                    datasets: [
-                        { label: 'Listrik (kWh)', data: listPemakaian, backgroundColor: '#198754', borderRadius: 6 },
-                        { label: 'Air (m³)', data: listAir, backgroundColor: '#0dcaf0', borderRadius: 6 }
-                    ]
-                },
-                options: { responsive: true, plugins: { legend: { display: true } } }
-            });
+                chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            { label: 'Biaya Listrik (Rp)', data: costsListrik, backgroundColor: '#198754', borderRadius: 6 },
+                            { label: 'Biaya Air (Rp)', data: costsAir, backgroundColor: '#0dcaf0', borderRadius: 6 }
+                        ]
+                    },
+                    options: { 
+                        responsive: true, 
+                        plugins: { legend: { display: true } },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    callback: function(value) {
+                                        return 'Rp ' + value.toLocaleString('id-ID');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error("Gagal memuat chart:", err);
+            }
         }
 
         // ROUTER SUB PAGE
@@ -1183,7 +1210,7 @@
                         <input type="number" id="fu-biaya" class="form-control" value="${editData.biaya}" required>
                     </div>
                     <div class="form-group">
-                        <label>Tanggal</label>
+                        <label>Tanggal / Bulan</label>
                         <input type="date" id="fu-bulan" class="form-control" value="${editData.bulan_tahun}" required>
                     </div>
                     <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">${id ? 'Update Utilitas' : 'Simpan Utilitas'}</button>
