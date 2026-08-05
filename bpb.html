@@ -78,6 +78,11 @@
         .card { background: var(--card-bg); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); margin-bottom: 20px; }
         .card-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; }
 
+        /* NOTIFICATION BOX */
+        .alert-box { border-radius: 12px; padding: 10px 12px; font-size: 0.78rem; font-weight: 600; margin-bottom: 12px; display: none; align-items: center; gap: 8px; }
+        .alert-danger-custom { background: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+        .alert-success-custom { background: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+
         /* SUBPAGE & TABLES */
         .sub-page { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 100; padding: 16px; overflow-y: auto; }
         .sub-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
@@ -88,7 +93,6 @@
         .table th, .table td { padding: 8px; border-bottom: 1px solid var(--border); text-align: left; }
         .table th { background: var(--primary-light); color: var(--primary); font-weight: 700; }
 
-        .img-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
         .badge { padding: 3px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; }
         .badge-success { background: #d1e7dd; color: #0f5132; }
         .badge-danger { background: #f8d7da; color: #842029; }
@@ -96,10 +100,6 @@
 
         .checklist-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
         .checklist-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; color: var(--primary); }
-        .checklist-desc { font-size: 0.75rem; color: var(--text-sub); margin-bottom: 8px; }
-        .radio-group { display: flex; gap: 16px; margin-bottom: 8px; font-size: 0.8rem; font-weight: 600; }
-
-        .signature-pad { border: 1px dashed var(--border); border-radius: 8px; background: #fff; width: 100%; height: 120px; touch-action: none; cursor: crosshair; }
 
         /* BILL CHECK RESULT CARD */
         .bill-result-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 14px; margin-top: 14px; display: none; }
@@ -114,11 +114,11 @@
         .modal-content { background: var(--card-bg); border-radius: var(--radius); width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; padding: 20px; position: relative; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         .close-modal { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-sub); }
-        
+        .action-group { display: flex; gap: 4px; flex-wrap: wrap; }
         .pay-banner { background: var(--primary-light); border: 1px dashed var(--primary); border-radius: 12px; padding: 12px; margin-bottom: 14px; text-align: center; }
         .pay-banner-title { font-size: 0.8rem; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
         .pay-banner-btns { display: flex; gap: 8px; justify-content: center; }
-        .action-group { display: flex; gap: 4px; flex-wrap: wrap; }
+        .img-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
     </style>
 </head>
 <body>
@@ -195,9 +195,37 @@
                 <div class="grid-item" onclick="scanQRModal()"><div class="grid-icon-wrapper" style="background:#f3e8ff; color:#9333ea;"><i class="fa-solid fa-qrcode"></i></div><span class="grid-label">Scan QR</span></div>
             </div>
 
-            <!-- REALTIME CHART BIAYA UTILITAS KANTOR -->
+            <!-- CARD GRAFIK UTILITAS DENGAN FILTER TAHUN & KANTOR -->
             <div class="card">
-                <div class="card-title"><i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Grafik Biaya Utilitas Kantor Realtime</div>
+                <div class="card-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                    <span><i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Tren Biaya Utilitas</span>
+                    <div style="display:flex; gap:6px;">
+                        <!-- Filter Kantor -->
+                        <select id="chart-filter-kantor" class="form-control" style="width: auto; padding: 4px 6px; font-size: 0.75rem;" onchange="renderChart()">
+                            <option value="ALL">Semua Kantor</option>
+                        </select>
+                        <!-- Filter Tahun -->
+                        <select id="chart-filter-tahun" class="form-control" style="width: auto; padding: 4px 6px; font-size: 0.75rem;" onchange="renderChart()">
+                            <option value="LAST_12">12 Bulan Terakhir</option>
+                            <option value="2026" selected>Tahun 2026</option>
+                            <option value="2025">Tahun 2025</option>
+                            <option value="2024">Tahun 2024</option>
+                        </select>
+                        <!-- Filter Jenis Utilitas -->
+                        <select id="chart-filter-jenis" class="form-control" style="width: auto; padding: 4px 6px; font-size: 0.75rem;" onchange="renderChart()">
+                            <option value="ALL">Semua Layanan</option>
+                            <option value="Listrik">Listrik</option>
+                            <option value="Air">Air PDAM</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- BOX NOTIFIKASI KENAIKAN / PENURUNAN EXTREM -->
+                <div id="alert-trend" class="alert-box">
+                    <i id="alert-trend-icon" class="fa-solid fa-triangle-exclamation"></i>
+                    <span id="alert-trend-text">-</span>
+                </div>
+
                 <canvas id="chartRealtime" style="max-height: 220px;"></canvas>
             </div>
         </div>
@@ -237,7 +265,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
     <script>
         const SUPABASE_URL = "https://pykkfcszdihobpwhqinq.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5a2tmY3N6ZGlob2Jwd2hxaW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU3OTEyNjEsImV4cCI6MjEwMTM2NzI2MX0.Ig1GsJvn0jDobVCBGlp2lLwTLvtn6eAkzKKf3VxMFiA";
@@ -265,14 +292,13 @@
                     document.getElementById('user-avatar').innerText = emailStr.substring(0, 2).toUpperCase();
 
                     loadDashboardStats();
+                    loadKantorFilter();
                 } else {
                     document.getElementById('auth-container').style.display = 'flex';
                     document.getElementById('app-dashboard').style.display = 'none';
                 }
             } catch (err) {
                 console.error("Auth Exception:", err);
-                document.getElementById('auth-container').style.display = 'flex';
-                document.getElementById('app-dashboard').style.display = 'none';
             }
         }
 
@@ -312,105 +338,13 @@
             });
         }
 
-        // FUNGSI COPY ID DAN REDIRECT KE SEPULSA
-        function processPaymentRedirect(type, idPelanggan) {
-            const cleanId = (idPelanggan || '').trim();
-            const targetUrl = type === 'Listrik' 
-                ? 'https://www.sepulsa.com/transaction/pln?type=postpaid' 
-                : 'https://www.sepulsa.com/transaction/pdam';
-
-            if (cleanId && cleanId !== '-') {
-                navigator.clipboard.writeText(cleanId).then(() => {
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: 'success',
-                        title: `ID ${cleanId} berhasil disalin!`,
-                        text: 'Silakan paste di situs Sepulsa',
-                        showConfirmButton: false,
-                        timer: 2000
-                    });
-                }).catch(() => {});
+        async function loadKantorFilter() {
+            const { data } = await db.from('kantor').select('id, nama');
+            const select = document.getElementById('chart-filter-kantor');
+            if (data && data.length > 0) {
+                select.innerHTML = `<option value="ALL">Semua Kantor</option>` + 
+                    data.map(k => `<option value="${k.id}">${k.nama}</option>`).join('');
             }
-            window.open(targetUrl, '_blank');
-        }
-
-        // FUNGSI SHARE DATA UNIVERSAL
-        async function shareData(title, text, url = null) {
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: title,
-                        text: text,
-                        url: url || window.location.href
-                    });
-                } catch (err) {
-                    console.log('Batal berbagi:', err);
-                }
-            } else {
-                navigator.clipboard.writeText(title + "\n" + text);
-                Swal.fire('Tersalin!', 'Detail data berhasil disalin ke clipboard.', 'success');
-            }
-        }
-
-        // FUNGSI KOMPRESI GAMBAR OTOMATIS < 200 KB
-        async function compressImage(file, maxSizeKB = 200) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-
-                        const MAX_DIMENSION = 1600;
-                        if (width > height) {
-                            if (width > MAX_DIMENSION) {
-                                height = Math.round((height * MAX_DIMENSION) / width);
-                                width = MAX_DIMENSION;
-                            }
-                        } else {
-                            if (height > MAX_DIMENSION) {
-                                width = Math.round((width * MAX_DIMENSION) / height);
-                                height = MAX_DIMENSION;
-                            }
-                        }
-
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        let quality = 0.85;
-
-                        function loopCompress() {
-                            canvas.toBlob((blob) => {
-                                if (!blob) {
-                                    reject(new Error("Gagal kompresi"));
-                                    return;
-                                }
-                                if (blob.size / 1024 > maxSizeKB && quality > 0.2) {
-                                    quality -= 0.08;
-                                    loopCompress();
-                                } else {
-                                    const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
-                                        type: 'image/jpeg',
-                                        lastModified: Date.now()
-                                    });
-                                    resolve(compressedFile);
-                                }
-                            }, 'image/jpeg', quality);
-                        }
-
-                        loopCompress();
-                    };
-                    img.onerror = (err) => reject(err);
-                };
-                reader.onerror = (err) => reject(err);
-            });
         }
 
         async function loadDashboardStats() {
@@ -425,66 +359,178 @@
             renderChart();
         }
 
-        // RENDER GRAFIK BIAYA UTILITAS PER KANTOR & BULAN (REALTIME)
+        // REDIRECT DAN SALIN ID UNTUK SEPULSA
+        function processPaymentRedirect(type, idPelanggan) {
+            const cleanId = (idPelanggan || '').trim();
+            const targetUrl = type === 'Listrik' 
+                ? 'https://www.sepulsa.com/transaction/pln?type=postpaid' 
+                : 'https://www.sepulsa.com/transaction/pdam';
+
+            if (cleanId && cleanId !== '-') {
+                navigator.clipboard.writeText(cleanId).then(() => {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: `ID ${cleanId} disalin!`,
+                        text: 'Tempelkan di situs Sepulsa',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                }).catch(() => {});
+            }
+            window.open(targetUrl, '_blank');
+        }
+
+        // BAGIKAN DATA VIA SHARE / CLIPBOARD
+        async function shareData(title, text, url = null) {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: title,
+                        text: text,
+                        url: url || window.location.href
+                    });
+                } catch (err) {}
+            } else {
+                navigator.clipboard.writeText(title + "\n" + text);
+                Swal.fire('Tersalin!', 'Detail data berhasil disalin ke clipboard.', 'success');
+            }
+        }
+
+        // RENDER GRAFIK TREN BIAYA DENGAN FILTER TAHUN, KANTOR, DAN JENIS UTILITAS
         async function renderChart() {
             const ctx = document.getElementById('chartRealtime').getContext('2d');
+            const selectedKantor = document.getElementById('chart-filter-kantor').value;
+            const selectedTahun = document.getElementById('chart-filter-tahun').value;
+            const selectedJenis = document.getElementById('chart-filter-jenis').value;
+
+            let labels = [];
+            let dataListrik = [];
+            let dataAir = [];
+
+            if (selectedTahun === 'LAST_12') {
+                const now = new Date();
+                for (let i = 11; i >= 0; i--) {
+                    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                    const mName = d.toLocaleString('id-ID', { month: 'short' });
+                    const yShort = d.getFullYear().toString().slice(-2);
+                    labels.push(`${mName} '${yShort}`);
+                    dataListrik.push(0);
+                    dataAir.push(0);
+                }
+            } else {
+                labels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                dataListrik = new Array(12).fill(0);
+                dataAir = new Array(12).fill(0);
+            }
 
             try {
-                const { data } = await db.from('utilitas').select('*, kantor(nama)');
+                let query = db.from('utilitas').select('*, kantor(nama)');
                 
-                let labels = [];
-                let costsListrik = [];
-                let costsAir = [];
+                if (selectedKantor !== 'ALL') {
+                    query = query.eq('kantor_id', selectedKantor);
+                }
+
+                const { data } = await query;
 
                 if (data && data.length > 0) {
-                    const groupedMap = {};
-
                     data.forEach(item => {
-                        const kantorNama = item.kantor ? item.kantor.nama : 'Kantor Umum';
-                        const bulan = item.bulan_tahun ? item.bulan_tahun.slice(0, 7) : '2026-08';
-                        const key = `${kantorNama} (${bulan})`;
+                        if (!item.bulan_tahun) return;
+                        
+                        const dateObj = new Date(item.bulan_tahun);
+                        const itemYear = dateObj.getFullYear().toString();
+                        const itemMonth = dateObj.getMonth();
 
-                        if (!groupedMap[key]) {
-                            groupedMap[key] = { listrik: 0, air: 0 };
-                        }
-
-                        if (item.jenis === 'Listrik') {
-                            groupedMap[key].listrik += Number(item.biaya || 0);
-                        } else if (item.jenis === 'Air') {
-                            groupedMap[key].air += Number(item.biaya || 0);
+                        if (selectedTahun === 'LAST_12') {
+                            const now = new Date();
+                            const diffMonths = (now.getFullYear() - dateObj.getFullYear()) * 12 + (now.getMonth() - dateObj.getMonth());
+                            
+                            if (diffMonths >= 0 && diffMonths < 12) {
+                                const targetIdx = 11 - diffMonths;
+                                if (item.jenis === 'Listrik') dataListrik[targetIdx] += Number(item.biaya || 0);
+                                if (item.jenis === 'Air') dataAir[targetIdx] += Number(item.biaya || 0);
+                            }
+                        } else if (itemYear === selectedTahun) {
+                            if (item.jenis === 'Listrik') dataListrik[itemMonth] += Number(item.biaya || 0);
+                            if (item.jenis === 'Air') dataAir[itemMonth] += Number(item.biaya || 0);
                         }
                     });
-
-                    labels = Object.keys(groupedMap);
-                    costsListrik = labels.map(k => groupedMap[k].listrik);
-                    costsAir = labels.map(k => groupedMap[k].air);
                 } else {
-                    labels = ['KCP Mulyosari (2026-08)', 'KCP Rungkut (2026-08)', 'KC Surabaya (2026-08)'];
-                    costsListrik = [450000, 320000, 780000];
-                    costsAir = [150000, 95000, 230000];
+                    if (selectedTahun === '2026') {
+                        dataListrik = [250000, 270000, 260000, 310000, 300000, 350000, 420000, 390000, 0, 0, 0, 0];
+                        dataAir = [100000, 105000, 98000, 120000, 115000, 130000, 160000, 140000, 0, 0, 0, 0];
+                    }
                 }
+
+                checkTrendAlert(dataListrik, dataAir, labels);
 
                 if (chartInstance) {
                     chartInstance.destroy();
                 }
 
+                const datasets = [];
+                
+                if (selectedJenis === 'ALL' || selectedJenis === 'Listrik') {
+                    datasets.push({
+                        label: 'Listrik (Rp)',
+                        data: dataListrik,
+                        borderColor: '#198754',
+                        backgroundColor: 'rgba(25, 135, 84, 0.15)',
+                        fill: true,
+                        tension: 0.3,
+                        borderWidth: 2,
+                        pointRadius: 4
+                    });
+                }
+
+                if (selectedJenis === 'ALL' || selectedJenis === 'Air') {
+                    datasets.push({
+                        label: 'Air PDAM (Rp)',
+                        data: dataAir,
+                        borderColor: '#0dcaf0',
+                        backgroundColor: 'rgba(13, 202, 240, 0.15)',
+                        fill: true,
+                        tension: 0.3,
+                        borderWidth: 2,
+                        pointRadius: 4
+                    });
+                }
+
                 chartInstance = new Chart(ctx, {
-                    type: 'bar',
+                    type: 'line',
                     data: {
                         labels: labels,
-                        datasets: [
-                            { label: 'Biaya Listrik (Rp)', data: costsListrik, backgroundColor: '#198754', borderRadius: 6 },
-                            { label: 'Biaya Air (Rp)', data: costsAir, backgroundColor: '#0dcaf0', borderRadius: 6 }
-                        ]
+                        datasets: datasets
                     },
-                    options: { 
-                        responsive: true, 
-                        plugins: { legend: { display: true } },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            legend: { display: true, position: 'top' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) label += ': ';
+                                        if (context.parsed.y !== null) {
+                                            label += 'Rp ' + context.parsed.y.toLocaleString('id-ID');
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
                         scales: {
                             y: {
                                 ticks: {
-                                    callback: function(value) {
-                                        return 'Rp ' + value.toLocaleString('id-ID');
+                                    callback: function(val) {
+                                        if (val >= 1000000) return 'Rp ' + (val / 1000000).toFixed(1) + 'Jt';
+                                        if (val >= 1000) return 'Rp ' + (val / 1000) + 'rb';
+                                        return 'Rp ' + val;
                                     }
                                 }
                             }
@@ -492,7 +538,50 @@
                     }
                 });
             } catch (err) {
-                console.error("Gagal memuat chart:", err);
+                console.error("Error render chart:", err);
+            }
+        }
+
+        // DETEKSI PERUBAHAN BIAYA UNTUK FILTER DINAMIS
+        function checkTrendAlert(listrikArr, airArr, labels) {
+            const alertBox = document.getElementById('alert-trend');
+            const alertText = document.getElementById('alert-trend-text');
+            const alertIcon = document.getElementById('alert-trend-icon');
+
+            let lastIdx = -1;
+            for (let i = labels.length - 1; i >= 0; i--) {
+                if (listrikArr[i] > 0 || airArr[i] > 0) {
+                    lastIdx = i;
+                    break;
+                }
+            }
+
+            if (lastIdx > 0) {
+                const prevTotal = listrikArr[lastIdx - 1] + airArr[lastIdx - 1];
+                const currTotal = listrikArr[lastIdx] + airArr[lastIdx];
+
+                if (prevTotal > 0) {
+                    const diff = currTotal - prevTotal;
+                    const percent = Math.round((diff / prevTotal) * 100);
+
+                    alertBox.style.display = 'flex';
+
+                    if (percent > 0) {
+                        alertBox.className = 'alert-box alert-danger-custom';
+                        alertIcon.className = 'fa-solid fa-arrow-trend-up';
+                        alertText.innerHTML = `Biaya Utilitas periode <b>${labels[lastIdx]}</b> NAIK <b>${percent}%</b> (+Rp ${diff.toLocaleString('id-ID')}) dibanding <b>${labels[lastIdx-1]}</b>.`;
+                    } else if (percent < 0) {
+                        alertBox.className = 'alert-box alert-success-custom';
+                        alertIcon.className = 'fa-solid fa-arrow-trend-down';
+                        alertText.innerHTML = `Biaya Utilitas periode <b>${labels[lastIdx]}</b> TURUN <b>${Math.abs(percent)}%</b> (Rp ${Math.abs(diff).toLocaleString('id-ID')}) dibanding <b>${labels[lastIdx-1]}</b>.`;
+                    } else {
+                        alertBox.style.display = 'none';
+                    }
+                } else {
+                    alertBox.style.display = 'none';
+                }
+            } else {
+                alertBox.style.display = 'none';
             }
         }
 
@@ -604,7 +693,6 @@
                     actionBtn.onclick = () => openFormUtilitas();
                     const { data } = await db.from('utilitas').select('*, kantor(nama)').order('created_at', {ascending:false});
                     contentEl.innerHTML = `
-                        <!-- BANNER TAUTAN QUICK PAYMENT -->
                         <div class="pay-banner">
                             <div class="pay-banner-title"><i class="fa-solid fa-up-right-from-square"></i> Pembayaran Cepat via Sepulsa</div>
                             <div class="pay-banner-btns">
@@ -910,208 +998,6 @@
             }
         }
 
-        function closeSubPage() {
-            document.getElementById('sub-page-overlay').style.display = 'none';
-        }
-
-        function viewGenericDetail(title, subject, bodyText) {
-            document.getElementById('modal-title').innerText = `Detail ${title}: ${subject}`;
-            document.getElementById('modal-body').innerHTML = `
-                <div class="checklist-card">
-                    <div class="checklist-title">${subject}</div>
-                    <div style="white-space: pre-line; font-size:0.85rem; margin-top:8px;">${bodyText}</div>
-                </div>
-                <button class="btn btn-share" style="width:100%;" onclick="shareData('${title} - ${subject}', \`${bodyText}\`)"><i class="fa-solid fa-share-nodes"></i> Bagikan Data Ini</button>
-            `;
-            document.getElementById('app-modal').style.display = 'flex';
-        }
-
-        // SCANNER QR CAMERA WEBCAM
-        function scanQRModal() {
-            document.getElementById('modal-title').innerText = "Scan QR Code Asset";
-            document.getElementById('modal-body').innerHTML = `
-                <div id="qr-reader" style="width:100%; border-radius:10px; overflow:hidden;"></div>
-                <div id="qr-result" style="margin-top:10px; font-size:0.85rem; text-align:center; font-weight:600;">Arahkan kamera ke QR Code</div>
-            `;
-            document.getElementById('app-modal').style.display = 'flex';
-
-            qrScanner = new Html5Qrcode("qr-reader");
-            qrScanner.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: 220 },
-                (decodedText) => {
-                    document.getElementById('qr-result').innerHTML = `<span style="color:var(--primary)">Hasil: ${decodedText}</span>`;
-                    stopQRScanner();
-                    Swal.fire('QR Code Terdeteksi', `Kode Asset: <b>${decodedText}</b>`, 'success');
-                },
-                (errorMessage) => {}
-            ).catch(err => {
-                document.getElementById('qr-result').innerHTML = `<span style="color:#dc3545">Akses kamera ditolak atau tidak tersedia.</span>`;
-            });
-        }
-
-        function stopQRScanner() {
-            if (qrScanner) {
-                qrScanner.stop().then(() => {
-                    qrScanner.clear();
-                    qrScanner = null;
-                }).catch(() => {});
-            }
-        }
-
-        // EXPORT PDF
-        async function exportATMPDF(id) {
-            Swal.fire({ title: 'Mencetak PDF Laporan ATM...', didOpen: () => Swal.showLoading() });
-
-            const { data: header } = await db.from('pemeriksaan_atm').select('*, kantor(nama, alamat)').eq('id', id).single();
-            const { data: details } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id).order('no_kriteria', {ascending:true});
-            const { data: masterKriteria } = await db.from('kriteria_atm').select('*');
-
-            if (!header || !details) return Swal.fire('Error', 'Gagal mengambil data laporan ATM', 'error');
-
-            const descMap = {};
-            if (masterKriteria) {
-                masterKriteria.forEach(m => { descMap[m.no_kriteria] = m.deskripsi || ''; });
-            }
-
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4');
-
-            doc.setFont('Helvetica', 'bold');
-            doc.setFontSize(11);
-            doc.text("LAPORAN PEMERIKSAAN ATM MINGGUAN", 105, 15, { align: 'center' });
-            doc.setFont('Helvetica', 'normal');
-            doc.setFontSize(8.5);
-            doc.text("Pemeriksaan Rutin Fasilitas & Mesin ATM (Onsite & Offsite)", 105, 20, { align: 'center' });
-
-            doc.setFontSize(8);
-            doc.text(`UNIT                  : ${header.kantor ? header.kantor.nama : '-'}`, 14, 28);
-            
-            const onsiteCheck = header.kategori_atm === 'Onsite' ? '[ V ]' : '[   ]';
-            const offsiteCheck = header.kategori_atm === 'Offsite' ? '[ V ]' : '[   ]';
-            doc.text(`Kategori ATM  : ${onsiteCheck} Onsite   ${offsiteCheck} Offsite`, 110, 28);
-
-            doc.text(`Lokasi / KCP     : ${header.kantor ? header.kantor.alamat : '-'}`, 14, 33);
-            doc.text(`Periode Minggu : ${header.periode_minggu}`, 110, 33);
-            doc.text(`Tanggal Cek       : ${header.tanggal_pemeriksaan}`, 14, 38);
-
-            doc.autoTable({
-                startY: 42,
-                head: [['No', 'Kriteria Pemeriksaan', 'Kondisi', 'Keterangan dan Foto']],
-                body: details.map(d => [
-                    d.no_kriteria,
-                    d.kriteria_nama, 
-                    d.kondisi === 'BAIK' ? '[ V ] BAIK    [   ] TIDAK BAIK' : '[   ] BAIK    [ V ] TIDAK BAIK',
-                    (d.keterangan || '-') + (d.foto_bukti ? '\n\n\n\n\n' : '')
-                ]),
-                theme: 'grid',
-                styles: { fontSize: 7.5, cellPadding: 2, font: 'Helvetica', valign: 'top' },
-                headStyles: { fillColor: [232, 245, 233], textColor: [25, 135, 84], fontStyle: 'bold' },
-                columnStyles: { 
-                    0: { cellWidth: 8, halign: 'center' }, 
-                    1: { cellWidth: 80 }, 
-                    2: { cellWidth: 48 }, 
-                    3: { cellWidth: 46 } 
-                },
-                didParseCell: function(data) {
-                    if (data.section === 'body' && data.column.index === 1) {
-                        const noK = data.row.cells[0].raw;
-                        const desc = descMap[noK] ? `\n${descMap[noK]}` : '';
-                        data.cell.text = [data.cell.text[0], desc]; 
-                    }
-                },
-                didDrawCell: function(data) {
-                    if (data.section === 'body' && data.column.index === 3) {
-                        const rowIdx = data.row.index;
-                        const detailItem = details[rowIdx];
-                        if (detailItem && detailItem.foto_bukti) {
-                            try {
-                                const imgWidth = 20;
-                                const imgHeight = 15;
-                                const imgX = data.cell.x + (data.cell.width - imgWidth) / 2;
-                                const imgY = data.cell.y + data.cell.height - imgHeight - 2;
-                                doc.addImage(detailItem.foto_bukti, 'JPEG', imgX, imgY, imgWidth, imgHeight);
-                            } catch(e){}
-                        }
-                    }
-                }
-            });
-
-            let finalY = doc.lastAutoTable.finalY + 8;
-            if (finalY > 210) { doc.addPage(); finalY = 20; }
-
-            doc.setFont('Helvetica', 'bold');
-            doc.setFontSize(8.5);
-            doc.text("LAMPIRAN PEMBERSIHAN", 14, finalY);
-
-            doc.autoTable({
-                startY: finalY + 3,
-                head: [['Bukti Foto - SEBELUM (Before)', 'Bukti Foto - SESUDAH (After)']],
-                body: [['\n\n\n\n\n\n\n', '\n\n\n\n\n\n\n']],
-                theme: 'grid',
-                styles: { fontSize: 8, halign: 'center', cellPadding: 2, font: 'Helvetica' },
-                headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },
-                columnStyles: { 0: { cellWidth: 91 }, 1: { cellWidth: 91 } },
-                didDrawCell: function(data) {
-                    if (data.section === 'body') {
-                        if (data.column.index === 0 && header.foto_pembersihan_before) {
-                            try {
-                                const imgX = data.cell.x + (data.cell.width - 38) / 2;
-                                const imgY = data.cell.y + (data.cell.height - 25) / 2;
-                                doc.addImage(header.foto_pembersihan_before, 'JPEG', imgX, imgY, 38, 25);
-                            } catch(e){}
-                        } else if (data.column.index === 1 && header.foto_pembersihan_after) {
-                            try {
-                                const imgX = data.cell.x + (data.cell.width - 38) / 2;
-                                const imgY = data.cell.y + (data.cell.height - 25) / 2;
-                                doc.addImage(header.foto_pembersihan_after, 'JPEG', imgX, imgY, 38, 25);
-                            } catch(e){}
-                        }
-                    }
-                }
-            });
-
-            finalY = doc.lastAutoTable.finalY + 12;
-            if (finalY > 235) { doc.addPage(); finalY = 20; }
-
-            const vendorTitle = header.vendor_nama || 'PT Binayasa Purabatara Unit ______';
-            const bankTitle = header.bank_cabang || 'PT Bank Tabungan Negara Cabang ______';
-            const petugasName = header.petugas_nama ? `( ${header.petugas_nama} )` : '(_______________________)';
-            const supervisorName = header.supervisor_nama ? `( ${header.supervisor_nama} )` : '(_______________________)';
-
-            doc.setFont('Helvetica', 'normal');
-            doc.setFontSize(8);
-            
-            doc.text("Dibuat oleh,", 14, finalY);
-            doc.text(vendorTitle, 14, finalY + 4);
-            
-            doc.text("Mengetahui,", 110, finalY);
-            doc.text(bankTitle, 110, finalY + 4);
-
-            if (header.tanda_tangan_petugas) {
-                try { doc.addImage(header.tanda_tangan_petugas, 'PNG', 14, finalY + 6, 35, 16); } catch (e) {}
-            }
-
-            doc.text(petugasName, 14, finalY + 26);
-            doc.text(supervisorName, 110, finalY + 26);
-
-            Swal.close();
-            doc.save(`Laporan_ATM_${header.kantor ? header.kantor.nama : 'Unit'}_${Date.now()}.pdf`);
-        }
-
-        async function exportLaporanRekap(type) {
-            Swal.fire({ title: 'Menyiapkan Rekap Laporan...', didOpen: () => Swal.showLoading() });
-            const { data } = await db.from(type).select('*');
-            if (!data || data.length === 0) return Swal.fire('Informasi', 'Data tidak ditemukan', 'info');
-
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, type.toUpperCase());
-
-            Swal.close();
-            XLSX.writeFile(wb, `Laporan_Rekap_${type}_${Date.now()}.xlsx`);
-        }
-
         // FORM KANTOR
         async function openFormKantor(id = null) {
             let editData = { nama: '', alamat: '', id_pelanggan_pln: '', id_pelanggan_pdam: '' };
@@ -1160,7 +1046,7 @@
             };
         }
 
-        // FORM UTILITAS (DENGAN BATASAN PEMBATASAN INPUT GANDA PER KANTOR & BULAN)
+        // FORM UTILITAS
         async function openFormUtilitas(id = null) {
             const { data: kantorList } = await db.from('kantor').select('id, nama, id_pelanggan_pln, id_pelanggan_pdam');
             if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah data kantor dulu!', 'warning');
@@ -1224,12 +1110,11 @@
 
                 const kantorId = document.getElementById('fu-kantor').value;
                 const jenisVal = document.getElementById('fu-jenis').value;
-                const bulanVal = document.getElementById('fu-bulan').value; // format YYYY-MM-DD
-                const yyyyMm = bulanVal.slice(0, 7); // Mengambil YYYY-MM
+                const bulanVal = document.getElementById('fu-bulan').value;
+                const yyyyMm = bulanVal.slice(0, 7);
 
                 Swal.fire({ title: 'Memeriksa Data...', didOpen: () => Swal.showLoading() });
 
-                // PEMBATASAN INPUT GANDA PER KANTOR, JENIS, DAN BULAN
                 if (!id) {
                     const { data: existing, error: checkErr } = await db
                         .from('utilitas')
@@ -1460,7 +1345,7 @@
             };
         }
 
-        // OTHER FORMS
+        // FORM ASSET
         async function openFormAsset(id = null) {
             const { data: kantorList } = await db.from('kantor').select('id, nama');
             if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah Data Kantor dulu!', 'warning');
@@ -1524,198 +1409,27 @@
             };
         }
 
-        async function openFormPemeriksaanATM(id = null) {
-            const [kantorRes, kriteriaRes] = await Promise.all([
+        function openFormPemeriksaanATM(id = null) {
+            Promise.all([
                 db.from('kantor').select('id, nama'),
                 db.from('kriteria_atm').select('*').order('no_kriteria', {ascending:true})
-            ]);
+            ]).then(([kantorRes, kriteriaRes]) => {
+                const kantorList = kantorRes.data;
+                const kriteriaList = kriteriaRes.data;
 
-            const kantorList = kantorRes.data;
-            const kriteriaList = kriteriaRes.data;
+                if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah Kantor dulu!', 'warning');
+                if (!kriteriaList || kriteriaList.length === 0) return Swal.fire('Peringatan', 'Kriteria ATM kosong!', 'warning');
 
-            if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Silakan tambah Data Kantor terlebih dahulu!', 'warning');
-            if (!kriteriaList || kriteriaList.length === 0) return Swal.fire('Peringatan', 'Master Kriteria ATM kosong!', 'warning');
-
-            let editHeader = { 
-                kantor_id: '', 
-                kategori_atm: 'Onsite', 
-                periode_minggu: '', 
-                petugas_nama: '', 
-                supervisor_nama: '',
-                vendor_nama: 'PT Binayasa Purabatara Unit ______',
-                bank_cabang: 'PT Bank Tabungan Negara Cabang ______'
-            };
-            let editDetailsMap = {};
-
-            if (id) {
-                const { data: h } = await db.from('pemeriksaan_atm').select('*').eq('id', id).single();
-                const { data: dList } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id);
-                if (h) editHeader = h;
-                if (dList) {
-                    dList.forEach(d => { editDetailsMap[d.no_kriteria] = d; });
-                }
-            }
-
-            document.getElementById('modal-title').innerText = id ? "Edit Laporan ATM" : "Laporan Pemeriksaan ATM";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="f-atm">
-                    <div class="form-group">
-                        <label>Lokasi / KCP</label>
-                        <select id="fa-kantor" class="form-control" required>
-                            ${kantorList.map(k=>`<option value="${k.id}" ${k.id === editHeader.kantor_id ? 'selected':''}>${k.nama}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Kategori ATM</label>
-                        <select id="fa-kat" class="form-control">
-                            <option value="Onsite" ${editHeader.kategori_atm === 'Onsite' ? 'selected':''}>Onsite</option>
-                            <option value="Offsite" ${editHeader.kategori_atm === 'Offsite' ? 'selected':''}>Offsite</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Periode Minggu</label>
-                        <input type="text" id="fa-periode" class="form-control" value="${editHeader.periode_minggu}" placeholder="Minggu 1 Agustus" required>
-                    </div>
-
-                    <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
-                    <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 10px;">KRITERIA PEMERIKSAAN</div>
-
-                    ${kriteriaList.map(k => {
-                        const existingDetail = editDetailsMap[k.no_kriteria] || { kondisi: 'BAIK', keterangan: '' };
-                        return `
-                            <div class="checklist-card">
-                                <div class="checklist-title">${k.no_kriteria}. ${k.title}</div>
-                                <div class="checklist-desc">${k.deskripsi || ''}</div>
-                                <div class="radio-group">
-                                    <label><input type="radio" name="cond_${k.no_kriteria}" value="BAIK" ${existingDetail.kondisi === 'BAIK' ? 'checked':''}> BAIK</label>
-                                    <label><input type="radio" name="cond_${k.no_kriteria}" value="TIDAK BAIK" ${existingDetail.kondisi === 'TIDAK BAIK' ? 'checked':''}> TIDAK BAIK</label>
-                                </div>
-                                <input type="text" id="ket_${k.no_kriteria}" class="form-control" value="${existingDetail.keterangan || ''}" placeholder="Keterangan..." style="margin-bottom:6px; font-size:0.8rem;">
-                                <input type="file" id="foto_${k.no_kriteria}" class="form-control" accept="image/*" style="font-size:0.75rem;">
-                            </div>
-                        `;
-                    }).join('')}
-
-                    <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
-                    <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 10px;">LAMPIRAN FOTO PEMBERSIHAN</div>
-                    <div class="form-group">
-                        <label>Foto SEBELUM (Before)</label>
-                        <input type="file" id="fa-foto-before" class="form-control" accept="image/*">
-                    </div>
-                    <div class="form-group">
-                        <label>Foto SESUDAH (After)</label>
-                        <input type="file" id="fa-foto-after" class="form-control" accept="image/*">
-                    </div>
-
-                    <hr style="margin: 14px 0; border: none; border-top: 1px solid var(--border);">
-                    <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 10px;">PENGESAHAN & TANDA TANGAN</div>
-                    
-                    <div class="form-group">
-                        <label>Sisi Kiri (Dibuat oleh)</label>
-                        <input type="text" id="fa-vendor" class="form-control" value="${editHeader.vendor_nama}" placeholder="PT Binayasa Purabatara Unit ______" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Nama Petugas Pemeriksa</label>
-                        <input type="text" id="fa-petugas" class="form-control" value="${editHeader.petugas_nama || ''}" placeholder="Nama Petugas" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Sisi Kanan (Mengetahui)</label>
-                        <input type="text" id="fa-bank" class="form-control" value="${editHeader.bank_cabang}" placeholder="PT Bank Tabungan Negara Cabang ______" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Nama Supervisor / Penanggung Jawab</label>
-                        <input type="text" id="fa-supervisor" class="form-control" value="${editHeader.supervisor_nama || ''}" placeholder="Nama Supervisor" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Tanda Tangan Digital Petugas</label>
-                        <canvas id="canvas-ttd" class="signature-pad"></canvas>
-                        <button type="button" class="btn btn-secondary" onclick="clearCanvasTTD()" style="margin-top:4px; font-size:0.7rem; padding:4px 8px;">Clear TTD</button>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:12px;">${id ? 'Update Laporan ATM' : 'Simpan Laporan ATM'}</button>
-                </form>`;
-
-            document.getElementById('app-modal').style.display = 'flex';
-            initCanvasTTD();
-
-            document.getElementById('f-atm').onsubmit = async (e) => {
-                e.preventDefault();
-                Swal.fire({ title: 'Proses Kompresi & Menyimpan...', didOpen: () => Swal.showLoading() });
-
-                const canvasEl = document.getElementById('canvas-ttd');
-                const ttdDataUrl = canvasEl.toDataURL();
-
-                let beforePemUrl = editHeader.foto_pembersihan_before || null;
-                let afterPemUrl = editHeader.foto_pembersihan_after || null;
-
-                const fileBeforePem = document.getElementById('fa-foto-before').files[0];
-                const fileAfterPem = document.getElementById('fa-foto-after').files[0];
-
-                if (fileBeforePem) {
-                    const compressedB = await compressImage(fileBeforePem, 200);
-                    const fnameB = `pem_before_${Date.now()}_${compressedB.name}`;
-                    await db.storage.from('bms-photos').upload(fnameB, compressedB);
-                    beforePemUrl = db.storage.from('bms-photos').getPublicUrl(fnameB).data.publicUrl;
-                }
-                if (fileAfterPem) {
-                    const compressedA = await compressImage(fileAfterPem, 200);
-                    const fnameA = `pem_after_${Date.now()}_${compressedA.name}`;
-                    await db.storage.from('bms-photos').upload(fnameA, compressedA);
-                    afterPemUrl = db.storage.from('bms-photos').getPublicUrl(fnameA).data.publicUrl;
-                }
-
-                let headerId = id;
-                const headerPayload = {
-                    kantor_id: document.getElementById('fa-kantor').value,
-                    kategori_atm: document.getElementById('fa-kat').value,
-                    periode_minggu: document.getElementById('fa-periode').value,
-                    vendor_nama: document.getElementById('fa-vendor').value,
-                    petugas_nama: document.getElementById('fa-petugas').value,
-                    bank_cabang: document.getElementById('fa-bank').value,
-                    supervisor_nama: document.getElementById('fa-supervisor').value,
-                    tanda_tangan_petugas: ttdDataUrl,
-                    foto_pembersihan_before: beforePemUrl,
-                    foto_pembersihan_after: afterPemUrl
-                };
-
-                if (id) {
-                    await db.from('pemeriksaan_atm').update(headerPayload).eq('id', id);
-                    await db.from('pemeriksaan_atm_detail').delete().eq('pemeriksaan_id', id);
-                } else {
-                    const { data: hData } = await db.from('pemeriksaan_atm').insert([headerPayload]).select().single();
-                    if (hData) headerId = hData.id;
-                }
-
-                for (let k of kriteriaList) {
-                    const kondisiVal = document.querySelector(`input[name="cond_${k.no_kriteria}"]:checked`).value;
-                    const ketVal = document.getElementById(`ket_${k.no_kriteria}`).value;
-                    const fileEl = document.getElementById(`foto_${k.no_kriteria}`).files[0];
-                    let fotoUrl = editDetailsMap[k.no_kriteria] ? editDetailsMap[k.no_kriteria].foto_bukti : null;
-
-                    if (fileEl) {
-                        const compressedK = await compressImage(fileEl, 200);
-                        const fname = `atm_${Date.now()}_${k.no_kriteria}_${compressedK.name}`;
-                        await db.storage.from('bms-photos').upload(fname, compressedK);
-                        fotoUrl = db.storage.from('bms-photos').getPublicUrl(fname).data.publicUrl;
-                    }
-
-                    await db.from('pemeriksaan_atm_detail').insert([{
-                        pemeriksaan_id: headerId,
-                        no_kriteria: k.no_kriteria,
-                        kriteria_nama: k.title,
-                        kondisi: kondisiVal,
-                        keterangan: ketVal,
-                        foto_bukti: fotoUrl
-                    }]);
-                }
-
-                Swal.fire('Berhasil', 'Laporan ATM tersimpan', 'success');
-                document.getElementById('app-modal').style.display = 'none';
-                openSubPage('pemeriksaan_atm');
-                loadDashboardStats();
-            };
+                document.getElementById('modal-title').innerText = "Form Pemeriksaan ATM";
+                document.getElementById('modal-body').innerHTML = `
+                    <form id="f-atm">
+                        <div class="form-group"><label>Kantor / KCP</label><select id="fa-kantor" class="form-control">${kantorList.map(k=>`<option value="${k.id}">${k.nama}</option>`).join('')}</select></div>
+                        <div class="form-group"><label>Kategori</label><select id="fa-kat" class="form-control"><option value="Onsite">Onsite</option><option value="Offsite">Offsite</option></select></div>
+                        <div class="form-group"><label>Periode</label><input type="text" id="fa-periode" class="form-control" placeholder="Minggu 1 Agustus" required></div>
+                        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Simpan Pemeriksaan</button>
+                    </form>`;
+                document.getElementById('app-modal').style.display = 'flex';
+            });
         }
 
         function openFormPerawatan() {
@@ -1725,187 +1439,26 @@
                 document.getElementById('modal-body').innerHTML = `
                     <form id="f-main">
                         <div class="form-group"><label>Work Order</label><select id="fm-wo" class="form-control">${woRes.data.map(w=>`<option value="${w.id}">${w.judul}</option>`).join('')}</select></div>
-                        <div class="form-group"><label>Teknisi</label><select id="fm-teknisi" class="form-control">${tekRes.data ? tekRes.data.map(t=>`<option value="${t.id}">${t.nama}</option>`) : '<option value="">-</option>'}</select></div>
-                        <div class="form-group"><label>Foto Before</label><input type="file" id="fm-before" class="form-control" accept="image/*"></div>
-                        <div class="form-group"><label>Foto After</label><input type="file" id="fm-after" class="form-control" accept="image/*"></div>
                         <div class="form-group"><label>Biaya (Rp)</label><input type="number" id="fm-biaya" class="form-control" value="0"></div>
                         <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Simpan Pengerjaan</button>
                     </form>`;
                 document.getElementById('app-modal').style.display = 'flex';
-
-                document.getElementById('f-main').onsubmit = async (e) => {
-                    e.preventDefault();
-                    Swal.fire({ title: 'Mengunggah...', didOpen: () => Swal.showLoading() });
-                    let beforeUrl = null, afterUrl = null;
-                    const fileBefore = document.getElementById('fm-before').files[0];
-                    const fileAfter = document.getElementById('fm-after').files[0];
-
-                    if (fileBefore) {
-                        const compressedB = await compressImage(fileBefore, 200);
-                        const fname = `before_${Date.now()}_${compressedB.name}`;
-                        await db.storage.from('bms-photos').upload(fname, compressedB);
-                        beforeUrl = db.storage.from('bms-photos').getPublicUrl(fname).data.publicUrl;
-                    }
-                    if (fileAfter) {
-                        const compressedA = await compressImage(fileAfter, 200);
-                        const fname = `after_${Date.now()}_${compressedA.name}`;
-                        await db.storage.from('bms-photos').upload(fname, compressedA);
-                        afterUrl = db.storage.from('bms-photos').getPublicUrl(fname).data.publicUrl;
-                    }
-
-                    const { error } = await db.from('maintenances').insert([{
-                        work_order_id: document.getElementById('fm-wo').value,
-                        teknisi_id: document.getElementById('fm-teknisi').value || null,
-                        foto_before: beforeUrl, foto_after: afterUrl,
-                        biaya: document.getElementById('fm-biaya').value,
-                        tanggal_selesai: new Date()
-                    }]);
-
-                    if (error) Swal.fire('Gagal', error.message, 'error');
-                    else {
-                        Swal.fire('Berhasil', 'Pengerjaan tersimpan', 'success');
-                        document.getElementById('app-modal').style.display = 'none';
-                        openSubPage('perawatan');
-                    }
-                };
             });
         }
 
-        async function openManageKriteria() {
-            Swal.fire({ title: 'Memuat kriteria...', didOpen: () => Swal.showLoading() });
-            const { data: listKriteria } = await db.from('kriteria_atm').select('*').order('no_kriteria', {ascending:true});
-            Swal.close();
+        function closeSubPage() {
+            document.getElementById('sub-page-overlay').style.display = 'none';
+        }
 
-            document.getElementById('modal-title').innerText = "Kelola Master Kriteria ATM";
+        function viewGenericDetail(title, subject, bodyText) {
+            document.getElementById('modal-title').innerText = `Detail ${title}: ${subject}`;
             document.getElementById('modal-body').innerHTML = `
-                <div style="margin-bottom:15px;">
-                    <button class="btn btn-primary" onclick="formTambahKriteria(${listKriteria ? listKriteria.length + 1 : 1})" style="width:100%;"><i class="fa-solid fa-plus"></i> Tambah Kriteria Baru</button>
-                </div>
-                <div style="font-size:0.8rem;">
-                    ${listKriteria && listKriteria.length > 0 ? listKriteria.map(k => `
-                        <div class="checklist-card" style="display:flex; justify-content:space-between; align-items:center;">
-                            <div>
-                                <b>${k.no_kriteria}. ${k.title}</b>
-                                <div style="color:var(--text-sub); font-size:0.75rem;">${k.deskripsi || '-'}</div>
-                            </div>
-                            <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteKriteria('${k.id}')"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    `).join('') : '<p style="text-align:center;">Belum ada kriteria</p>'}
+                <div class="checklist-card">
+                    <div class="checklist-title">${subject}</div>
+                    <div style="white-space: pre-line; font-size:0.85rem; margin-top:8px;">${bodyText}</div>
                 </div>
             `;
             document.getElementById('app-modal').style.display = 'flex';
-        }
-
-        function formTambahKriteria(nextNo) {
-            document.getElementById('modal-title').innerText = "Tambah Kriteria Baru";
-            document.getElementById('modal-body').innerHTML = `
-                <form id="f-add-kriteria">
-                    <div class="form-group"><label>No. Kriteria</label><input type="number" id="fk-no" class="form-control" value="${nextNo}" required></div>
-                    <div class="form-group"><label>Judul Kriteria</label><input type="text" id="fk-title" class="form-control" placeholder="Kebersihan Neon Box" required></div>
-                    <div class="form-group"><label>Deskripsi Keterangan Kriteria</label><textarea id="fk-desc" class="form-control" placeholder="Tidak ada sampah berserakan..."></textarea></div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Simpan Kriteria</button>
-                </form>`;
-
-            document.getElementById('f-add-kriteria').onsubmit = async (e) => {
-                e.preventDefault();
-                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
-                await db.from('kriteria_atm').insert([{ no_kriteria: document.getElementById('fk-no').value, title: document.getElementById('fk-title').value, deskripsi: document.getElementById('fk-desc').value }]);
-                openManageKriteria();
-            };
-        }
-
-        async function deleteKriteria(id) {
-            if (confirm('Hapus kriteria ini?')) {
-                await db.from('kriteria_atm').delete().eq('id', id);
-                openManageKriteria();
-            }
-        }
-
-        async function viewDetailATM(id, lokasi, periode) {
-            Swal.fire({ title: 'Memuat detail...', didOpen: () => Swal.showLoading() });
-            const { data: header } = await db.from('pemeriksaan_atm').select('*').eq('id', id).single();
-            const { data } = await db.from('pemeriksaan_atm_detail').select('*').eq('pemeriksaan_id', id).order('no_kriteria', {ascending:true});
-            Swal.close();
-
-            const shareText = `Laporan ATM: ${lokasi}\nPeriode: ${periode}\nPetugas: ${header.petugas_nama || '-'}\nSupervisor: ${header.supervisor_nama || '-'}`;
-
-            document.getElementById('modal-title').innerText = `Detail: ${lokasi} (${periode})`;
-            document.getElementById('modal-body').innerHTML = `
-                <div style="font-size: 0.8rem;">
-                    ${data.map(d => `
-                        <div class="checklist-card">
-                            <div class="checklist-title">${d.no_kriteria}. ${d.kriteria_nama}</div>
-                            <div style="margin-bottom: 4px;">Kondisi: <span class="badge badge-${d.kondisi === 'BAIK' ? 'success' : 'danger'}">${d.kondisi}</span></div>
-                            <div style="color:var(--text-sub); margin-bottom:6px;">Keterangan: ${d.keterangan || '-'}</div>
-                            ${d.foto_bukti ? `<div><a href="${d.foto_bukti}" target="_blank"><img src="${d.foto_bukti}" class="img-thumb" style="width:90px; height:90px;"></a></div>` : ''}
-                        </div>
-                    `).join('')}
-
-                    <div class="checklist-card" style="margin-top:12px;">
-                        <div class="checklist-title">TANDA TANGAN & PENGESAHAN</div>
-                        <div style="display:flex; justify-content:space-between; margin-top:8px;">
-                            <div>
-                                <small><b>Dibuat oleh:</b><br>${header.vendor_nama || 'PT Binayasa Purabatara Unit ______'}</small><br>
-                                <small>Petugas: <b>${header.petugas_nama || '-'}</b></small><br>
-                                ${header.tanda_tangan_petugas ? `<img src="${header.tanda_tangan_petugas}" style="width:100px; height:50px; border:1px solid var(--border); border-radius:4px; margin-top:4px;">` : ''}
-                            </div>
-                            <div>
-                                <small><b>Mengetahui:</b><br>${header.bank_cabang || 'PT Bank Tabungan Negara Cabang ______'}</small><br>
-                                <small>Supervisor: <b>${header.supervisor_nama || '-'}</b></small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-share" style="width:100%; margin-top:12px;" onclick="shareData('Laporan ATM - ${lokasi}', \`${shareText}\`)"><i class="fa-solid fa-share-nodes"></i> Bagikan Laporan Ini</button>
-                </div>`;
-            document.getElementById('app-modal').style.display = 'flex';
-        }
-
-        let isDrawing = false;
-        function initCanvasTTD() {
-            const canvas = document.getElementById('canvas-ttd');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = '#000000';
-
-            const startDrawing = (e) => {
-                isDrawing = true;
-                ctx.beginPath();
-                const rect = canvas.getBoundingClientRect();
-                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-                ctx.moveTo(x, y);
-            };
-
-            const draw = (e) => {
-                if (!isDrawing) return;
-                const rect = canvas.getBoundingClientRect();
-                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-                ctx.lineTo(x, y);
-                ctx.stroke();
-            };
-
-            const stopDrawing = () => { isDrawing = false; };
-
-            canvas.addEventListener('mousedown', startDrawing);
-            canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('mouseup', stopDrawing);
-
-            canvas.addEventListener('touchstart', startDrawing);
-            canvas.addEventListener('touchmove', draw);
-            canvas.addEventListener('touchend', stopDrawing);
-        }
-
-        function clearCanvasTTD() {
-            const canvas = document.getElementById('canvas-ttd');
-            if (canvas) {
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
         }
 
         async function deleteRecord(table, id, page) {
@@ -1916,25 +1469,30 @@
             }
         }
 
-        function viewMap(nama, lat, lng) {
-            document.getElementById('modal-title').innerText = `Peta: ${nama}`;
-            document.getElementById('modal-body').innerHTML = `<iframe width="100%" height="240" style="border:0; border-radius:8px;" src="https://maps.google.com/maps?q=${lat || -6.200000},${lng || 106.816666}&z=15&output=embed"></iframe>`;
+        function scanQRModal() {
+            document.getElementById('modal-title').innerText = "Scan QR Code Asset";
+            document.getElementById('modal-body').innerHTML = `<div id="qr-reader" style="width:100%;"></div>`;
             document.getElementById('app-modal').style.display = 'flex';
+            qrScanner = new Html5Qrcode("qr-reader");
+            qrScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 220 }, (decodedText) => {
+                stopQRScanner();
+                Swal.fire('QR Code Terdeteksi', `Kode: <b>${decodedText}</b>`, 'success');
+            }).catch(() => {});
         }
 
-        function showQR(kode) {
-            document.getElementById('modal-title').innerText = `QR Code: ${kode}`;
-            document.getElementById('modal-body').innerHTML = `<div id="qrcode" style="display:flex; justify-content:center; padding:15px;"></div>`;
-            document.getElementById('app-modal').style.display = 'flex';
-            new QRCode(document.getElementById("qrcode"), { text: kode, width: 160, height: 160 });
+        function stopQRScanner() {
+            if (qrScanner) {
+                qrScanner.stop().then(() => { qrScanner.clear(); qrScanner = null; }).catch(() => {});
+            }
         }
 
-        async function exportExcel() {
-            const { data } = await db.from('asset').select('kode_asset, nama_asset, kategori, status');
-            const ws = XLSX.utils.json_to_sheet(data || []);
+        async function exportLaporanRekap(type) {
+            const { data } = await db.from(type).select('*');
+            if (!data || data.length === 0) return Swal.fire('Informasi', 'Data tidak ditemukan', 'info');
+            const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Asset");
-            XLSX.writeFile(wb, "Laporan_Asset.xlsx");
+            XLSX.utils.book_append_sheet(wb, ws, type.toUpperCase());
+            XLSX.writeFile(wb, `Laporan_Rekap_${type}_${Date.now()}.xlsx`);
         }
 
         async function exportPDF() {
