@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Building Management System</title>
+    <title>Binayasa Unit BSN KC Surabaya</title>
     
     <!-- CSS Dependencies -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -39,7 +39,7 @@
         /* AUTH SCREEN */
         #auth-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 90vh; }
         .auth-card { background: var(--card-bg); padding: 24px; border-radius: var(--radius); width: 100%; box-shadow: var(--shadow); border: 1px solid var(--border); text-align: center; }
-        .auth-card h2 { color: var(--primary); margin-bottom: 6px; }
+        .auth-card h2 { color: var(--primary); margin-bottom: 6px; font-size: 1.1rem; }
         .auth-card p { color: var(--text-sub); font-size: 0.85rem; margin-bottom: 16px; }
 
         .form-group { text-align: left; margin-bottom: 12px; }
@@ -60,8 +60,8 @@
         .profile-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .profile-left { display: flex; align-items: center; gap: 12px; }
         .avatar { width: 44px; height: 44px; border-radius: 50%; background: #d1e7dd; color: #0f5132; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
-        .user-info .email { font-size: 0.85rem; font-weight: 700; word-break: break-all; }
-        .user-info .role { font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; }
+        .user-info .email { font-size: 0.82rem; font-weight: 700; word-break: break-all; }
+        .user-info .role { font-size: 0.68rem; font-weight: 800; color: var(--primary); text-transform: uppercase; }
 
         .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
         .stat-box { background: var(--card-bg); border-radius: var(--radius); padding: 12px 6px; text-align: center; border: 1px solid var(--border); }
@@ -86,7 +86,7 @@
         /* SUBPAGE & TABLES */
         .sub-page { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 100; padding: 16px; overflow-y: auto; }
         .sub-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-        .sub-header h2 { font-size: 1rem; flex: 1; text-transform: uppercase; }
+        .sub-header h2 { font-size: 0.95rem; flex: 1; text-transform: uppercase; }
 
         .table-responsive { width: 100%; overflow-x: auto; }
         .table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
@@ -136,7 +136,7 @@
         <!-- AUTH SCREEN -->
         <div id="auth-container">
             <div class="auth-card">
-                <h2><i class="fa-solid fa-building-circle-check"></i> BMS Mobile</h2>
+                <h2><i class="fa-solid fa-building-circle-check"></i> Binayasa BSN</h2>
                 <p>Silakan login untuk melanjutkan</p>
                 <form id="login-form">
                     <div class="form-group">
@@ -156,10 +156,10 @@
         <div id="app-dashboard" style="display: none;">
             <div class="profile-header">
                 <div class="profile-left">
-                    <div class="avatar" id="user-avatar">MA</div>
+                    <div class="avatar" id="user-avatar">BS</div>
                     <div class="user-info">
                         <div class="email" id="user-email">admin@bms.com</div>
-                        <div class="role">ADMINISTRATOR</div>
+                        <div class="role">BINAYASA UNIT BSN KC SURABAYA</div>
                     </div>
                 </div>
                 <div>
@@ -203,7 +203,7 @@
                 <div class="grid-item" onclick="scanQRModal()"><div class="grid-icon-wrapper" style="background:#f3e8ff; color:#9333ea;"><i class="fa-solid fa-qrcode"></i></div><span class="grid-label">Scan QR</span></div>
             </div>
 
-            <!-- CARD GRAFIK UTILITAS DOKUMEN -->
+            <!-- CARD GRAFIK UTILITAS -->
             <div class="card">
                 <div class="card-title" style="display:flex; flex-direction:column; gap:10px; margin-bottom:12px;">
                     <span style="font-size:0.95rem; font-weight:700;"><i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Tren Biaya Utilitas</span>
@@ -314,7 +314,6 @@
                     
                     const emailStr = currentUser.email;
                     document.getElementById('user-email').innerText = emailStr;
-                    document.getElementById('user-avatar').innerText = emailStr.substring(0, 2).toUpperCase();
 
                     loadDashboardStats();
                     loadKantorFilter();
@@ -485,11 +484,6 @@
                             if (item.jenis === 'Air') dataAir[targetIdx] += biayaVal;
                         }
                     });
-                } else {
-                    if (selectedTahun === '2026') {
-                        dataListrik = [250000, 270000, 260000, 310000, 300000, 350000, 420000, 390000, 0, 0, 0, 0];
-                        dataAir = [100000, 105000, 98000, 120000, 115000, 130000, 160000, 140000, 0, 0, 0, 0];
-                    }
                 }
 
                 checkTrendAlert(dataListrik, dataAir, labels, kantorStats, selectedKantor);
@@ -587,31 +581,6 @@
                     const diff = currTotal - prevTotal;
                     const percent = Math.round((diff / prevTotal) * 100);
 
-                    const currKantorMap = kantorStats[lastIdx] || {};
-                    const prevKantorMap = kantorStats[lastIdx - 1] || {};
-                    
-                    let kantorMelonjak = [];
-                    let kantorTurun = [];
-
-                    const allKantorNames = new Set([...Object.keys(currKantorMap), ...Object.keys(prevKantorMap)]);
-                    
-                    allKantorNames.forEach(kName => {
-                        const cVal = currKantorMap[kName] || 0;
-                        const pVal = prevKantorMap[kName] || 0;
-                        const kDiff = cVal - pVal;
-
-                        if (pVal > 0 && kDiff !== 0) {
-                            const kPercent = Math.round((kDiff / pVal) * 100);
-                            if (kPercent >= 15) {
-                                kantorMelonjak.push(`<b>${kName}</b> (+${kPercent}%)`);
-                            } else if (kPercent <= -15) {
-                                kantorTurun.push(`<b>${kName}</b> (${kPercent}%)`);
-                            }
-                        } else if (pVal === 0 && cVal > 0) {
-                            kantorMelonjak.push(`<b>${kName}</b> (Baru Diinput)`);
-                        }
-                    });
-
                     alertBox.style.display = 'flex';
 
                     let detailMsg = "";
@@ -626,15 +595,6 @@
                     } else {
                         alertBox.style.display = 'none';
                         return;
-                    }
-
-                    if (selectedKantor === 'ALL') {
-                        if (kantorMelonjak.length > 0) {
-                            detailMsg += `<br><span style="color:#842029;">• Kenaikan signifikan: ${kantorMelonjak.join(', ')}</span>`;
-                        }
-                        if (kantorTurun.length > 0) {
-                            detailMsg += `<br><span style="color:#0f5132;">• Penurunan signifikan: ${kantorTurun.join(', ')}</span>`;
-                        }
                     }
 
                     alertText.innerHTML = detailMsg;
@@ -773,6 +733,90 @@
                                 </tbody>
                             </table>
                         </div>`;
+                } else if (pageKey === 'laporan') {
+                    const { data: kantorList } = await db.from('kantor').select('id, nama');
+                    const currentYear = new Date().getFullYear();
+
+                    contentEl.innerHTML = `
+                        <!-- CARD GRAFIK REKAP LAPORAN -->
+                        <div class="card">
+                            <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+                                <span><i class="fa-solid fa-chart-bar" style="color:var(--primary);"></i> Visualisasi Tren Biaya</span>
+                            </div>
+                            
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:12px;">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Kantor</label>
+                                    <select id="lap-filter-kantor" class="form-control" style="font-size:0.78rem;" onchange="renderLaporanChart()">
+                                        <option value="ALL">Semua Kantor</option>
+                                        ${kantorList ? kantorList.map(k => `<option value="${k.id}">${k.nama}</option>`).join('') : ''}
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Tipe Rekap Grafik</label>
+                                    <select id="lap-filter-tipe" class="form-control" style="font-size:0.78rem;" onchange="renderLaporanChart()">
+                                        <option value="BULANAN">Bulanan (Tahun ${currentYear})</option>
+                                        <option value="TAHUNAN">Tahunan (Multi-Tahun)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="position: relative; height: 180px; width: 100%; margin-bottom: 10px;">
+                                <canvas id="chartLaporan"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- PUSAT EKSPOR LAPORAN CUSTOM -->
+                        <div class="card">
+                            <div class="card-title"><i class="fa-solid fa-file-export"></i> Pusat Ekspor Laporan Custom</div>
+                            <p style="font-size:0.78rem; color:var(--text-sub); margin-bottom:12px;">Atur parameter periode laporan yang ingin dicetak:</p>
+                            
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:12px;">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Filter Periode Bulan</label>
+                                    <select id="exp-bulan" class="form-control" style="font-size:0.8rem;">
+                                        <option value="ALL">Semua Bulan (Full Year)</option>
+                                        <option value="01">Januari</option>
+                                        <option value="02">Februari</option>
+                                        <option value="03">Maret</option>
+                                        <option value="04">April</option>
+                                        <option value="05">Mei</option>
+                                        <option value="06">Juni</option>
+                                        <option value="07">Juli</option>
+                                        <option value="08" selected>Agustus</option>
+                                        <option value="09">September</option>
+                                        <option value="10">Oktober</option>
+                                        <option value="11">November</option>
+                                        <option value="12">Desember</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label>Filter Tahun</label>
+                                    <select id="exp-tahun" class="form-control" style="font-size:0.8rem;">
+                                        <option value="2026" selected>2026</option>
+                                        <option value="2025">2025</option>
+                                        <option value="2024">2024</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="display:flex; flex-direction:column; gap:8px;">
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                                    <button class="btn btn-primary" onclick="generateReport('utilitas', 'excel')"><i class="fa-solid fa-file-excel"></i> Utilitas (Excel)</button>
+                                    <button class="btn btn-danger" onclick="generateReport('utilitas', 'pdf')"><i class="fa-solid fa-file-pdf"></i> Utilitas (PDF)</button>
+                                </div>
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                                    <button class="btn btn-primary" onclick="generateReport('asset', 'excel')"><i class="fa-solid fa-boxes-stacked"></i> Asset (Excel)</button>
+                                    <button class="btn btn-danger" onclick="generateReport('asset', 'pdf')"><i class="fa-solid fa-file-pdf"></i> Asset (PDF)</button>
+                                </div>
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                                    <button class="btn btn-primary" onclick="generateReport('work_orders', 'excel')"><i class="fa-solid fa-clipboard-list"></i> Work Order (Excel)</button>
+                                    <button class="btn btn-danger" onclick="generateReport('work_orders', 'pdf')"><i class="fa-solid fa-file-pdf"></i> Work Order (PDF)</button>
+                                </div>
+                            </div>
+                        </div>`;
+
+                    setTimeout(() => { renderLaporanChart(); }, 100);
                 } else if (pageKey === 'pemeriksaan_atm') {
                     actionBtn.style.display = 'inline-flex';
                     kriteriaBtn.style.display = 'inline-flex';
@@ -1023,90 +1067,6 @@
                             };
                         }, 1200);
                     };
-                } else if (pageKey === 'laporan') {
-                    const { data: kantorList } = await db.from('kantor').select('id, nama');
-                    const currentYear = new Date().getFullYear();
-
-                    contentEl.innerHTML = `
-                        <!-- CARD GRAFIK REKAP LAPORAN -->
-                        <div class="card">
-                            <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
-                                <span><i class="fa-solid fa-chart-bar" style="color:var(--primary);"></i> Visualisasi Tren Biaya</span>
-                            </div>
-                            
-                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:12px;">
-                                <div class="form-group" style="margin-bottom:0;">
-                                    <label>Kantor</label>
-                                    <select id="lap-filter-kantor" class="form-control" style="font-size:0.78rem;" onchange="renderLaporanChart()">
-                                        <option value="ALL">Semua Kantor</option>
-                                        ${kantorList ? kantorList.map(k => `<option value="${k.id}">${k.nama}</option>`).join('') : ''}
-                                    </select>
-                                </div>
-                                <div class="form-group" style="margin-bottom:0;">
-                                    <label>Tipe Rekap Grafik</label>
-                                    <select id="lap-filter-tipe" class="form-control" style="font-size:0.78rem;" onchange="renderLaporanChart()">
-                                        <option value="BULANAN">Bulanan (Tahun ${currentYear})</option>
-                                        <option value="TAHUNAN">Tahunan (Multi-Tahun)</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div style="position: relative; height: 180px; width: 100%; margin-bottom: 10px;">
-                                <canvas id="chartLaporan"></canvas>
-                            </div>
-                        </div>
-
-                        <!-- PUSAT EKSPOR LAPORAN CUSTOM -->
-                        <div class="card">
-                            <div class="card-title"><i class="fa-solid fa-file-export"></i> Pusat Ekspor Laporan Custom</div>
-                            <p style="font-size:0.78rem; color:var(--text-sub); margin-bottom:12px;">Atur parameter periode laporan yang ingin dicetak:</p>
-                            
-                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:12px;">
-                                <div class="form-group" style="margin-bottom:0;">
-                                    <label>Filter Periode Bulan</label>
-                                    <select id="exp-bulan" class="form-control" style="font-size:0.8rem;">
-                                        <option value="ALL">Semua Bulan (Full Year)</option>
-                                        <option value="01">Januari</option>
-                                        <option value="02">Februari</option>
-                                        <option value="03">Maret</option>
-                                        <option value="04">April</option>
-                                        <option value="05">Mei</option>
-                                        <option value="06">Juni</option>
-                                        <option value="07">Juli</option>
-                                        <option value="08" selected>Agustus</option>
-                                        <option value="09">September</option>
-                                        <option value="10">Oktober</option>
-                                        <option value="11">November</option>
-                                        <option value="12">Desember</option>
-                                    </select>
-                                </div>
-                                <div class="form-group" style="margin-bottom:0;">
-                                    <label>Filter Tahun</label>
-                                    <select id="exp-tahun" class="form-control" style="font-size:0.8rem;">
-                                        <option value="2026" selected>2026</option>
-                                        <option value="2025">2025</option>
-                                        <option value="2024">2024</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div style="display:flex; flex-direction:column; gap:8px;">
-                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
-                                    <button class="btn btn-primary" onclick="generateReport('utilitas', 'excel')"><i class="fa-solid fa-file-excel"></i> Utilitas (Excel)</button>
-                                    <button class="btn btn-danger" onclick="generateReport('utilitas', 'pdf')"><i class="fa-solid fa-file-pdf"></i> Utilitas (PDF)</button>
-                                </div>
-                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
-                                    <button class="btn btn-primary" onclick="generateReport('asset', 'excel')"><i class="fa-solid fa-boxes-stacked"></i> Asset (Excel)</button>
-                                    <button class="btn btn-danger" onclick="generateReport('asset', 'pdf')"><i class="fa-solid fa-file-pdf"></i> Asset (PDF)</button>
-                                </div>
-                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
-                                    <button class="btn btn-primary" onclick="generateReport('work_orders', 'excel')"><i class="fa-solid fa-clipboard-list"></i> Work Order (Excel)</button>
-                                    <button class="btn btn-danger" onclick="generateReport('work_orders', 'pdf')"><i class="fa-solid fa-file-pdf"></i> Work Order (PDF)</button>
-                                </div>
-                            </div>
-                        </div>`;
-
-                    setTimeout(() => { renderLaporanChart(); }, 100);
                 } else if (pageKey === 'pengaturan') {
                     contentEl.innerHTML = `
                         <div class="card">
@@ -1242,56 +1202,48 @@
             }
         }
 
-        // LOGIKA ANALISIS TREN ANOMALI & HOOK
+        // LOGIKA EFEKTIF MENGAMBIL 1 TERINGGI DAN 1 TERRENDAH (TANPA EMOJI AGAR BERSIH DI PDF)
         async function analyzeUtilityTrends(dataUtilitas, filterBulan, filterTahun) {
             let insights = [];
-            let hookMessage = "⚠️ TIDAK ADA ANOMALI: Seluruh pemakaian dalam batas wajar.";
+            let hookMessage = "PERHATIAN: Lakukan pemantauan berkala untuk menjaga efisiensi anggaran operasional.";
 
             if (!dataUtilitas || dataUtilitas.length === 0) {
-                return { insights: ["Data tidak ditemukan pada periode ini."], hook: "ℹ️ Harap lakukan input data pemakaian terlebih dahulu." };
+                return { insights: ["Data tidak ditemukan pada periode ini."], hook: "Status: Tidak ada record data pada periode terpilih." };
             }
 
-            let kantorMap = {};
+            let kantorList = [];
             dataUtilitas.forEach(u => {
                 const kName = u.kantor ? u.kantor.nama : 'Kantor Unassigned';
-                if (!kantorMap[kName]) kantorMap[kName] = { listrik: 0, air: 0 };
-                if (u.jenis === 'Listrik') kantorMap[kName].listrik += Number(u.biaya || 0);
-                if (u.jenis === 'Air') kantorMap[kName].air += Number(u.biaya || 0);
+                const totalBiaya = Number(u.biaya || 0);
+                kantorList.push({ nama: kName, biaya: totalBiaya, jenis: u.jenis });
             });
 
-            let spikeCount = 0;
-            let dropCount = 0;
+            // Urutkan biaya dari tertinggi ke terendah
+            kantorList.sort((a, b) => b.biaya - a.biaya);
 
-            Object.keys(kantorMap).forEach(kName => {
-                const listrik = kantorMap[kName].listrik;
-                const air = kantorMap[kName].air;
+            const tertinggi = kantorList[0];
+            const terendah = kantorList[kantorList.length - 1];
 
-                if (listrik > 350000) {
-                    insights.push(`• [${kName}] 🚨 KENAIKAN LISTRIK: Biaya mencatatkan nilai tinggi Rp ${listrik.toLocaleString('id-ID')}. Perlu pengecekan modul HVAC/AC.`);
-                    spikeCount++;
-                } else if (listrik > 0 && listrik < 200000) {
-                    insights.push(`• [${kName}] 📉 PENURUNAN LISTRIK: Penghematan tercapai dengan total Rp ${listrik.toLocaleString('id-ID')}.`);
-                    dropCount++;
-                } else if (listrik > 0) {
-                    insights.push(`• [${kName}] 🟢 LISTRIK STABIL: Total biaya Rp ${listrik.toLocaleString('id-ID')}.`);
-                }
+            if (tertinggi) {
+                insights.push(`[1] KENAIKAN TERTINGGI: ${tertinggi.nama} (${tertinggi.jenis}) mencatatkan biaya terbesar Rp ${tertinggi.biaya.toLocaleString('id-ID')}. Perlu evaluasi penggunaan.`);
+            }
 
-                if (air > 150000) {
-                    insights.push(`• [${kName}] 🚨 LONJAKAN PDAM: Biaya Air mencapai Rp ${air.toLocaleString('id-ID')}. Potensi kebocoran pipa utama!`);
-                    spikeCount++;
-                }
-            });
+            if (terendah && terendah.nama !== tertinggi.nama) {
+                insights.push(`[2] PEMAKAIAN TERENDAH: ${terendah.nama} (${terendah.jenis}) mencatatkan biaya efisien sebesar Rp ${terendah.biaya.toLocaleString('id-ID')}.`);
+            } else if (terendah) {
+                insights.push(`[2] STATUS PEMAKAIAN: Hanya terdapat 1 record data kantor pada periode ini.`);
+            }
 
-            if (spikeCount > 0) {
-                hookMessage = `🚨 PERHATIAN BMS: Terdeteksi ${spikeCount} lonjakan biaya signifikan! SEGERA LAKUKAN INSPEKSI TEKNIS Lapangan untuk mencegah kebocoran anggaran!`;
-            } else if (dropCount > 0) {
-                hookMessage = `💡 ANOMALI POSITIF: Terdeteksi penurunan pemakaian di beberapa lokasi. Lakukan verifikasi apakah disebabkan oleh efisiensi atau kesalahan input kWH.`;
+            if (tertinggi && tertinggi.biaya > 1000000) {
+                hookMessage = `PERHATIAN UTAMA: Terdeteksi biaya tinggi di ${tertinggi.nama}! SEGERA LAKUKAN INSPEKSI LAPANGAN untuk mencegah pemborosan!`;
+            } else {
+                hookMessage = `EVALUASI OPERASIONAL: Penggunaan utilitas secara umum terpantau stabil pada periode ini.`;
             }
 
             return { insights, hook: hookMessage };
         }
 
-        // GENERATOR EKSPOR (EXCEL / PDF)
+        // GENERATOR EKSPOR PDF / EXCEL DENGAN BRANDING LENGKAP & TEKS BEBAS CHARACTER CORRUPT
         async function generateReport(type, format) {
             const selBulan = document.getElementById('exp-bulan').value;
             const selTahun = document.getElementById('exp-tahun').value;
@@ -1322,14 +1274,14 @@
 
                 if (format === 'excel') {
                     const excelRows = [];
-                    excelRows.push({ "LAPORAN BIKINAN SYSTEM": "PUSAT EVALUASI BIAYA & ASSET BMS" });
-                    excelRows.push({ "LAPORAN BIKINAN SYSTEM": `PERIODE: BULAN ${selBulan} - TAHUN ${selTahun}` });
-                    excelRows.push({ "LAPORAN BIKINAN SYSTEM": `STATUS ANOMALI: ${analysis.hook}` });
+                    excelRows.push({ "BINAYASA UNIT BSN KC SURABAYA": "LAPORAN EVALUASI BIAYA & OPERASIONAL" });
+                    excelRows.push({ "BINAYASA UNIT BSN KC SURABAYA": `PERIODE: BULAN ${selBulan} - TAHUN ${selTahun}` });
+                    excelRows.push({ "BINAYASA UNIT BSN KC SURABAYA": `STATUS: ${analysis.hook}` });
                     excelRows.push({}); 
 
-                    excelRows.push({ "LAPORAN BIKINAN SYSTEM": "--- NOTIFIKASI PENCEGAHAN & INSIGHT TEKNIS ---" });
+                    excelRows.push({ "BINAYASA UNIT BSN KC SURABAYA": "--- CATATAN EVALUASI REKAP ---" });
                     analysis.insights.forEach(msg => {
-                        excelRows.push({ "LAPORAN BIKINAN SYSTEM": msg });
+                        excelRows.push({ "BINAYASA UNIT BSN KC SURABAYA": msg });
                     });
                     excelRows.push({}); 
 
@@ -1340,7 +1292,6 @@
                                 "Kantor": row.kantor ? row.kantor.nama : '-',
                                 "Jenis Layanan": row.jenis,
                                 "ID Pelanggan": row.id_pelanggan || '-',
-                                "Periode": row.periode_bulan || '-',
                                 "Pemakaian": `${row.jumlah_pemakaian} ${row.satuan}`,
                                 "Biaya (Rp)": Number(row.biaya || 0),
                                 "Tanggal Record": row.bulan_tahun || '-'
@@ -1352,7 +1303,7 @@
 
                     const ws = XLSX.utils.json_to_sheet(excelRows);
                     const wb = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(wb, ws, "Laporan_BMS");
+                    XLSX.utils.book_append_sheet(wb, ws, "Binayasa_Report");
                     XLSX.writeFile(wb, `Laporan_${type}_${selBulan}_${selTahun}.xlsx`);
                     Swal.close();
 
@@ -1360,35 +1311,43 @@
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
 
-                    doc.setFontSize(14);
+                    // Header Branding
+                    doc.setFontSize(13);
+                    doc.setFont("helvetica", "bold");
                     doc.setTextColor(25, 135, 84);
-                    doc.text(`LAPORAN REKAP ${type.toUpperCase()} - BMS`, 14, 15);
+                    doc.text(`LAPORAN REKAP ${type.toUpperCase()} - BINAYASA UNIT BSN KC SURABAYA`, 14, 15);
+                    
                     doc.setFontSize(9);
+                    doc.setFont("helvetica", "normal");
                     doc.setTextColor(100);
                     doc.text(`Periode Filter: Bulan ${selBulan} / Tahun ${selTahun}`, 14, 21);
 
+                    // Box Hook Notifikasi Pemicu (Bersih Tanpa Karakter Aneh)
                     doc.setFillColor(254, 242, 242);
                     doc.setDrawColor(239, 68, 68);
-                    doc.roundedRect(14, 25, 182, 16, 2, 2, 'FD');
+                    doc.roundedRect(14, 25, 182, 14, 2, 2, 'FD');
                     
                     doc.setFontSize(8);
+                    doc.setFont("helvetica", "bold");
                     doc.setTextColor(185, 28, 28);
-                    doc.text(doc.splitTextToSize(analysis.hook, 176), 18, 31);
+                    doc.text(doc.splitTextToSize(analysis.hook, 176), 18, 32);
 
-                    let yPos = 48;
+                    let yPos = 46;
                     doc.setFontSize(9);
+                    doc.setFont("helvetica", "bold");
                     doc.setTextColor(0);
                     doc.text("Catatan Evaluasi Kenaikan / Penurunan Biaya:", 14, yPos);
                     yPos += 5;
 
                     doc.setFontSize(8);
-                    doc.setTextColor(70);
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(50);
                     analysis.insights.forEach(insight => {
                         doc.text(insight, 14, yPos);
                         yPos += 5;
                     });
 
-                    yPos += 4;
+                    yPos += 3;
 
                     let tableBody = [];
                     let tableHeaders = [];
@@ -1419,8 +1378,8 @@
                         head: tableHeaders,
                         body: tableBody,
                         theme: 'striped',
-                        headStyles: { fillStyle: [25, 135, 84] },
-                        styles: { fontSize: 8 }
+                        headStyles: { fillColor: [25, 135, 84] },
+                        styles: { fontSize: 8, font: "helvetica" }
                     });
 
                     doc.save(`Laporan_${type}_${selBulan}_${selTahun}.pdf`);
