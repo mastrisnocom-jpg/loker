@@ -1160,7 +1160,7 @@
             };
         }
 
-        // FORM UTILITAS
+        // FORM UTILITAS (DENGAN BATASAN PEMBATASAN INPUT GANDA PER KANTOR & BULAN)
         async function openFormUtilitas(id = null) {
             const { data: kantorList } = await db.from('kantor').select('id, nama, id_pelanggan_pln, id_pelanggan_pdam');
             if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah data kantor dulu!', 'warning');
@@ -1221,15 +1221,43 @@
 
             document.getElementById('f-utilitas').onsubmit = async (e) => {
                 e.preventDefault();
-                Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+
+                const kantorId = document.getElementById('fu-kantor').value;
+                const jenisVal = document.getElementById('fu-jenis').value;
+                const bulanVal = document.getElementById('fu-bulan').value; // format YYYY-MM-DD
+                const yyyyMm = bulanVal.slice(0, 7); // Mengambil YYYY-MM
+
+                Swal.fire({ title: 'Memeriksa Data...', didOpen: () => Swal.showLoading() });
+
+                // PEMBATASAN INPUT GANDA PER KANTOR, JENIS, DAN BULAN
+                if (!id) {
+                    const { data: existing, error: checkErr } = await db
+                        .from('utilitas')
+                        .select('id, bulan_tahun')
+                        .eq('kantor_id', kantorId)
+                        .eq('jenis', jenisVal);
+
+                    if (!checkErr && existing && existing.length > 0) {
+                        const isDuplicate = existing.some(item => item.bulan_tahun && item.bulan_tahun.startsWith(yyyyMm));
+                        if (isDuplicate) {
+                            const selectedKantorName = document.getElementById('fu-kantor').options[document.getElementById('fu-kantor').selectedIndex].text;
+                            return Swal.fire({
+                                icon: 'warning',
+                                title: 'Gagal Input!',
+                                text: `Data ${jenisVal} untuk ${selectedKantorName} periode ${yyyyMm} sudah pernah diinput sebelumnya. Silakan pilih jenis lain atau update data yang ada.`
+                            });
+                        }
+                    }
+                }
+
                 const payload = {
-                    kantor_id: document.getElementById('fu-kantor').value,
-                    jenis: document.getElementById('fu-jenis').value,
+                    kantor_id: kantorId,
+                    jenis: jenisVal,
                     id_pelanggan: document.getElementById('fu-id-pelanggan').value,
                     jumlah_pemakaian: document.getElementById('fu-jumlah').value,
                     satuan: document.getElementById('fu-satuan').value,
                     biaya: document.getElementById('fu-biaya').value,
-                    bulan_tahun: document.getElementById('fu-bulan').value
+                    bulan_tahun: bulanVal
                 };
 
                 let err = null;
@@ -1241,9 +1269,10 @@
                     err = error;
                 }
 
-                if (err) Swal.fire('Gagal', err.message, 'error');
-                else {
-                    Swal.fire('Berhasil', 'Utilitas tersimpan', 'success');
+                if (err) {
+                    Swal.fire('Gagal', err.message, 'error');
+                } else {
+                    Swal.fire('Berhasil', 'Utilitas berhasil tersimpan', 'success');
                     document.getElementById('app-modal').style.display = 'none';
                     openSubPage('utilitas');
                     renderChart();
