@@ -90,8 +90,16 @@
 
         .table-responsive { width: 100%; overflow-x: auto; }
         .table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        .table th, .table td { padding: 8px; border-bottom: 1px solid var(--border); text-align: left; }
+        .table th, .table td { padding: 8px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; }
         .table th { background: var(--primary-light); color: var(--primary); font-weight: 700; }
+
+        /* DROPDOWN ACTION MENU RAPI */
+        .dropdown-action { position: relative; display: inline-block; }
+        .btn-action-trigger { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-main); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+        .dropdown-menu-content { display: none; position: absolute; right: 0; top: 36px; background-color: var(--card-bg); min-width: 130px; box-shadow: 0px 8px 16px rgba(0,0,0,0.15); border: 1px solid var(--border); border-radius: 10px; z-index: 105; overflow: hidden; }
+        .dropdown-menu-content button { color: var(--text-main); padding: 8px 12px; text-decoration: none; display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: none; border: none; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+        .dropdown-menu-content button:hover { background-color: var(--primary-light); }
+        .dropdown-action.active .dropdown-menu-content { display: block; }
 
         .badge { padding: 3px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; }
         .badge-success { background: #d1e7dd; color: #0f5132; }
@@ -114,7 +122,6 @@
         .modal-content { background: var(--card-bg); border-radius: var(--radius); width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; padding: 20px; position: relative; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         .close-modal { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-sub); }
-        .action-group { display: flex; gap: 4px; flex-wrap: wrap; }
         .pay-banner { background: var(--primary-light); border: 1px dashed var(--primary); border-radius: 12px; padding: 12px; margin-bottom: 14px; text-align: center; }
         .pay-banner-title { font-size: 0.8rem; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
         .pay-banner-btns { display: flex; gap: 8px; justify-content: center; }
@@ -195,12 +202,11 @@
                 <div class="grid-item" onclick="scanQRModal()"><div class="grid-icon-wrapper" style="background:#f3e8ff; color:#9333ea;"><i class="fa-solid fa-qrcode"></i></div><span class="grid-label">Scan QR</span></div>
             </div>
 
-            <!-- CARD GRAFIK UTILITAS DENGAN LAYOUT FLEKSIBEL & RESPONSIF -->
+            <!-- CARD GRAFIK UTILITAS -->
             <div class="card">
                 <div class="card-title" style="display:flex; flex-direction:column; gap:10px; margin-bottom:12px;">
                     <span style="font-size:0.95rem; font-weight:700;"><i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Tren Biaya Utilitas</span>
                     
-                    <!-- Grid Filter 3 Kolom agar responsif dan tidak terpotong -->
                     <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; width:100%;">
                         <select id="chart-filter-kantor" class="form-control" style="padding: 6px 4px; font-size: 0.72rem; text-overflow: ellipsis;" onchange="renderChart()">
                             <option value="ALL">Semua Kantor</option>
@@ -219,7 +225,6 @@
                     </div>
                 </div>
 
-                <!-- BOX NOTIFIKASI KENAIKAN / PENURUNAN EXTREM DENGAN DETAIL KANTOR -->
                 <div id="alert-trend" class="alert-box" style="flex-direction:column; align-items:flex-start; gap:4px; font-size:0.75rem;">
                     <div style="display:flex; align-items:center; gap:6px;">
                         <i id="alert-trend-icon" class="fa-solid fa-triangle-exclamation"></i>
@@ -282,6 +287,21 @@
             checkAuth();
             setupEventListeners();
         });
+
+        // Event listener klik di luar dropdown untuk menutup menu aksi
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown-action')) {
+                document.querySelectorAll('.dropdown-action').forEach(el => el.classList.remove('active'));
+            }
+        });
+
+        function toggleDropdownMenu(button) {
+            const currentContainer = button.closest('.dropdown-action');
+            document.querySelectorAll('.dropdown-action').forEach(el => {
+                if (el !== currentContainer) el.classList.remove('active');
+            });
+            currentContainer.classList.toggle('active');
+        }
 
         async function checkAuth() {
             try {
@@ -627,7 +647,7 @@
             }
         }
 
-        // ROUTER SUB PAGE
+        // ROUTER SUB PAGE UNTUK DROPDOWN ACTION MENU
         async function openSubPage(pageKey) {
             const overlay = document.getElementById('sub-page-overlay');
             const titleEl = document.getElementById('sub-page-title');
@@ -649,7 +669,7 @@
                     contentEl.innerHTML = `
                         <div class="table-responsive">
                             <table class="table">
-                                <thead><tr><th>Nama</th><th>Alamat</th><th>Aksi</th></tr></thead>
+                                <thead><tr><th>Nama</th><th>Alamat</th><th style="width:40px; text-align:center;">Aksi</th></tr></thead>
                                 <tbody>
                                     ${data && data.length > 0 ? data.map(k => {
                                         const detailStr = `Nama: ${k.nama}\nAlamat: ${k.alamat}\nID PLN: ${k.id_pelanggan_pln || '-'}\nID PDAM: ${k.id_pelanggan_pdam || '-'}`;
@@ -657,12 +677,15 @@
                                         <tr>
                                             <td><b>${k.nama}</b></td>
                                             <td>${k.alamat}</td>
-                                            <td>
-                                                <div class="action-group">
-                                                    <button class="btn btn-info" style="padding:4px 8px;" title="Lihat Detail" onclick="viewGenericDetail('Kantor', '${k.nama}', \`${detailStr}\`)"><i class="fa-solid fa-eye"></i></button>
-                                                    <button class="btn btn-share" style="padding:4px 8px;" title="Bagikan Data" onclick="shareData('Data Kantor', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes"></i></button>
-                                                    <button class="btn btn-warning" style="padding:4px 8px;" title="Edit Data" onclick="openFormKantor('${k.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                    <button class="btn btn-danger" style="padding:4px 8px;" title="Hapus Data" onclick="deleteRecord('kantor','${k.id}','kantor')"><i class="fa-solid fa-trash"></i></button>
+                                            <td style="text-align:center;">
+                                                <div class="dropdown-action">
+                                                    <button class="btn-action-trigger" onclick="toggleDropdownMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                                    <div class="dropdown-menu-content">
+                                                        <button onclick="viewGenericDetail('Kantor', '${k.nama}', \`${detailStr}\`)"><i class="fa-solid fa-eye" style="color:#0dcaf0;"></i> Detail</button>
+                                                        <button onclick="shareData('Data Kantor', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes" style="color:#0d6efd;"></i> Bagikan</button>
+                                                        <button onclick="openFormKantor('${k.id}')"><i class="fa-solid fa-pen-to-square" style="color:#ffc107;"></i> Edit</button>
+                                                        <button onclick="deleteRecord('kantor','${k.id}','kantor')"><i class="fa-solid fa-trash" style="color:#dc3545;"></i> Hapus</button>
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
@@ -677,7 +700,7 @@
                     contentEl.innerHTML = `
                         <div class="table-responsive">
                             <table class="table">
-                                <thead><tr><th>Kode</th><th>Nama Asset</th><th>Status</th><th>Aksi</th></tr></thead>
+                                <thead><tr><th>Kode</th><th>Nama Asset</th><th>Status</th><th style="width:40px; text-align:center;">Aksi</th></tr></thead>
                                 <tbody>
                                     ${data && data.length > 0 ? data.map(a => {
                                         const detailStr = `Kode Asset: ${a.kode_asset}\nNama Asset: ${a.nama_asset}\nKantor: ${a.kantor ? a.kantor.nama : '-'}\nKategori: ${a.kategori}\nStatus: ${a.status}`;
@@ -686,47 +709,19 @@
                                             <td><b>${a.kode_asset}</b></td>
                                             <td>${a.nama_asset}</td>
                                             <td><span class="badge badge-${a.status === 'Baik' ? 'success' : 'danger'}">${a.status}</span></td>
-                                            <td>
-                                                <div class="action-group">
-                                                    <button class="btn btn-info" style="padding:4px 8px;" title="Lihat Detail" onclick="viewGenericDetail('Asset', '${a.nama_asset}', \`${detailStr}\`)"><i class="fa-solid fa-eye"></i></button>
-                                                    <button class="btn btn-share" style="padding:4px 8px;" title="Bagikan Data" onclick="shareData('Data Asset', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes"></i></button>
-                                                    <button class="btn btn-warning" style="padding:4px 8px;" title="Edit Data" onclick="openFormAsset('${a.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                    <button class="btn btn-danger" style="padding:4px 8px;" title="Hapus Data" onclick="deleteRecord('asset','${a.id}','asset')"><i class="fa-solid fa-trash"></i></button>
+                                            <td style="text-align:center;">
+                                                <div class="dropdown-action">
+                                                    <button class="btn-action-trigger" onclick="toggleDropdownMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                                    <div class="dropdown-menu-content">
+                                                        <button onclick="viewGenericDetail('Asset', '${a.nama_asset}', \`${detailStr}\`)"><i class="fa-solid fa-eye" style="color:#0dcaf0;"></i> Detail</button>
+                                                        <button onclick="shareData('Data Asset', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes" style="color:#0d6efd;"></i> Bagikan</button>
+                                                        <button onclick="openFormAsset('${a.id}')"><i class="fa-solid fa-pen-to-square" style="color:#ffc107;"></i> Edit</button>
+                                                        <button onclick="deleteRecord('asset','${a.id}','asset')"><i class="fa-solid fa-trash" style="color:#dc3545;"></i> Hapus</button>
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
                                     `}).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada data asset</td></tr>'}
-                                </tbody>
-                            </table>
-                        </div>`;
-                } else if (pageKey === 'pemeriksaan_atm') {
-                    actionBtn.style.display = 'inline-flex';
-                    kriteriaBtn.style.display = 'inline-flex';
-                    actionBtn.onclick = () => openFormPemeriksaanATM();
-                    const { data } = await db.from('pemeriksaan_atm').select('*, kantor(nama)').order('tanggal_pemeriksaan', {ascending:false});
-                    contentEl.innerHTML = `
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead><tr><th>Lokasi/KCP</th><th>Kategori</th><th>Periode</th><th>Aksi</th></tr></thead>
-                                <tbody>
-                                    ${data && data.length > 0 ? data.map(atm => {
-                                        const detailStr = `Lokasi/KCP: ${atm.kantor ? atm.kantor.nama : '-'}\nKategori: ${atm.kategori_atm}\nPeriode: ${atm.periode_minggu}\nPetugas: ${atm.petugas_nama || '-'}\nSupervisor: ${atm.supervisor_nama || '-'}`;
-                                        return `
-                                        <tr>
-                                            <td><b>${atm.kantor ? atm.kantor.nama : '-'}</b></td>
-                                            <td><span class="badge badge-success">${atm.kategori_atm}</span></td>
-                                            <td>${atm.periode_minggu}</td>
-                                            <td>
-                                                <div class="action-group">
-                                                    <button class="btn btn-info" style="padding:4px 8px;" title="Lihat Rincian" onclick="viewDetailATM('${atm.id}', '${atm.kantor ? atm.kantor.nama : ''}', '${atm.periode_minggu}')"><i class="fa-solid fa-eye"></i></button>
-                                                    <button class="btn btn-share" style="padding:4px 8px;" title="Bagikan Laporan" onclick="shareData('Laporan Pemeriksaan ATM', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes"></i></button>
-                                                    <button class="btn btn-primary" style="padding:4px 8px;" title="Unduh PDF" onclick="exportATMPDF('${atm.id}')"><i class="fa-solid fa-file-pdf"></i></button>
-                                                    <button class="btn btn-warning" style="padding:4px 8px;" title="Edit Form" onclick="openFormPemeriksaanATM('${atm.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                    <button class="btn btn-danger" style="padding:4px 8px;" title="Hapus Data" onclick="deleteRecord('pemeriksaan_atm','${atm.id}','pemeriksaan_atm')"><i class="fa-solid fa-trash"></i></button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    `}).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada pemeriksaan ATM</td></tr>'}
                                 </tbody>
                             </table>
                         </div>`;
@@ -745,7 +740,7 @@
 
                         <div class="table-responsive">
                             <table class="table">
-                                <thead><tr><th>Jenis</th><th>ID Pelanggan</th><th>Pemakaian</th><th>Biaya (Rp)</th><th>Aksi</th></tr></thead>
+                                <thead><tr><th>Jenis</th><th>ID Pelanggan</th><th>Pemakaian</th><th>Biaya (Rp)</th><th style="width:40px; text-align:center;">Aksi</th></tr></thead>
                                 <tbody>
                                     ${data && data.length > 0 ? data.map(u => {
                                         const detailStr = `Jenis Utilitas: ${u.jenis}\nKantor: ${u.kantor ? u.kantor.nama : '-'}\nID Pelanggan: ${u.id_pelanggan || '-'}\nPemakaian: ${u.jumlah_pemakaian} ${u.satuan}\nBiaya: Rp ${Number(u.biaya).toLocaleString('id-ID')}\nTanggal: ${u.bulan_tahun || '-'}`;
@@ -755,21 +750,56 @@
                                             <td><span class="badge badge-warning">${u.id_pelanggan || '-'}</span></td>
                                             <td>${u.jumlah_pemakaian} ${u.satuan}</td>
                                             <td>Rp ${Number(u.biaya).toLocaleString('id-ID')}</td>
-                                            <td>
-                                                <div class="action-group">
-                                                    ${(u.jenis === 'Listrik' || u.jenis === 'Air') ? `
-                                                        <button class="btn btn-pay" style="padding:4px 8px;" title="Salin ID & Bayar Sepulsa" onclick="processPaymentRedirect('${u.jenis}', '${u.id_pelanggan}')">
-                                                            <i class="fa-solid fa-credit-card"></i>
-                                                        </button>
-                                                    ` : ''}
-                                                    <button class="btn btn-info" style="padding:4px 8px;" title="Lihat Detail Utilitas" onclick="viewGenericDetail('Utilitas', '${u.jenis}', \`${detailStr}\`)"><i class="fa-solid fa-eye"></i></button>
-                                                    <button class="btn btn-share" style="padding:4px 8px;" title="Bagikan Data" onclick="shareData('Data Utilitas', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes"></i></button>
-                                                    <button class="btn btn-warning" style="padding:4px 8px;" title="Edit Data" onclick="openFormUtilitas('${u.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                    <button class="btn btn-danger" style="padding:4px 8px;" title="Hapus Data" onclick="deleteRecord('utilitas','${u.id}','utilitas')"><i class="fa-solid fa-trash"></i></button>
+                                            <td style="text-align:center;">
+                                                <div class="dropdown-action">
+                                                    <button class="btn-action-trigger" onclick="toggleDropdownMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                                    <div class="dropdown-menu-content">
+                                                        ${(u.jenis === 'Listrik' || u.jenis === 'Air') ? `
+                                                            <button onclick="processPaymentRedirect('${u.jenis}', '${u.id_pelanggan}')"><i class="fa-solid fa-credit-card" style="color:#10b981;"></i> Bayar</button>
+                                                        ` : ''}
+                                                        <button onclick="viewGenericDetail('Utilitas', '${u.jenis}', \`${detailStr}\`)"><i class="fa-solid fa-eye" style="color:#0dcaf0;"></i> Detail</button>
+                                                        <button onclick="shareData('Data Utilitas', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes" style="color:#0d6efd;"></i> Bagikan</button>
+                                                        <button onclick="openFormUtilitas('${u.id}')"><i class="fa-solid fa-pen-to-square" style="color:#ffc107;"></i> Edit</button>
+                                                        <button onclick="deleteRecord('utilitas','${u.id}','utilitas')"><i class="fa-solid fa-trash" style="color:#dc3545;"></i> Hapus</button>
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
                                     `}).join('') : '<tr><td colspan="5" style="text-align:center;">Belum ada data utilitas</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else if (pageKey === 'pemeriksaan_atm') {
+                    actionBtn.style.display = 'inline-flex';
+                    kriteriaBtn.style.display = 'inline-flex';
+                    actionBtn.onclick = () => openFormPemeriksaanATM();
+                    const { data } = await db.from('pemeriksaan_atm').select('*, kantor(nama)').order('tanggal_pemeriksaan', {ascending:false});
+                    contentEl.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead><tr><th>Lokasi/KCP</th><th>Kategori</th><th>Periode</th><th style="width:40px; text-align:center;">Aksi</th></tr></thead>
+                                <tbody>
+                                    ${data && data.length > 0 ? data.map(atm => {
+                                        const detailStr = `Lokasi/KCP: ${atm.kantor ? atm.kantor.nama : '-'}\nKategori: ${atm.kategori_atm}\nPeriode: ${atm.periode_minggu}\nPetugas: ${atm.petugas_nama || '-'}\nSupervisor: ${atm.supervisor_nama || '-'}`;
+                                        return `
+                                        <tr>
+                                            <td><b>${atm.kantor ? atm.kantor.nama : '-'}</b></td>
+                                            <td><span class="badge badge-success">${atm.kategori_atm}</span></td>
+                                            <td>${atm.periode_minggu}</td>
+                                            <td style="text-align:center;">
+                                                <div class="dropdown-action">
+                                                    <button class="btn-action-trigger" onclick="toggleDropdownMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                                    <div class="dropdown-menu-content">
+                                                        <button onclick="viewDetailATM('${atm.id}', '${atm.kantor ? atm.kantor.nama : ''}', '${atm.periode_minggu}')"><i class="fa-solid fa-eye" style="color:#0dcaf0;"></i> Detail</button>
+                                                        <button onclick="shareData('Laporan Pemeriksaan ATM', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes" style="color:#0d6efd;"></i> Bagikan</button>
+                                                        <button onclick="exportATMPDF('${atm.id}')"><i class="fa-solid fa-file-pdf" style="color:#198754;"></i> Unduh PDF</button>
+                                                        <button onclick="openFormPemeriksaanATM('${atm.id}')"><i class="fa-solid fa-pen-to-square" style="color:#ffc107;"></i> Edit</button>
+                                                        <button onclick="deleteRecord('pemeriksaan_atm','${atm.id}','pemeriksaan_atm')"><i class="fa-solid fa-trash" style="color:#dc3545;"></i> Hapus</button>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `}).join('') : '<tr><td colspan="4" style="text-align:center;">Belum ada pemeriksaan ATM</td></tr>'}
                                 </tbody>
                             </table>
                         </div>`;
@@ -780,7 +810,7 @@
                     contentEl.innerHTML = `
                         <div class="table-responsive">
                             <table class="table">
-                                <thead><tr><th>Judul</th><th>Asset</th><th>Status</th><th>Aksi</th></tr></thead>
+                                <thead><tr><th>Judul</th><th>Asset</th><th>Status</th><th style="width:40px; text-align:center;">Aksi</th></tr></thead>
                                 <tbody>
                                     ${data && data.length > 0 ? data.map(w => {
                                         const detailStr = `Judul Work Order: ${w.judul}\nAsset Terkait: ${w.asset ? w.asset.nama_asset : '-'}\nStatus: ${w.status}`;
@@ -789,12 +819,15 @@
                                             <td><b>${w.judul}</b></td>
                                             <td>${w.asset ? w.asset.nama_asset : '-'}</td>
                                             <td><span class="badge badge-warning">${w.status}</span></td>
-                                            <td>
-                                                <div class="action-group">
-                                                    <button class="btn btn-info" style="padding:4px 8px;" title="Lihat Detail Work Order" onclick="viewGenericDetail('Work Order', '${w.judul}', \`${detailStr}\`)"><i class="fa-solid fa-eye"></i></button>
-                                                    <button class="btn btn-share" style="padding:4px 8px;" title="Bagikan WO" onclick="shareData('Work Order', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes"></i></button>
-                                                    <button class="btn btn-warning" style="padding:4px 8px;" title="Edit WO" onclick="openFormWO('${w.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                    <button class="btn btn-danger" style="padding:4px 8px;" title="Hapus WO" onclick="deleteRecord('work_orders','${w.id}','workorder')"><i class="fa-solid fa-trash"></i></button>
+                                            <td style="text-align:center;">
+                                                <div class="dropdown-action">
+                                                    <button class="btn-action-trigger" onclick="toggleDropdownMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                                    <div class="dropdown-menu-content">
+                                                        <button onclick="viewGenericDetail('Work Order', '${w.judul}', \`${detailStr}\`)"><i class="fa-solid fa-eye" style="color:#0dcaf0;"></i> Detail</button>
+                                                        <button onclick="shareData('Work Order', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes" style="color:#0d6efd;"></i> Bagikan</button>
+                                                        <button onclick="openFormWO('${w.id}')"><i class="fa-solid fa-pen-to-square" style="color:#ffc107;"></i> Edit</button>
+                                                        <button onclick="deleteRecord('work_orders','${w.id}','workorder')"><i class="fa-solid fa-trash" style="color:#dc3545;"></i> Hapus</button>
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
@@ -809,7 +842,7 @@
                     contentEl.innerHTML = `
                         <div class="table-responsive">
                             <table class="table">
-                                <thead><tr><th>WO</th><th>Before</th><th>After</th><th>Biaya</th><th>Aksi</th></tr></thead>
+                                <thead><tr><th>WO</th><th>Before</th><th>After</th><th>Biaya</th><th style="width:40px; text-align:center;">Aksi</th></tr></thead>
                                 <tbody>
                                     ${data && data.length > 0 ? data.map(m => {
                                         const detailStr = `Work Order: ${m.work_orders ? m.work_orders.judul : '-'}\nTeknisi: ${m.teknisi ? m.teknisi.nama : '-'}\nBiaya Perawatan: Rp ${Number(m.biaya).toLocaleString('id-ID')}\nFoto Before: ${m.foto_before ? 'Ada' : 'Tidak Ada'}\nFoto After: ${m.foto_after ? 'Ada' : 'Tidak Ada'}`;
@@ -819,11 +852,14 @@
                                             <td>${m.foto_before ? `<img src="${m.foto_before}" class="img-thumb">` : '-'}</td>
                                             <td>${m.foto_after ? `<img src="${m.foto_after}" class="img-thumb">` : '-'}</td>
                                             <td>Rp ${Number(m.biaya).toLocaleString('id-ID')}</td>
-                                            <td>
-                                                <div class="action-group">
-                                                    <button class="btn btn-info" style="padding:4px 8px;" title="Lihat Detail Pengerjaan" onclick="viewGenericDetail('Hasil Perawatan', '${m.work_orders ? m.work_orders.judul : '-'}', \`${detailStr}\`)"><i class="fa-solid fa-eye"></i></button>
-                                                    <button class="btn btn-share" style="padding:4px 8px;" title="Bagikan Laporan Perawatan" onclick="shareData('Laporan Perawatan', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes"></i></button>
-                                                    <button class="btn btn-danger" style="padding:4px 8px;" title="Hapus Record" onclick="deleteRecord('maintenances','${m.id}','perawatan')"><i class="fa-solid fa-trash"></i></button>
+                                            <td style="text-align:center;">
+                                                <div class="dropdown-action">
+                                                    <button class="btn-action-trigger" onclick="toggleDropdownMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                                    <div class="dropdown-menu-content">
+                                                        <button onclick="viewGenericDetail('Hasil Perawatan', '${m.work_orders ? m.work_orders.judul : '-'}', \`${detailStr}\`)"><i class="fa-solid fa-eye" style="color:#0dcaf0;"></i> Detail</button>
+                                                        <button onclick="shareData('Laporan Perawatan', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes" style="color:#0d6efd;"></i> Bagikan</button>
+                                                        <button onclick="deleteRecord('maintenances','${m.id}','perawatan')"><i class="fa-solid fa-trash" style="color:#dc3545;"></i> Hapus</button>
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
@@ -838,7 +874,7 @@
                     contentEl.innerHTML = `
                         <div class="table-responsive">
                             <table class="table">
-                                <thead><tr><th>Nama</th><th>Spesialisasi</th><th>Status</th><th>Aksi</th></tr></thead>
+                                <thead><tr><th>Nama</th><th>Spesialisasi</th><th>Status</th><th style="width:40px; text-align:center;">Aksi</th></tr></thead>
                                 <tbody>
                                     ${data && data.length > 0 ? data.map(t => {
                                         const detailStr = `Nama Teknisi: ${t.nama}\nSpesialisasi: ${t.spesialisasi}\nStatus Saat Ini: ${t.status}`;
@@ -847,12 +883,15 @@
                                             <td><b>${t.nama}</b></td>
                                             <td>${t.spesialisasi}</td>
                                             <td><span class="badge badge-success">${t.status}</span></td>
-                                            <td>
-                                                <div class="action-group">
-                                                    <button class="btn btn-info" style="padding:4px 8px;" title="Lihat Profile" onclick="viewGenericDetail('Teknisi', '${t.nama}', \`${detailStr}\`)"><i class="fa-solid fa-eye"></i></button>
-                                                    <button class="btn btn-share" style="padding:4px 8px;" title="Bagikan Profile" onclick="shareData('Data Teknisi', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes"></i></button>
-                                                    <button class="btn btn-warning" style="padding:4px 8px;" title="Edit Data" onclick="openFormTeknisi('${t.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                    <button class="btn btn-danger" style="padding:4px 8px;" title="Hapus Data" onclick="deleteRecord('teknisi','${t.id}','teknisi')"><i class="fa-solid fa-trash"></i></button>
+                                            <td style="text-align:center;">
+                                                <div class="dropdown-action">
+                                                    <button class="btn-action-trigger" onclick="toggleDropdownMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                                    <div class="dropdown-menu-content">
+                                                        <button onclick="viewGenericDetail('Teknisi', '${t.nama}', \`${detailStr}\`)"><i class="fa-solid fa-eye" style="color:#0dcaf0;"></i> Detail</button>
+                                                        <button onclick="shareData('Data Teknisi', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes" style="color:#0d6efd;"></i> Bagikan</button>
+                                                        <button onclick="openFormTeknisi('${t.id}')"><i class="fa-solid fa-pen-to-square" style="color:#ffc107;"></i> Edit</button>
+                                                        <button onclick="deleteRecord('teknisi','${t.id}','teknisi')"><i class="fa-solid fa-trash" style="color:#dc3545;"></i> Hapus</button>
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
@@ -867,7 +906,7 @@
                     contentEl.innerHTML = `
                         <div class="table-responsive">
                             <table class="table">
-                                <thead><tr><th>Judul Kegiatan</th><th>Kategori</th><th>Tanggal</th><th>Status</th><th>Aksi</th></tr></thead>
+                                <thead><tr><th>Judul Kegiatan</th><th>Kategori</th><th>Tanggal</th><th>Status</th><th style="width:40px; text-align:center;">Aksi</th></tr></thead>
                                 <tbody>
                                     ${data && data.length > 0 ? data.map(j => {
                                         const detailStr = `Kegiatan: ${j.judul}\nKategori: ${j.kategori || '-'}\nTanggal: ${j.tanggal || '-'}\nStatus: ${j.status}\nKeterangan: ${j.keterangan || '-'}`;
@@ -877,12 +916,15 @@
                                             <td>${j.kategori || '-'}</td>
                                             <td>${j.tanggal || '-'}</td>
                                             <td><span class="badge badge-${j.status === 'Selesai' ? 'success' : 'warning'}">${j.status}</span></td>
-                                            <td>
-                                                <div class="action-group">
-                                                    <button class="btn btn-info" style="padding:4px 8px;" title="Lihat Rincian" onclick="viewGenericDetail('Jadwal', '${j.judul}', \`${detailStr}\`)"><i class="fa-solid fa-eye"></i></button>
-                                                    <button class="btn btn-share" style="padding:4px 8px;" title="Bagikan Jadwal" onclick="shareData('Jadwal Kegiatan', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes"></i></button>
-                                                    <button class="btn btn-warning" style="padding:4px 8px;" title="Edit Jadwal" onclick="openFormJadwal('${j.id}')"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                    <button class="btn btn-danger" style="padding:4px 8px;" title="Hapus Jadwal" onclick="deleteRecord('jadwal','${j.id}','jadwal')"><i class="fa-solid fa-trash"></i></button>
+                                            <td style="text-align:center;">
+                                                <div class="dropdown-action">
+                                                    <button class="btn-action-trigger" onclick="toggleDropdownMenu(this)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                                    <div class="dropdown-menu-content">
+                                                        <button onclick="viewGenericDetail('Jadwal', '${j.judul}', \`${detailStr}\`)"><i class="fa-solid fa-eye" style="color:#0dcaf0;"></i> Detail</button>
+                                                        <button onclick="shareData('Jadwal Kegiatan', \`${detailStr}\`)"><i class="fa-solid fa-share-nodes" style="color:#0d6efd;"></i> Bagikan</button>
+                                                        <button onclick="openFormJadwal('${j.id}')"><i class="fa-solid fa-pen-to-square" style="color:#ffc107;"></i> Edit</button>
+                                                        <button onclick="deleteRecord('jadwal','${j.id}','jadwal')"><i class="fa-solid fa-trash" style="color:#dc3545;"></i> Hapus</button>
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
