@@ -93,7 +93,7 @@
         .table th, .table td { padding: 8px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; }
         .table th { background: var(--primary-light); color: var(--primary); font-weight: 700; }
 
-        /* DROPDOWN ACTION MENU RAPI */
+        /* DROPDOWN ACTION MENU */
         .dropdown-action { position: relative; display: inline-block; }
         .btn-action-trigger { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-main); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
         .dropdown-menu-content { display: none; position: absolute; right: 0; top: 36px; background-color: var(--card-bg); min-width: 130px; box-shadow: 0px 8px 16px rgba(0,0,0,0.15); border: 1px solid var(--border); border-radius: 10px; z-index: 105; overflow: hidden; }
@@ -1126,12 +1126,12 @@
             };
         }
 
-        // FORM UTILITAS (LENGKAP DENGAN NAMA PELANGGAN, PERIODE BULAN, TARIF/DAYA)
+        // FORM UTILITAS (OTOMATIS NAMA PELANGGAN & TARIF/DAYA KETIKA DIKLIK KANTOR)
         async function openFormUtilitas(id = null) {
             const { data: kantorList } = await db.from('kantor').select('id, nama, id_pelanggan_pln, id_pelanggan_pdam');
             if (!kantorList || kantorList.length === 0) return Swal.fire('Peringatan', 'Tambah data kantor dulu!', 'warning');
 
-            let editData = { kantor_id: kantorList[0].id, jenis: 'Listrik', nama_pelanggan: '', id_pelanggan: '', periode_bulan: '', tarif_daya: '', jumlah_pemakaian: 0, satuan: 'kWh', biaya: 0, bulan_tahun: '' };
+            let editData = { kantor_id: kantorList[0].id, jenis: 'Listrik', nama_pelanggan: '', id_pelanggan: '', periode_bulan: 'Agustus', tarif_daya: '', jumlah_pemakaian: 0, satuan: 'kWh', biaya: 0, bulan_tahun: '' };
             if (id) {
                 const { data } = await db.from('utilitas').select('*').eq('id', id).single();
                 if (data) editData = data;
@@ -1160,8 +1160,8 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Nama Pelanggan</label>
-                        <input type="text" id="fu-nama-pelanggan" class="form-control" value="${editData.nama_pelanggan || ''}" placeholder="Contoh: PT BINAYASA PURABATARA" required>
+                        <label>Nama Pelanggan (Otomatis)</label>
+                        <input type="text" id="fu-nama-pelanggan" class="form-control" value="${editData.nama_pelanggan || ''}" placeholder="Otomatis mengikuti kantor..." style="background-color: var(--primary-light); font-weight: bold;" required>
                     </div>
                     <div class="form-group">
                         <label>ID Pelanggan (Otomatis)</label>
@@ -1177,7 +1177,7 @@
                             <option value="Mei" ${editData.periode_bulan === 'Mei' ? 'selected':''}>Mei</option>
                             <option value="Juni" ${editData.periode_bulan === 'Juni' ? 'selected':''}>Juni</option>
                             <option value="Juli" ${editData.periode_bulan === 'Juli' ? 'selected':''}>Juli</option>
-                            <option value="Agustus" ${editData.periode_bulan === 'Agustus' ? 'selected':''}>Agustus</option>
+                            <option value="Agustus" ${editData.periode_bulan === 'Agustus' || !editData.periode_bulan ? 'selected':''}>Agustus</option>
                             <option value="September" ${editData.periode_bulan === 'September' ? 'selected':''}>September</option>
                             <option value="Oktober" ${editData.periode_bulan === 'Oktober' ? 'selected':''}>Oktober</option>
                             <option value="November" ${editData.periode_bulan === 'November' ? 'selected':''}>November</option>
@@ -1185,8 +1185,8 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Tarif / Daya</label>
-                        <input type="text" id="fu-tarif-daya" class="form-control" value="${editData.tarif_daya || ''}" placeholder="Contoh: R1M / 1300 VA atau Golongan IIB" required>
+                        <label>Tarif / Daya (Otomatis)</label>
+                        <input type="text" id="fu-tarif-daya" class="form-control" value="${editData.tarif_daya || ''}" placeholder="Otomatis terisi..." style="background-color: var(--primary-light); font-weight: bold;" required>
                     </div>
                     <div class="form-group">
                         <label>Pemakaian</label>
@@ -1208,7 +1208,11 @@
                 </form>`;
             
             document.getElementById('app-modal').style.display = 'flex';
-            autoFillIDPelanggan();
+            
+            // Auto fill pertama kali jika baru tambah data
+            if (!id) {
+                autoFillIDPelanggan();
+            }
 
             document.getElementById('f-utilitas').onsubmit = async (e) => {
                 e.preventDefault();
@@ -1273,6 +1277,7 @@
             };
         }
 
+        // FUNGSI AUTO-FILL DINAMIS KETIKA KANTOR ATAU JENIS UTILITAS DIUBAH
         function autoFillIDPelanggan() {
             const kantorId = document.getElementById('fu-kantor').value;
             const jenis = document.getElementById('fu-jenis').value;
@@ -1283,21 +1288,24 @@
 
             if (window.kantorMap && window.kantorMap[kantorId]) {
                 const infoKantor = window.kantorMap[kantorId];
-                if (!namaPelInput.value) {
-                    namaPelInput.value = infoKantor.name ? `PT BINAYASA PURABATARA - ${infoKantor.name}` : '';
-                }
+                
+                // Otomatisasi Nama Pelanggan mengikuti Kantor
+                namaPelangganVal = infoKantor.name ? `${infoKantor.name}` : 'PT BINAYASA PURABATARA';
+                namaPelInput.value = namaPelangganVal;
 
+                // Otomatisasi ID, Tarif/Daya, dan Satuan berdasarkan Jenis Utilitas
                 if (jenis === 'Listrik') {
                     idPelInput.value = infoKantor.pln || '-';
                     satuanInput.value = 'kWh';
-                    if (!tarifDayaInput.value) tarifDayaInput.value = 'R1M / 1300 VA';
+                    tarifDayaInput.value = 'R1M / 1300 VA';
                 } else if (jenis === 'Air') {
                     idPelInput.value = infoKantor.pdam || '-';
                     satuanInput.value = 'm³';
-                    if (!tarifDayaInput.value) tarifDayaInput.value = 'Golongan IIB';
+                    tarifDayaInput.value = 'Golongan IIB';
                 } else {
                     idPelInput.value = '-';
                     satuanInput.value = 'Unit';
+                    tarifDayaInput.value = '-';
                 }
             }
         }
