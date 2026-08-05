@@ -195,24 +195,23 @@
                 <div class="grid-item" onclick="scanQRModal()"><div class="grid-icon-wrapper" style="background:#f3e8ff; color:#9333ea;"><i class="fa-solid fa-qrcode"></i></div><span class="grid-label">Scan QR</span></div>
             </div>
 
-            <!-- CARD GRAFIK UTILITAS DENGAN FILTER TAHUN & KANTOR -->
+            <!-- CARD GRAFIK UTILITAS DENGAN LAYOUT FLEKSIBEL & RESPONSIF -->
             <div class="card">
-                <div class="card-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                    <span><i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Tren Biaya Utilitas</span>
-                    <div style="display:flex; gap:6px;">
-                        <!-- Filter Kantor -->
-                        <select id="chart-filter-kantor" class="form-control" style="width: auto; padding: 4px 6px; font-size: 0.75rem;" onchange="renderChart()">
+                <div class="card-title" style="display:flex; flex-direction:column; gap:10px; margin-bottom:12px;">
+                    <span style="font-size:0.95rem; font-weight:700;"><i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Tren Biaya Utilitas</span>
+                    
+                    <!-- Grid Filter 3 Kolom agar responsif dan tidak terpotong -->
+                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; width:100%;">
+                        <select id="chart-filter-kantor" class="form-control" style="padding: 6px 4px; font-size: 0.72rem; text-overflow: ellipsis;" onchange="renderChart()">
                             <option value="ALL">Semua Kantor</option>
                         </select>
-                        <!-- Filter Tahun -->
-                        <select id="chart-filter-tahun" class="form-control" style="width: auto; padding: 4px 6px; font-size: 0.75rem;" onchange="renderChart()">
+                        <select id="chart-filter-tahun" class="form-control" style="padding: 6px 4px; font-size: 0.72rem;" onchange="renderChart()">
                             <option value="LAST_12">12 Bulan Terakhir</option>
                             <option value="2026" selected>Tahun 2026</option>
                             <option value="2025">Tahun 2025</option>
                             <option value="2024">Tahun 2024</option>
                         </select>
-                        <!-- Filter Jenis Utilitas -->
-                        <select id="chart-filter-jenis" class="form-control" style="width: auto; padding: 4px 6px; font-size: 0.75rem;" onchange="renderChart()">
+                        <select id="chart-filter-jenis" class="form-control" style="padding: 6px 4px; font-size: 0.72rem;" onchange="renderChart()">
                             <option value="ALL">Semua Layanan</option>
                             <option value="Listrik">Listrik</option>
                             <option value="Air">Air PDAM</option>
@@ -220,13 +219,18 @@
                     </div>
                 </div>
 
-                <!-- BOX NOTIFIKASI KENAIKAN / PENURUNAN EXTREM -->
-                <div id="alert-trend" class="alert-box">
-                    <i id="alert-trend-icon" class="fa-solid fa-triangle-exclamation"></i>
-                    <span id="alert-trend-text">-</span>
+                <!-- BOX NOTIFIKASI KENAIKAN / PENURUNAN EXTREM DENGAN DETAIL KANTOR -->
+                <div id="alert-trend" class="alert-box" style="flex-direction:column; align-items:flex-start; gap:4px; font-size:0.75rem;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <i id="alert-trend-icon" class="fa-solid fa-triangle-exclamation"></i>
+                        <b id="alert-trend-title">Analisis Tren Biaya Utilitas</b>
+                    </div>
+                    <div id="alert-trend-text" style="font-weight:normal; line-height:1.3;">-</div>
                 </div>
 
-                <canvas id="chartRealtime" style="max-height: 220px;"></canvas>
+                <div style="position: relative; height: 220px; width: 100%;">
+                    <canvas id="chartRealtime"></canvas>
+                </div>
             </div>
         </div>
 
@@ -359,7 +363,6 @@
             renderChart();
         }
 
-        // REDIRECT DAN SALIN ID UNTUK SEPULSA
         function processPaymentRedirect(type, idPelanggan) {
             const cleanId = (idPelanggan || '').trim();
             const targetUrl = type === 'Listrik' 
@@ -382,15 +385,10 @@
             window.open(targetUrl, '_blank');
         }
 
-        // BAGIKAN DATA VIA SHARE / CLIPBOARD
         async function shareData(title, text, url = null) {
             if (navigator.share) {
                 try {
-                    await navigator.share({
-                        title: title,
-                        text: text,
-                        url: url || window.location.href
-                    });
+                    await navigator.share({ title: title, text: text, url: url || window.location.href });
                 } catch (err) {}
             } else {
                 navigator.clipboard.writeText(title + "\n" + text);
@@ -398,7 +396,7 @@
             }
         }
 
-        // RENDER GRAFIK TREN BIAYA DENGAN FILTER TAHUN, KANTOR, DAN JENIS UTILITAS
+        // RENDER GRAFIK TREN BIAYA DENGAN ANALISIS SPESIFIK KANTOR
         async function renderChart() {
             const ctx = document.getElementById('chartRealtime').getContext('2d');
             const selectedKantor = document.getElementById('chart-filter-kantor').value;
@@ -408,6 +406,7 @@
             let labels = [];
             let dataListrik = [];
             let dataAir = [];
+            let kantorStats = {};
 
             if (selectedTahun === 'LAST_12') {
                 const now = new Date();
@@ -425,9 +424,10 @@
                 dataAir = new Array(12).fill(0);
             }
 
+            labels.forEach((_, idx) => { kantorStats[idx] = {}; });
+
             try {
                 let query = db.from('utilitas').select('*, kantor(nama)');
-                
                 if (selectedKantor !== 'ALL') {
                     query = query.eq('kantor_id', selectedKantor);
                 }
@@ -441,19 +441,28 @@
                         const dateObj = new Date(item.bulan_tahun);
                         const itemYear = dateObj.getFullYear().toString();
                         const itemMonth = dateObj.getMonth();
+                        const kantorNama = item.kantor ? item.kantor.nama : 'Kantor Unassigned';
+                        const biayaVal = Number(item.biaya || 0);
+
+                        let targetIdx = -1;
 
                         if (selectedTahun === 'LAST_12') {
                             const now = new Date();
                             const diffMonths = (now.getFullYear() - dateObj.getFullYear()) * 12 + (now.getMonth() - dateObj.getMonth());
-                            
                             if (diffMonths >= 0 && diffMonths < 12) {
-                                const targetIdx = 11 - diffMonths;
-                                if (item.jenis === 'Listrik') dataListrik[targetIdx] += Number(item.biaya || 0);
-                                if (item.jenis === 'Air') dataAir[targetIdx] += Number(item.biaya || 0);
+                                targetIdx = 11 - diffMonths;
                             }
                         } else if (itemYear === selectedTahun) {
-                            if (item.jenis === 'Listrik') dataListrik[itemMonth] += Number(item.biaya || 0);
-                            if (item.jenis === 'Air') dataAir[itemMonth] += Number(item.biaya || 0);
+                            targetIdx = itemMonth;
+                        }
+
+                        if (targetIdx !== -1) {
+                            if (selectedJenis === 'ALL' || selectedJenis === item.jenis) {
+                                kantorStats[targetIdx][kantorNama] = (kantorStats[targetIdx][kantorNama] || 0) + biayaVal;
+                            }
+
+                            if (item.jenis === 'Listrik') dataListrik[targetIdx] += biayaVal;
+                            if (item.jenis === 'Air') dataAir[targetIdx] += biayaVal;
                         }
                     });
                 } else {
@@ -463,7 +472,7 @@
                     }
                 }
 
-                checkTrendAlert(dataListrik, dataAir, labels);
+                checkTrendAlert(dataListrik, dataAir, labels, kantorStats, selectedKantor);
 
                 if (chartInstance) {
                     chartInstance.destroy();
@@ -499,16 +508,11 @@
 
                 chartInstance = new Chart(ctx, {
                     type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: datasets
-                    },
+                    data: { labels: labels, datasets: datasets },
                     options: {
                         responsive: true,
-                        interaction: {
-                            intersect: false,
-                            mode: 'index'
-                        },
+                        maintainAspectRatio: false,
+                        interaction: { intersect: false, mode: 'index' },
                         plugins: {
                             legend: { display: true, position: 'top' },
                             tooltip: {
@@ -542,8 +546,8 @@
             }
         }
 
-        // DETEKSI PERUBAHAN BIAYA UNTUK FILTER DINAMIS
-        function checkTrendAlert(listrikArr, airArr, labels) {
+        // DETEKSI BIAYA MELONJAK / TURUN PER KANTOR
+        function checkTrendAlert(listrikArr, airArr, labels, kantorStats, selectedKantor) {
             const alertBox = document.getElementById('alert-trend');
             const alertText = document.getElementById('alert-trend-text');
             const alertIcon = document.getElementById('alert-trend-icon');
@@ -564,19 +568,57 @@
                     const diff = currTotal - prevTotal;
                     const percent = Math.round((diff / prevTotal) * 100);
 
+                    const currKantorMap = kantorStats[lastIdx] || {};
+                    const prevKantorMap = kantorStats[lastIdx - 1] || {};
+                    
+                    let kantorMelonjak = [];
+                    let kantorTurun = [];
+
+                    const allKantorNames = new Set([...Object.keys(currKantorMap), ...Object.keys(prevKantorMap)]);
+                    
+                    allKantorNames.forEach(kName => {
+                        const cVal = currKantorMap[kName] || 0;
+                        const pVal = prevKantorMap[kName] || 0;
+                        const kDiff = cVal - pVal;
+
+                        if (pVal > 0 && kDiff !== 0) {
+                            const kPercent = Math.round((kDiff / pVal) * 100);
+                            if (kPercent >= 15) {
+                                kantorMelonjak.push(`<b>${kName}</b> (+${kPercent}%)`);
+                            } else if (kPercent <= -15) {
+                                kantorTurun.push(`<b>${kName}</b> (${kPercent}%)`);
+                            }
+                        } else if (pVal === 0 && cVal > 0) {
+                            kantorMelonjak.push(`<b>${kName}</b> (Baru Diinput)`);
+                        }
+                    });
+
                     alertBox.style.display = 'flex';
 
+                    let detailMsg = "";
                     if (percent > 0) {
                         alertBox.className = 'alert-box alert-danger-custom';
                         alertIcon.className = 'fa-solid fa-arrow-trend-up';
-                        alertText.innerHTML = `Biaya Utilitas periode <b>${labels[lastIdx]}</b> NAIK <b>${percent}%</b> (+Rp ${diff.toLocaleString('id-ID')}) dibanding <b>${labels[lastIdx-1]}</b>.`;
+                        detailMsg = `Total biaya periode <b>${labels[lastIdx]}</b> NAIK <b>${percent}%</b> (+Rp ${diff.toLocaleString('id-ID')}) dibanding <b>${labels[lastIdx-1]}</b>.`;
                     } else if (percent < 0) {
                         alertBox.className = 'alert-box alert-success-custom';
                         alertIcon.className = 'fa-solid fa-arrow-trend-down';
-                        alertText.innerHTML = `Biaya Utilitas periode <b>${labels[lastIdx]}</b> TURUN <b>${Math.abs(percent)}%</b> (Rp ${Math.abs(diff).toLocaleString('id-ID')}) dibanding <b>${labels[lastIdx-1]}</b>.`;
+                        detailMsg = `Total biaya periode <b>${labels[lastIdx]}</b> TURUN <b>${Math.abs(percent)}%</b> (-Rp ${Math.abs(diff).toLocaleString('id-ID')}) dibanding <b>${labels[lastIdx-1]}</b>.`;
                     } else {
                         alertBox.style.display = 'none';
+                        return;
                     }
+
+                    if (selectedKantor === 'ALL') {
+                        if (kantorMelonjak.length > 0) {
+                            detailMsg += `<br><span style="color:#842029;">• Kenaikan signifikan: ${kantorMelonjak.join(', ')}</span>`;
+                        }
+                        if (kantorTurun.length > 0) {
+                            detailMsg += `<br><span style="color:#0f5132;">• Penurunan signifikan: ${kantorTurun.join(', ')}</span>`;
+                        }
+                    }
+
+                    alertText.innerHTML = detailMsg;
                 } else {
                     alertBox.style.display = 'none';
                 }
